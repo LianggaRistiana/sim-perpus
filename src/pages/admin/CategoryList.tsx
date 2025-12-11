@@ -94,6 +94,7 @@ const CategoryList: React.FC = () => {
                     <table className="w-full text-left text-sm">
                         <thead className="sticky top-0 z-10 bg-neutral-50 text-neutral-500">
                             <tr>
+                                <th className="px-6 py-4 font-medium">Kode Kategori</th>
                                 <th className="px-6 py-4 font-medium">Nama Kategori</th>
                                 <th className="px-6 py-4 font-medium">Deskripsi</th>
                                 <th className="px-6 py-4 font-medium text-right">Aksi</th>
@@ -115,6 +116,7 @@ const CategoryList: React.FC = () => {
                             ) : (
                                 categories.map((category) => (
                                     <tr key={category.id} className="hover:bg-neutral-50 cursor-pointer" onClick={() => navigate(`/dashboard/categories/${category.id}`)}>
+                                        <td className="px-6 py-4 font-medium text-neutral-900">{category.code || '-'}</td>
                                         <td className="px-6 py-4 font-medium text-neutral-900">{category.name}</td>
                                         <td className="px-6 py-4 text-neutral-600">{category.description}</td>
                                         <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
