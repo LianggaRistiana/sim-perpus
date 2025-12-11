@@ -5,7 +5,7 @@ import { api } from '../services/api';
 import type { BookMaster, Category, BookItem } from '../types';
 import dummyCover from '../assets/images/dummy_cover_book.jpg';
 
-const BookDetail: React.FC = () => {
+const BookCatalogDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [book, setBook] = useState<BookMaster | null>(null);
     const [category, setCategory] = useState<Category | null>(null);
@@ -13,28 +13,28 @@ const BookDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [imageError, setImageError] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!id) return;
-            try {
-                const bookData = await api.getBookById(id);
-                if (bookData) {
-                    setBook(bookData);
-                    const categories = await api.getCategories();
-                    const categoryData = categories.find(c => c.id === bookData.categoryId);
-                    setCategory(categoryData || null);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         if (!id) return;
+    //         try {
+    //             const bookData = await api.getBookById(id);
+    //             if (bookData) {
+    //                 setBook(bookData);
+    //                 const categories = await api.getCategories();
+    //                 const categoryData = categories.find(c => c.id === bookData.categoryId);
+    //                 setCategory(categoryData || null);
 
-                    const itemsData = await api.getBookItems(id);
-                    setItems(itemsData);
-                }
-            } catch (error) {
-                console.error('Error fetching book details:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [id]);
+    //                 const itemsData = await api.getBookItems(id);
+    //                 setItems(itemsData);
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching book details:', error);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchData();
+    // }, [id]);
 
     if (loading) {
         return (
@@ -173,4 +173,4 @@ const BookDetail: React.FC = () => {
     );
 };
 
-export default BookDetail;
+export default BookCatalogDetail;

@@ -1,77 +1,104 @@
-import type { BookMaster, BookItem } from '../types';
-import { books, bookItems } from './mock-db';
+import { apiClient } from '../lib/api-client';
+import type { BookMaster, BookItem, PaginatedResponse, ApiResponse } from '../types';
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 
 export const bookService = {
-  getBooks: async (): Promise<BookMaster[]> => {
-    await delay(500);
-    return books;
+  getBooks: async (params?: { page?: number; limit?: number; keyword?: string; category_id?: string }): Promise<PaginatedResponse<BookMaster>> => {
+    try {
+      const query = new URLSearchParams();
+      if (params?.page) query.append('page', params.page.toString());
+      if (params?.limit) query.append('limit', params.limit.toString());
+      if (params?.keyword) query.append('keyword', params.keyword);
+      if (params?.category_id) query.append('category_id', params.category_id);
+
+      const response = await apiClient.get<PaginatedResponse<BookMaster>>(`/books?${query.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch books:', error);
+      return {
+        status: 'error',
+        data: [],
+        meta: { page: 1, per_page: 10, total: 0, last_page: 1, timestamp: new Date().toISOString() }
+      };
+    }
   },
   getBookById: async (id: string): Promise<BookMaster | undefined> => {
-    await delay(500);
-    return books.find((book) => book.id === id);
-  },
-  addBook: async (book: Omit<BookMaster, 'id'>): Promise<BookMaster> => {
-    await delay(500);
-    const newBook = { ...book, id: Date.now().toString() };
-    books.push(newBook);
-    return newBook;
-  },
-  updateBook: async (id: string, book: Partial<BookMaster>): Promise<BookMaster | null> => {
-    await delay(500);
-    const index = books.findIndex((b) => b.id === id);
-    if (index !== -1) {
-      books[index] = { ...books[index], ...book };
-      return books[index];
+    try {
+      const response = await apiClient.get<{ data: BookMaster }>(`/books/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch book:', error);
+      return undefined;
     }
-    return null;
   },
-  deleteBook: async (id: string): Promise<boolean> => {
-    await delay(500);
-    const index = books.findIndex((b) => b.id === id);
-    if (index !== -1) {
-      books.splice(index, 1);
-      return true;
+  addBook: async (book: Omit<BookMaster, 'id'> & { bookItemQuantity?: number }): Promise<ApiResponse<BookMaster>> => {
+    const response = await apiClient.post<ApiResponse<BookMaster>>('/books', book);
+    return response;
+  },
+  updateBook: async (id: string, book: Partial<BookMaster>): Promise<ApiResponse<BookMaster> | null> => {
+    try {
+      const response = await apiClient.put<ApiResponse<BookMaster>>(`/books/${id}`, book);
+      return response;
+    } catch (error) {
+      console.error('Failed to update book:', error);
+      return null;
     }
-    return false;
+  },
+  deleteBook: async (id: string): Promise<ApiResponse<null> | null> => {
+    try {
+      const response = await apiClient.delete<ApiResponse<null>>(`/books/${id}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to delete book:', error);
+      return null;
+    }
   },
 
   // Book Items
   getBookItems: async (masterId?: string): Promise<BookItem[]> => {
-    await delay(500);
-    if (masterId) {
-      return bookItems.filter((item) => item.masterId === masterId);
+    try {
+      if (masterId) {
+        const response = await apiClient.get<{ data: BookItem[] }>(`/books/${masterId}/items`);
+        return response.data;
+      }
+      // If no masterId, maybe get all? Not sure if supported, but preserving signature.
+      return [];
+    } catch (error) {
+      console.error('Failed to fetch book items:', error);
+      return [];
     }
-    return bookItems;
   },
-  addBookItem: async (item: Omit<BookItem, 'id' | 'createdAt'>): Promise<BookItem> => {
-    await delay(500);
-    const newItem = { ...item, id: Date.now().toString(), createdAt: new Date() };
-    bookItems.push(newItem);
-    return newItem;
+  addBookItem: async (item: Omit<BookItem, 'id' | 'createdAt'>): Promise<ApiResponse<BookItem>> => {
+    const response = await apiClient.post<ApiResponse<BookItem>>('/book-items', item);
+    return response;
   },
-  updateBookItem: async (id: string, item: Partial<BookItem>): Promise<BookItem | null> => {
-    await delay(500);
-    const index = bookItems.findIndex((i) => i.id === id);
-    if (index !== -1) {
-      bookItems[index] = { ...bookItems[index], ...item };
-      return bookItems[index];
+  updateBookItem: async (id: string, item: Partial<BookItem>): Promise<ApiResponse<BookItem> | null> => {
+    try {
+      const response = await apiClient.put<ApiResponse<BookItem>>(`/book-items/${id}`, item);
+      return response;
+    } catch (error) {
+      console.error('Failed to update book item:', error);
+      return null;
     }
-    return null;
   },
-  deleteBookItem: async (id: string): Promise<boolean> => {
-    await delay(500);
-    const index = bookItems.findIndex((i) => i.id === id);
-    if (index !== -1) {
-      bookItems.splice(index, 1);
-      return true;
+  deleteBookItem: async (id: string): Promise<ApiResponse<null> | null> => {
+    try {
+      const response = await apiClient.delete<ApiResponse<null>>(`/book-items/${id}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to delete book item:', error);
+      return null;
     }
-    return false;
   },
   
   getDamagedBooks: async (): Promise<BookItem[]> => {
-    await delay(500);
-    return bookItems.filter(item => item.condition !== 'Good' && item.condition !== 'New');
+    try {
+      // Assuming endpoint for damaged books or filter
+      const response = await apiClient.get<{ data: BookItem[] }>('/book-items?condition=damaged');
+      return response.data; 
+    } catch {
+      return [];
+    }
   },
 };

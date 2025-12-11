@@ -56,6 +56,8 @@ export interface BookMaster {
   year: number;
   categoryId: string;
   isbn: string;
+  bookItemQuantity?: number; // Added for creation payload
+  category?: Category;
 }
 
 export interface BookItem {

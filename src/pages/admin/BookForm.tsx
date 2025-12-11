@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { api } from '../../services/api';
+import { useToast } from '../../components/Toast';
 import type { BookMaster, Category, BookItem } from '../../types';
 
 const BookForm: React.FC = () => {
@@ -30,8 +31,8 @@ const BookForm: React.FC = () => {
     }, [id]);
 
     const fetchCategories = async () => {
-        const data = await api.getCategories();
-        setCategories(data);
+        const response = await api.getCategories({ limit: 100 });
+        setCategories(response.data);
     };
 
     const fetchBookData = async () => {
@@ -51,18 +52,28 @@ const BookForm: React.FC = () => {
         }
     };
 
+    const { showToast } = useToast();
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
+            let response;
             if (isEditMode && id) {
-                await api.updateBook(id, formData);
+                response = await api.updateBook(id, formData);
             } else {
-                await api.addBook(formData as Omit<BookMaster, 'id'>);
+                response = await api.addBook(formData as Omit<BookMaster, 'id'>);
             }
-            navigate('/dashboard/books');
+
+            if (response) {
+                showToast(response.message || 'Buku berhasil disimpan', 'success');
+                navigate('/dashboard/books');
+            } else {
+                showToast('Gagal menyimpan buku', 'error');
+            }
         } catch (error) {
             console.error('Error saving book:', error);
+            showToast('Terjadi kesalahan saat menyimpan buku', 'error');
         } finally {
             setLoading(false);
         }
@@ -166,6 +177,19 @@ const BookForm: React.FC = () => {
                                     onChange={e => setFormData({ ...formData, isbn: e.target.value })}
                                 />
                             </div>
+                            {!isEditMode && (
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">Jumlah Buku (Auto-generate)</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
+                                        value={formData.bookItemQuantity || ''}
+                                        onChange={e => setFormData({ ...formData, bookItemQuantity: parseInt(e.target.value) || undefined })}
+                                        placeholder="Opsional, default 1"
+                                    />
+                                </div>
+                            )}
                             <div className="col-span-2">
                                 <label className="mb-2 block text-sm font-medium text-neutral-700">Kategori</label>
                                 <select

@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import BookCatalog from './pages/BookCatalog';
-import BookDetail from './pages/BookDetail';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import DashboardHome from './pages/DashboardHome';
@@ -15,6 +14,7 @@ const DashboardHomeWrapper = () => {
 };
 import BookList from './pages/admin/BookList';
 import BookForm from './pages/admin/BookForm';
+import AdminBookDetail from './pages/admin/BookDetail';
 import StudentList from './pages/admin/StudentList';
 import StudentUpload from './pages/admin/StudentUpload';
 import CategoryList from './pages/admin/CategoryList';
@@ -28,6 +28,7 @@ import BookReport from './pages/admin/reports/BookReport';
 import CategoryReport from './pages/admin/reports/CategoryReport';
 import MemberReport from './pages/admin/reports/MemberReport';
 import { ToastProvider } from './components/Toast';
+import BookCatalogDetail from './pages/BookCatalogDetail';
 
 function App() {
   return (
@@ -36,7 +37,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/books" element={<BookCatalog />} />
-          <Route path="/books/:id" element={<BookDetail />} />
+          <Route path="/books/:id" element={<BookCatalogDetail />} />
           <Route path="/login" element={<LoginPage />} />
 
           <Route path="/dashboard" element={<Dashboard />}>
@@ -45,7 +46,8 @@ function App() {
             {/* Master Data Routes */}
             <Route path="books" element={<BookList />} />
             <Route path="books/new" element={<BookForm />} />
-            <Route path="books/:id" element={<BookForm />} />
+            <Route path="books/:id" element={<AdminBookDetail />} />
+            <Route path="books/:id/edit" element={<BookForm />} />
 
             <Route path="students" element={<StudentList />} />
             <Route path="students/upload" element={<StudentUpload />} />
