@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { api } from '../../services/api';
+import { useToast } from '../../components/Toast';
 import type { Category } from '../../types';
 
 const CategoryForm: React.FC = () => {
@@ -27,7 +28,10 @@ const CategoryForm: React.FC = () => {
         try {
             const data = await api.getCategoryById(id);
             if (data) {
-                setFormData(data);
+                setFormData({
+                    name: data.name,
+                    description: data.description
+                });
             }
         } catch (error) {
             console.error('Error fetching category:', error);
@@ -36,18 +40,35 @@ const CategoryForm: React.FC = () => {
         }
     };
 
+    const { showToast } = useToast();
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
             if (isEditMode && id) {
-                await api.updateCategory(id, formData);
+                const response = await api.updateCategory(id, {
+                    name: formData.name,
+                    description: formData.description
+                });
+                if (response) {
+                    showToast(response.message || 'Kategori berhasil diperbarui', 'success');
+                    navigate('/dashboard/categories');
+                } else {
+                    showToast('Gagal memperbarui kategori', 'error');
+                }
             } else {
-                await api.addCategory(formData as Omit<Category, 'id'>);
+                const response = await api.addCategory(formData as Omit<Category, 'id'>);
+                if (response) {
+                    showToast(response.message || 'Kategori berhasil ditambahkan', 'success');
+                    navigate('/dashboard/categories');
+                } else {
+                    showToast('Gagal menambahkan kategori', 'error');
+                }
             }
-            navigate('/dashboard/categories');
         } catch (error) {
             console.error('Error saving category:', error);
+            showToast('Terjadi kesalahan saat menyimpan kategori', 'error');
         } finally {
             setLoading(false);
         }

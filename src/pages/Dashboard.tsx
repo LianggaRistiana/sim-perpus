@@ -26,7 +26,7 @@ const Dashboard: React.FC = () => {
     if (!user) return null;
 
     return (
-        <div className="flex min-h-screen bg-neutral-50">
+        <div className="flex h-screen overflow-hidden bg-neutral-50">
             <Sidebar
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
@@ -34,14 +34,14 @@ const Dashboard: React.FC = () => {
             />
 
             {/* Main Content */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <Header
                     onMenuClick={() => setIsSidebarOpen(true)}
                     user={user}
                 />
 
                 {/* Dashboard Content */}
-                <main>
+                <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
                     <Outlet context={{ user }} />
                 </main>
             </div>

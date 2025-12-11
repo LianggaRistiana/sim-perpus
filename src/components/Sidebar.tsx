@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
     return (
         <aside
             className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-neutral-900 text-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}
+                } flex flex-col`}
         >
             <div className="flex h-16 items-center justify-between px-6">
                 <span className="text-xl font-bold">SimPerpus</span>
@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
                 </button>
             </div>
 
-            <nav className="mt-6 px-4 space-y-2">
+            <nav className="mt-6 px-4 space-y-2 flex-1 overflow-y-auto">
                 <Link
                     to="/dashboard"
                     className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${location.pathname === '/dashboard'
@@ -169,7 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
                 </div>
             </nav>
 
-            <div className="absolute bottom-0 w-full border-t border-neutral-800 p-4">
+            <div className="w-full border-t border-neutral-800 p-4">
                 <button
                     onClick={onLogout}
                     className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-400 hover:bg-neutral-800 hover:text-red-300 transition-colors"

@@ -4,7 +4,7 @@ import { Library, Lock, User } from 'lucide-react';
 import { api } from '../services/api';
 
 const LoginPage: React.FC = () => {
-    const [username, setUsername] = useState('');
+    const [userNumber, setUserNumber] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -16,13 +16,13 @@ const LoginPage: React.FC = () => {
         setLoading(true);
 
         try {
-            const user = await api.login(username, password);
+            const user = await api.login(userNumber, password);
             if (user) {
                 // In a real app, we would store the token/user in context/local storage
                 localStorage.setItem('user', JSON.stringify(user));
                 navigate('/dashboard');
             } else {
-                setError('Username atau password salah');
+                setError('Nomor pengguna atau password salah');
             }
         } catch (err) {
             setError('Terjadi kesalahan saat login');
@@ -49,20 +49,20 @@ const LoginPage: React.FC = () => {
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <div className="space-y-4 rounded-md shadow-sm">
                         <div>
-                            <label htmlFor="username" className="sr-only">Username</label>
+                            <label htmlFor="userNumber" className="sr-only">Nomor Pengguna / ID</label>
                             <div className="relative">
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                     <User className="h-5 w-5 text-neutral-400" />
                                 </div>
                                 <input
-                                    id="username"
-                                    name="username"
+                                    id="userNumber"
+                                    name="userNumber"
                                     type="text"
                                     required
                                     className="block w-full rounded-lg border border-neutral-300 py-3 pl-10 text-neutral-900 placeholder-neutral-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-                                    placeholder="Username"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Nomor Pengguna / ID"
+                                    value={userNumber}
+                                    onChange={(e) => setUserNumber(e.target.value)}
                                 />
                             </div>
                         </div>
