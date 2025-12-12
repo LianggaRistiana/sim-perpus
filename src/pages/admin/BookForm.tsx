@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2, Book, Calendar, User, Building, Quote, Pencil } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
+import { Modal } from '../../components/Modal';
 import type { BookMaster, Category, BookItem } from '../../types';
 
 const BookForm: React.FC = () => {
@@ -394,79 +395,77 @@ const BookForm: React.FC = () => {
                 </form>
             </div>
 
-            {showCopyModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCopyModal(false)} />
-                    <div className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-neutral-200">
-                        <div className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <h3 className="text-base font-semibold text-neutral-900">
-                                {editingItem ? 'Edit Kondisi Buku' : 'Tambah Salinan Buku'}
-                            </h3>
-                        </div>
-                        <div className="p-6">
-                            <label className="mb-2 block text-sm font-medium text-neutral-700">Kondisi Buku</label>
-                            <select
-                                className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
-                                value={copyCondition}
-                                onChange={(e) => setCopyCondition(e.target.value)}
-                            >
-                                <option value="good">Good</option>
-                                <option value="fair">Fair</option>
-                                <option value="poor">Poor</option>
-                            </select>
-                        </div>
-                        <div className="flex items-center justify-end gap-3 border-t border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowCopyModal(false)}
-                                className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
-                            >
-                                Batal
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleSaveCopy}
-                                className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-neutral-900/20 hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/10 transition-all"
-                            >
-                                {editingItem ? 'Simpan Perubahan' : 'Tambahkan'}
-                            </button>
-                        </div>
-                    </div>
+            <Modal
+                isOpen={showCopyModal}
+                onClose={() => setShowCopyModal(false)}
+                title={editingItem ? 'Edit Kondisi Buku' : 'Tambah Salinan Buku'}
+                width="max-w-sm"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setShowCopyModal(false)}
+                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSaveCopy}
+                            className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-neutral-900/20 hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/10 transition-all"
+                        >
+                            {editingItem ? 'Simpan Perubahan' : 'Tambahkan'}
+                        </button>
+                    </>
+                }
+            >
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-neutral-700">Kondisi Buku</label>
+                    <select
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                        value={copyCondition}
+                        onChange={(e) => setCopyCondition(e.target.value)}
+                    >
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                        <option value="poor">Poor</option>
+                    </select>
                 </div>
-            )}
+            </Modal>
 
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
-                    <div className="relative w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-neutral-200">
-                        <div className="p-6 text-center">
-                            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
-                                <Trash2 size={24} />
-                            </div>
-                            <h3 className="mb-2 text-lg font-semibold text-neutral-900">Hapus Salinan Buku?</h3>
-                            <p className="text-sm text-neutral-500">
-                                Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan.
-                            </p>
-                        </div>
-                        <div className="flex items-center justify-center gap-3 border-t border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowDeleteModal(false)}
-                                className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
-                            >
-                                Batal
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleConfirmDelete}
-                                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
-                            >
-                                Ya, Hapus
-                            </button>
-                        </div>
+            <Modal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                width="max-w-sm"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteModal(false)}
+                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleConfirmDelete}
+                            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
+                        >
+                            Ya, Hapus
+                        </button>
+                    </>
+                }
+            >
+                <div className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+                        <Trash2 size={24} />
                     </div>
+                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">Hapus Salinan Buku?</h3>
+                    <p className="text-sm text-neutral-500">
+                        Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan.
+                    </p>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 };

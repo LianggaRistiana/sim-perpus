@@ -21,11 +21,11 @@ const BorrowForm: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [studentsData, itemsData, booksData] = await Promise.all([
-                api.getStudents(),
-                api.getBookItems(),
-                api.getBooks()
-            ]);
+            // const [studentsData, itemsData, booksData] = await Promise.all([
+            //     api.getStudents(),
+            //     // api.getBookItems(),
+            //     api.getBooks()
+            // ]);
 
             // Enrich items with master data
             // const enrichedItems = itemsData.map(item => ({
