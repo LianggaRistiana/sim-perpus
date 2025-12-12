@@ -1,39 +1,76 @@
-import type { Student, Admin } from '../types';
-import { students, admins } from './mock-db';
+import { apiClient } from '../lib/api-client';
+import type { Student, Admin, PaginatedResponse, ApiResponse } from '../types';
+import { admins } from './mock-db';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const studentService = {
-  getStudents: async (): Promise<Student[]> => {
-    await delay(500);
-    return students;
-  },
-  getStudentById: async (id: string): Promise<Student | undefined> => {
-    await delay(500);
-    return students.find(s => s.id === id);
-  },
-  addStudent: async (student: Omit<Student, 'id'>): Promise<Student> => {
-    await delay(500);
-    const newStudent = { ...student, id: Date.now().toString() };
-    students.push(newStudent);
-    return newStudent;
-  },
-  deleteStudent: async (id: string): Promise<boolean> => {
-    await delay(500);
-    const index = students.findIndex((s) => s.id === id);
-    if (index !== -1) {
-      students.splice(index, 1);
-      return true;
+  getStudents: async (params?: { page?: number; limit?: number; keyword?: string }): Promise<PaginatedResponse<Student>> => {
+    try {
+      const query = new URLSearchParams();
+      if (params?.page) query.append('page', params.page.toString());
+      if (params?.limit) query.append('limit', params.limit.toString());
+      if (params?.keyword) query.append('keyword', params.keyword);
+
+      const response = await apiClient.get<PaginatedResponse<Student>>(`/students?${query.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch students:', error);
+      return {
+        status: 'error',
+        data: [],
+        meta: { page: 1, per_page: 10, total: 0, last_page: 1, timestamp: new Date().toISOString() }
+      };
     }
-    return false;
+  },
+
+  getStudentById: async (id: string): Promise<Student | undefined> => {
+    try {
+      const response = await apiClient.get<{ data: Student }>(`/students/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch student:', error);
+      return undefined;
+    }
+  },
+
+  addStudent: async (student: Omit<Student, 'id'>): Promise<ApiResponse<Student>> => {
+    const response = await apiClient.post<ApiResponse<Student>>('/students', student);
+    return response;
+  },
+
+  updateStudent: async (id: string, student: Partial<Student>): Promise<ApiResponse<Student> | null> => {
+    try {
+        const response = await apiClient.put<ApiResponse<Student>>(`/students/${id}`, student);
+        return response;
+    } catch (error) {
+        console.error('Failed to update student:', error);
+        return null;
+    }
+  },
+
+  deleteStudent: async (id: string): Promise<ApiResponse<null> | null> => {
+    try {
+      const response = await apiClient.delete<ApiResponse<null>>(`/students/${id}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to delete student:', error);
+      return null;
+    }
+  },
+
+  batchCreateStudents: async (students: Omit<Student, 'id'>[]): Promise<ApiResponse<Student[]>> => {
+     const response = await apiClient.post<ApiResponse<Student[]>>('/students/batch', { students });
+     return response;
   },
   
-  // Admins (kept here or separate? Api.ts had it with students/admins)
+  // Admins (Mock implementation retained as no API endpoint was specified)
   getAdmins: async (): Promise<Admin[]> => {
     await delay(500);
     return admins;
   },
 
+  // Reports (Mock implementation retained for dashboard/analytics)
   getMostActiveStudents: async (): Promise<{ name: string; count: number }[]> => {
     await delay(500);
     return [

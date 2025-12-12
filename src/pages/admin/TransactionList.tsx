@@ -24,7 +24,7 @@ const TransactionList: React.FC = () => {
             ]);
             // Sort by date desc
             setTransactions(transData.sort((a, b) => new Date(b.borrowedAt).getTime() - new Date(a.borrowedAt).getTime()));
-            setStudents(studentsData);
+            setStudents(studentsData.data);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {

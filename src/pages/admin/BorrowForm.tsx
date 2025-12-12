@@ -28,13 +28,13 @@ const BorrowForm: React.FC = () => {
             ]);
 
             // Enrich items with master data
-            const enrichedItems = itemsData.map(item => ({
-                ...item,
-                master: booksData.find(b => b.id === item.masterId)
-            })).filter(item => item.status === 'Available'); // Only available books
+            // const enrichedItems = itemsData.map(item => ({
+            //     ...item,
+            //     master: booksData.find(b => b.id === item.masterId)
+            // })).filter(item => item.status === 'Available'); // Only available books
 
-            setStudents(studentsData);
-            setBookItems(enrichedItems);
+            // setStudents(studentsData.data);
+            // setBookItems(enrichedItems);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -97,7 +97,7 @@ const BorrowForm: React.FC = () => {
                                 >
                                     <option value="">-- Pilih Siswa --</option>
                                     {students.map(s => (
-                                        <option key={s.id} value={s.id}>{s.nis} - {s.name}</option>
+                                        <option key={s.id} value={s.id}>{s.user_number} - {s.name}</option>
                                     ))}
                                 </select>
                             </div>

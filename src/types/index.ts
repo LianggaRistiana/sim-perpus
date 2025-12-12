@@ -17,7 +17,7 @@ export interface Admin extends User {
 
 export interface Student {
   id: string;
-  nis: string;
+  user_number: string;
   name: string;
 }
 

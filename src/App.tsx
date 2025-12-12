@@ -17,6 +17,7 @@ import BookForm from './pages/admin/BookForm';
 import AdminBookDetail from './pages/admin/BookDetail';
 import StudentList from './pages/admin/StudentList';
 import StudentUpload from './pages/admin/StudentUpload';
+import StudentForm from './pages/admin/StudentForm';
 import CategoryList from './pages/admin/CategoryList';
 import CategoryDetail from './pages/admin/CategoryDetail';
 import CategoryForm from './pages/admin/CategoryForm';
@@ -31,6 +32,7 @@ import { ToastProvider } from './components/Toast';
 import BookCatalogDetail from './pages/BookCatalogDetail';
 
 function App() {
+
   return (
     <Router>
       <ToastProvider>
@@ -50,6 +52,8 @@ function App() {
             <Route path="books/:id/edit" element={<BookForm />} />
 
             <Route path="students" element={<StudentList />} />
+            <Route path="students/new" element={<StudentForm />} />
+            <Route path="students/:id/edit" element={<StudentForm />} />
             <Route path="students/upload" element={<StudentUpload />} />
 
             <Route path="categories" element={<CategoryList />} />

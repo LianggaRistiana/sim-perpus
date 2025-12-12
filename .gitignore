@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 
+.env
 
 # API Documentation
 # Editor directories and files
