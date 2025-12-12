@@ -27,6 +27,7 @@ import ReturnForm from './pages/admin/ReturnForm';
 import BookReport from './pages/admin/reports/BookReport';
 import CategoryReport from './pages/admin/reports/CategoryReport';
 import MemberReport from './pages/admin/reports/MemberReport';
+import LibraryReportPage from './pages/admin/reports/LibraryReportPage';
 import { ToastProvider } from './components/Toast';
 import BookCatalogDetail from './pages/BookCatalogDetail';
 
@@ -64,6 +65,7 @@ function App() {
             <Route path="transactions/:id/return" element={<ReturnForm />} />
 
             {/* Report Routes */}
+            <Route path="reports/library" element={<LibraryReportPage />} />
             <Route path="reports/books" element={<BookReport />} />
             <Route path="reports/categories" element={<CategoryReport />} />
             <Route path="reports/members" element={<MemberReport />} />

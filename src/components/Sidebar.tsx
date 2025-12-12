@@ -138,6 +138,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
                     {isReportOpen && (
                         <div className="pl-11 space-y-1">
                             <Link
+                                to="/dashboard/reports/library"
+                                className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/reports/library')
+                                    ? 'text-white'
+                                    : 'text-neutral-400 hover:text-white'
+                                    }`}
+                            >
+                                Perpustakaan
+                            </Link>
+                            <Link
                                 to="/dashboard/reports/books"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/reports/books')
                                     ? 'text-white'

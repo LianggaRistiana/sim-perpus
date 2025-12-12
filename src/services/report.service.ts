@@ -1,4 +1,10 @@
 import { bookItems, borrowDetails, borrowTransactions, returnTransactions, returnDetails, students } from './mock-db';
+import { apiClient } from '../lib/api-client';
+import type {
+  LibraryOverviewResponse,
+  CategoryDistributionResponse,
+  InventoryReportResponse
+} from '../types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -87,15 +93,15 @@ export const reportService = {
     }[];
   }> => {
     await delay(500);
-    
+
     // Find items for this book
     const items = bookItems.filter(item => item.masterId === bookId);
-    
+
     // Map items to include history
     const itemsWithHistory = items.map(item => {
       // Find borrows for this item
       const itemBorrows = borrowDetails.filter(bd => bd.bookItemId === item.id);
-      
+
       const history = itemBorrows.map(bd => {
         const borrowTx = borrowTransactions.find(bt => bt.id === bd.borrowId);
         if (!borrowTx) return null;
@@ -137,5 +143,55 @@ export const reportService = {
       totalLifetimeBorrows: itemsWithHistory.reduce((acc, item) => acc + item.history.length, 0),
       items: itemsWithHistory
     };
+  },
+
+  // ===== Library Report API Methods =====
+
+  /**
+   * Get library overview statistics
+   * @returns Library overview data with total books, items, and categories
+   */
+  getLibraryOverview: async () => {
+    try {
+      const response = await apiClient.get<LibraryOverviewResponse>('/library/reports/overview');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch library overview:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get category distribution report
+   * @returns List of categories with book counts
+   */
+  getCategoryDistribution: async () => {
+    try {
+      const response = await apiClient.get<CategoryDistributionResponse>('/library/reports/categories');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch category distribution:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get inventory report with pagination
+   * @param page - Page number (default: 1)
+   * @param perPage - Items per page (default: 15)
+   * @returns Paginated inventory data with book items details
+   */
+  getInventoryReport: async (page: number = 1, perPage: number = 15) => {
+    try {
+      const query = new URLSearchParams();
+      query.append('page', page.toString());
+      query.append('per_page', perPage.toString());
+
+      const response = await apiClient.get<InventoryReportResponse>(`/library/reports/inventory?${query.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch inventory report:', error);
+      throw error;
+    }
   },
 };

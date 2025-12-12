@@ -11,7 +11,7 @@ export interface User {
 export interface Admin extends User {
   // Extending User for compatibility with existing code where possible
   // Adjusting based on existing usage
-  passwordHash?: string; 
+  passwordHash?: string;
   createdAt?: Date;
 }
 
@@ -110,4 +110,63 @@ export interface CategoryReportItem {
   id: string;
   name: string;
   value: number; // count or days
+}
+
+// Library Report Types
+export interface LibraryOverview {
+  total_book_titles: number;
+  total_book_items: number;
+  total_categories: number;
+}
+
+export interface CategoryDistributionItem {
+  category_name: string;
+  total_book_titles: number;
+  total_book_items: number;
+}
+
+export interface InventoryBookItem {
+  item_id: string;
+  code: number;
+  condition: string;
+  status: string;
+  created_at: string;
+}
+
+export interface InventoryBook {
+  book_id: string;
+  title: string;
+  author: string;
+  publisher: string;
+  year: number;
+  isbn: string;
+  category: string;
+  total_items: number;
+  items: InventoryBookItem[];
+}
+
+export interface InventoryPagination {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+}
+
+export interface LibraryOverviewResponse {
+  success: boolean;
+  message: string;
+  data: LibraryOverview;
+}
+
+export interface CategoryDistributionResponse {
+  success: boolean;
+  message: string;
+  data: CategoryDistributionItem[];
+}
+
+export interface InventoryReportResponse {
+  success: boolean;
+  message: string;
+  data: InventoryBook[];
+  pagination: InventoryPagination;
 }
