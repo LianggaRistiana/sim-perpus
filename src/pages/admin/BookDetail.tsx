@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
+import { Modal } from '../../components/Modal';
 import type { BookMaster, BookItem } from '../../types';
 
 const BookDetail: React.FC = () => {
@@ -12,6 +13,7 @@ const BookDetail: React.FC = () => {
     const [book, setBook] = useState<BookMaster | null>(null);
     const [items, setItems] = useState<BookItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -42,8 +44,12 @@ const BookDetail: React.FC = () => {
         }
     };
 
-    const handleDelete = async () => {
-        if (!book || !window.confirm('Apakah Anda yakin ingin menghapus buku ini?')) return;
+    const handleDelete = () => {
+        setShowDeleteModal(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!book) return;
 
         try {
             const response = await api.deleteBook(book.id);
@@ -105,7 +111,7 @@ const BookDetail: React.FC = () => {
             <div className="grid gap-8 lg:grid-cols-3">
                 {/* Book Info */}
                 <div className="space-y-6 lg:col-span-1">
-                    <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                    <div className="h-[calc(100vh-14rem)] overflow-y-auto rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                         <h2 className="mb-4 text-lg font-bold text-neutral-900">Informasi Buku</h2>
                         <div className="space-y-4">
                             <div>
@@ -144,11 +150,11 @@ const BookDetail: React.FC = () => {
 
                 {/* Items List */}
                 <div className="lg:col-span-2">
-                    <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-                        <div className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+                    <div className="flex flex-col h-[calc(100vh-14rem)] rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                        <div className="shrink-0 border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <h2 className="font-bold text-neutral-900">Daftar Salinan Buku ({items.length})</h2>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="flex-1 overflow-auto">
                             <table className="w-full text-left text-sm">
                                 <thead className="bg-neutral-50 text-neutral-500">
                                     <tr>
@@ -179,7 +185,7 @@ const BookDetail: React.FC = () => {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-3 text-neutral-500">
-                                                    {new Date(item.createdAt).toLocaleDateString('id-ID')}
+                                                    {new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                             </tr>
                                         ))
@@ -190,6 +196,40 @@ const BookDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <Modal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                width="max-w-sm"
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteModal(false)}
+                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleConfirmDelete}
+                            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
+                        >
+                            Ya, Hapus
+                        </button>
+                    </>
+                }
+            >
+                <div className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+                        <Trash2 size={24} />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">Hapus Buku?</h3>
+                    <p className="text-sm text-neutral-500">
+                        Apakah Anda yakin ingin menghapus buku ini beserta seluruh salinannya? Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 };
