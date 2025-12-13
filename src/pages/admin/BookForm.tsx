@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, Book, Calendar, User, Building, Quote, Pencil } from 'lucide-react';
+import { Save, Plus, Trash2, Book, Calendar, User, Building, Pencil, Hash } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
+import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, Category, BookItem } from '../../types';
+import BackButton from '../../components/BackButton';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 const BookForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -151,28 +154,16 @@ const BookForm: React.FC = () => {
     };
 
     if (loading && isEditMode && !formData.id) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-                <div className="text-center">
-                    <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-neutral-300 border-t-neutral-900 mx-auto"></div>
-                    <p className="text-neutral-600">Memuat data buku...</p>
-                </div>
-            </div>
-        );
+        return <LoadingScreen message="Memuat data buku..." />;
     }
 
     return (
         <div className="min-h-screen bg-neutral-50/50 pb-32 pt-8 p-6 md:p-8 animate-in fade-in duration-500">
-            <div className="mx-auto max-w-4xl">
+            <div className="mx-auto ">
                 {/* Header Section */}
                 <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate('/dashboard/books')}
-                            className="group flex h-10 w-10 items-center justify-center rounded-xl bg-white text-neutral-500 shadow-sm transition-all hover:bg-neutral-50 hover:text-neutral-900 border border-neutral-200/60"
-                        >
-                            <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
-                        </button>
+                        <BackButton to="/dashboard/books" />
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
                                 {isEditMode ? 'Edit Buku' : 'Tambah Buku Baru'}
@@ -188,10 +179,12 @@ const BookForm: React.FC = () => {
                     {/* Main Information Card */}
                     <div className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'lg:sticky lg:top-8' : ''}`}>
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
-                                <Book size={18} className="text-neutral-500" />
-                                Informasi Utama
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                    <Book size={18} />
+                                </div>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Buku</h2>
+                            </div>
                             <button
                                 type="submit"
                                 disabled={submitting}
@@ -271,7 +264,7 @@ const BookForm: React.FC = () => {
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
-                                            <Quote size={14} className="text-neutral-400" />
+                                            <Hash size={14} className="text-neutral-400" />
                                             ISBN
                                         </div>
                                     </label>
@@ -360,7 +353,7 @@ const BookForm: React.FC = () => {
                                                 <div>
                                                     <div className="mb-1 flex items-center gap-2">
                                                         <span className="font-mono text-sm font-bold text-neutral-900">{item.code}</span>
-                                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${item.status === 'Available' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+                                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${item.status === 'available' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
                                                             }`}>
                                                             {item.status}
                                                         </span>
@@ -433,39 +426,14 @@ const BookForm: React.FC = () => {
                 </div>
             </Modal>
 
-            <Modal
+            <DeleteModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
-                width="max-w-sm"
-                footer={
-                    <>
-                        <button
-                            type="button"
-                            onClick={() => setShowDeleteModal(false)}
-                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
-                        >
-                            Ya, Hapus
-                        </button>
-                    </>
-                }
-            >
-                <div className="text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
-                        <Trash2 size={24} />
-                    </div>
-                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">Hapus Salinan Buku?</h3>
-                    <p className="text-sm text-neutral-500">
-                        Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                </div>
-            </Modal>
+                onConfirm={handleConfirmDelete}
+                title="Hapus Salinan Buku?"
+                message="Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

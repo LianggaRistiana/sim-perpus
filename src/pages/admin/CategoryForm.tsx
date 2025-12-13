@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save, Tag, AlignLeft } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import type { Category } from '../../types';
+import BackButton from '../../components/BackButton';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 const CategoryForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -74,68 +76,83 @@ const CategoryForm: React.FC = () => {
         }
     };
 
+    if (loading && isEditMode && !formData.name) {
+        return <LoadingScreen message="Memuat data kategori..." />;
+    }
+
     return (
-        <div className="min-h-screen bg-neutral-50 p-8">
-            <div className="mx-auto max-w-2xl">
-                <div className="mb-8 flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/dashboard/categories')}
-                        className="rounded-lg p-2 hover:bg-neutral-200"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
+        <div className="min-h-screen bg-neutral-50/50 pb-32 pt-8 p-6 md:p-8 animate-in fade-in duration-500">
+            {/* Header Section */}
+            <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                    <BackButton to="/dashboard/categories" />
                     <div>
-                        <h1 className="text-2xl font-bold text-neutral-900">
+                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
                             {isEditMode ? 'Edit Kategori' : 'Tambah Kategori Baru'}
                         </h1>
-                        <p className="text-neutral-600">
-                            {isEditMode ? 'Perbarui informasi kategori' : 'Masukkan detail kategori baru'}
+                        <p className="text-sm text-neutral-500">
+                            {isEditMode ? 'Perbarui informasi dan detail kategori buku' : 'Tambahkan kategori baru untuk pengelompokan buku'}
                         </p>
                     </div>
                 </div>
+            </div>
+            <div className="mx-auto max-w-2xl">
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-neutral-700">Nama Kategori</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
+                    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
+                        <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                    <Tag size={18} />
+                                </div>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Kategori</h2>
                             </div>
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-neutral-700">Deskripsi</label>
-                                <textarea
-                                    required
-                                    rows={4}
-                                    className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-neutral-900/20 hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/10 disabled:opacity-70 disabled:shadow-none transition-all"
+                            >
+                                <Save size={16} />
+                                {loading ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                        </div>
+
+                        <div className="p-6 md:p-8">
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Tag size={14} className="text-neutral-400" />
+                                            Nama Kategori
+                                        </div>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Contoh: Fiksi, Sains, Sejarah"
+                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <AlignLeft size={14} className="text-neutral-400" />
+                                            Deskripsi
+                                        </div>
+                                    </label>
+                                    <textarea
+                                        required
+                                        rows={4}
+                                        placeholder="Deskripsi singkat mengenai kategori ini..."
+                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="flex justify-end gap-4">
-                        <button
-                            type="button"
-                            onClick={() => navigate('/dashboard/categories')}
-                            className="rounded-lg px-6 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-70"
-                        >
-                            <Save size={20} />
-                            {loading ? 'Menyimpan...' : 'Simpan Kategori'}
-                        </button>
                     </div>
                 </form>
             </div>

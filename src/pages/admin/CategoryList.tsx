@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight, Plus, Edit, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
+import { DeleteModal } from '../../components/DeleteModal';
+import { TableLoading, TableEmpty } from '../../components/TableState';
 import type { Category, PaginatedResponse } from '../../types';
 
 const CategoryList: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [keyword, setKeyword] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [meta, setMeta] = useState<PaginatedResponse<Category>['meta']>({
@@ -18,6 +22,10 @@ const CategoryList: React.FC = () => {
         last_page: 1,
         timestamp: ''
     });
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
     const navigate = useNavigate();
 
@@ -31,12 +39,12 @@ const CategoryList: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [page, keyword]);
+    }, [page, keyword, itemsPerPage]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await api.getCategories({ page, limit: 10, keyword });
+            const response = await api.getCategories({ page, limit: itemsPerPage, keyword });
             setCategories(response.data);
             setMeta(response.meta);
         } catch (error) {
@@ -48,20 +56,33 @@ const CategoryList: React.FC = () => {
 
     const { showToast } = useToast();
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
-            const response = await api.deleteCategory(id);
+    const handleDelete = (id: string) => {
+        setCategoryToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!categoryToDelete) return;
+
+        try {
+            const response = await api.deleteCategory(categoryToDelete);
             if (response) {
                 showToast(response.message || 'Kategori berhasil dihapus', 'success');
                 fetchData();
             } else {
                 showToast('Gagal menghapus kategori', 'error');
             }
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            showToast('Gagal menghapus kategori', 'error');
+        } finally {
+            setShowDeleteModal(false);
+            setCategoryToDelete(null);
         }
     };
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50 p-8">
+        <div className="flex h-full flex-col bg-neutral-50 px-8 pt-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-neutral-900">Kategori Buku</h1>
@@ -102,17 +123,13 @@ const CategoryList: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-neutral-100">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
-                                        Memuat data...
-                                    </td>
-                                </tr>
+                                <TableLoading colSpan={4} />
                             ) : categories.length === 0 ? (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
-                                        Tidak ada kategori ditemukan.
-                                    </td>
-                                </tr>
+                                <TableEmpty
+                                    colSpan={4}
+                                    message="Tidak ada kategori ditemukan"
+                                    description="Coba cari dengan kata kunci lain atau tambahkan kategori baru."
+                                />
                             ) : (
                                 categories.map((category) => (
                                     <tr key={category.id} className="hover:bg-neutral-50 cursor-pointer" onClick={() => navigate(`/dashboard/categories/${category.id}`)}>
@@ -144,58 +161,27 @@ const CategoryList: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3 sm:px-6">
-                <div className="flex flex-1 justify-between sm:hidden">
-                    <button
-                        onClick={() => setPage(Math.max(1, page - 1))}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        onClick={() => setPage(Math.min(meta.last_page, page + 1))}
-                        disabled={page === meta.last_page}
-                        className="relative ml-3 inline-flex items-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                    >
-                        Next
-                    </button>
-                </div>
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-sm text-neutral-700">
-                            Menampilkan <span className="font-medium">{(meta.page - 1) * meta.per_page + 1}</span> sampai <span className="font-medium">{Math.min(meta.page * meta.per_page, meta.total)}</span> dari <span className="font-medium">{meta.total}</span> hasil
-                        </p>
-                    </div>
-                    <div>
-                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                            <button
-                                onClick={() => setPage(Math.max(1, page - 1))}
-                                disabled={page === 1}
-                                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Previous</span>
-                                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                            {/* Simple pagination: show current page */}
-                            <button
-                                aria-current="page"
-                                className="relative z-10 inline-flex items-center bg-neutral-900 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-600"
-                            >
-                                {page}
-                            </button>
-                            <button
-                                onClick={() => setPage(Math.min(meta.last_page, page + 1))}
-                                disabled={page === meta.last_page}
-                                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Next</span>
-                                <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                        </nav>
-                    </div>
-                </div>
-            </div>
+            <Pagination
+                currentPage={page}
+                totalPages={meta.last_page}
+                totalItems={meta.total}
+                itemsPerPage={meta.per_page}
+                onPageChange={setPage}
+                onItemsPerPageChange={(limit) => {
+                    setItemsPerPage(limit);
+                    setPage(1);
+                }}
+            />
+
+
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                title="Hapus Kategori?"
+                message="Apakah Anda yakin ingin menghapus kategori ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

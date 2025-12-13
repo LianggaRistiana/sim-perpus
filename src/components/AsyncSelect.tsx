@@ -111,7 +111,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         <div className="relative" ref={dropdownRef}>
             {label && <label className="mb-2 block text-sm font-medium text-neutral-700">{label}</label>}
             <div
-                className={`flex w-full cursor-pointer items-center justify-between rounded-lg border bg-white p-2.5 ${isOpen ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-300'}`}
+                className={`flex w-full cursor-pointer items-center justify-between rounded-lg border  p-2 ${isOpen ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-300'}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={`block truncate ${!value ? 'text-neutral-400' : 'text-neutral-900'}`}>
@@ -134,7 +134,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                             <input
                                 type="text"
-                                className="w-full rounded-md border border-neutral-200 bg-neutral-50 py-1.5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
+                                className="w-full rounded-md border border-neutral-200 bg-transparent py-1.5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
                                 placeholder="Search..."
                                 value={keyword}
                                 onChange={(e) => setKeyword(e.target.value)}
