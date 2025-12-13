@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Book } from 'lucide-react';
 import type { BookMaster } from '../types';
-import dummyCover from '../assets/images/dummy_cover_book.jpg';
 
 interface BookCardProps {
     book: BookMaster;
@@ -10,21 +9,16 @@ interface BookCardProps {
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book, categoryName }) => {
-    const [imageError, setImageError] = useState(false);
 
     return (
         <div className="group flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-all hover:border-blue-200 hover:shadow-lg">
-            <div className="flex h-48 items-center justify-center bg-neutral-100 overflow-hidden relative">
-                {!imageError ? (
-                    <img
-                        src={dummyCover}
-                        alt={`Cover of ${book.title}`}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        onError={() => setImageError(true)}
-                    />
-                ) : (
-                    <Book className="h-16 w-16 text-neutral-300 transition-colors group-hover:text-blue-400" />
-                )}
+            <div className="flex h-48 items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 p-6 relative overflow-hidden group-hover:from-blue-600 group-hover:to-indigo-700 transition-colors">
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Book className="h-16 w-16 text-white/90 drop-shadow-sm" />
+
+                {/* Decorative circles */}
+                <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+                <div className="absolute -top-8 -left-8 h-24 w-24 rounded-full bg-white/10 blur-xl" />
             </div>
             <div className="flex flex-1 flex-col p-4">
                 <div className="mb-2">

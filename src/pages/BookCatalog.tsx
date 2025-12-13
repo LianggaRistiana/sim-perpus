@@ -1,49 +1,69 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter } from 'lucide-react';
+import { Search } from 'lucide-react';
 import BookCard from '../components/BookCard';
 import { api } from '../services/api';
-import type { BookMaster, Category } from '../types';
+import { AsyncSelect, type Option } from '../components/AsyncSelect';
+import type { BookMaster, PaginatedResponse } from '../types';
 
 const BookCatalog: React.FC = () => {
     const [books, setBooks] = useState<BookMaster[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<Option | null>(null);
+    const [meta, setMeta] = useState<PaginatedResponse<BookMaster>['meta'] | null>(null);
 
+    const [page, setPage] = useState(1);
+
+    // Debounce search term
     useEffect(() => {
-        const fetchData = async () => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setPage(1); // Reset page on new search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const loadCategoryOptions = async ({ page, keyword }: { page: number; keyword: string }) => {
+        try {
+            const response = await api.getCategories({ page, limit: 10, keyword });
+            return {
+                options: response.data.map(c => ({ id: c.id, label: c.name })),
+                hasMore: response.meta.page < response.meta.last_page
+            };
+        } catch (error) {
+            return { options: [], hasMore: false };
+        }
+    };
+
+    const handleCategoryChange = (option: Option | null) => {
+        setSelectedCategory(option);
+        setPage(1); // Reset page on category change
+    };
+
+    // Fetch Books on change of debouncedSearch, selectedCategory, or page
+    useEffect(() => {
+        const fetchBooks = async () => {
+            setLoading(true);
             try {
-                const [booksData, categoriesData] = await Promise.all([
-                    api.getBooks(),
-                    api.getCategories(),
-                ]);
-                setBooks(booksData);
-                setCategories(categoriesData);
+                const response = await api.getBooks({
+                    keyword: debouncedSearch,
+                    category_id: selectedCategory?.id,
+                    limit: 12,
+                    page: page
+                });
+                setBooks(response.data);
+                setMeta(response.meta);
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error fetching books:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, []);
 
-    const filteredBooks = books.filter((book) => {
-        const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            book.author.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'all' || book.categoryId === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
-
-    if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-            </div>
-        );
-    }
+        fetchBooks();
+    }, [debouncedSearch, selectedCategory, page]);
 
     return (
         <div className="min-h-screen bg-neutral-50 py-12">
@@ -70,38 +90,60 @@ const BookCatalog: React.FC = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="relative w-full md:w-64">
-                        <Filter className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
-                        <select
-                            className="w-full appearance-none rounded-lg border border-neutral-200 bg-white py-2 pl-10 pr-8 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    <div className="w-full md:w-64">
+                        <AsyncSelect
+                            placeholder="Semua Kategori"
                             value={selectedCategory}
-                            onChange={(e) => setSelectedCategory(e.target.value)}
-                        >
-                            <option value="all">Semua Kategori</option>
-                            {categories.map((category) => (
-                                <option key={category.id} value={category.id}>
-                                    {category.name}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={handleCategoryChange}
+                            loadOptions={loadCategoryOptions}
+                        />
                     </div>
                 </div>
 
                 {/* Book Grid */}
-                {filteredBooks.length === 0 ? (
+                {loading ? (
+                    <div className="flex min-h-[300px] items-center justify-center">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                    </div>
+                ) : books.length === 0 ? (
                     <div className="py-12 text-center">
                         <p className="text-lg text-neutral-500">Tidak ada buku yang ditemukan sesuai kriteria Anda.</p>
                     </div>
                 ) : (
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {filteredBooks.map((book) => (
-                            <BookCard
-                                key={book.id}
-                                book={book}
-                                categoryName={categories.find(c => c.id === book.categoryId)?.name || 'Tidak Diketahui'}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            {books.map((book) => (
+                                <BookCard
+                                    key={book.id}
+                                    book={book}
+                                    categoryName={book.category?.name || 'Kategori Umum'}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Pagination */}
+                        {meta && meta.last_page > 1 && (
+                            <div className="mt-12 flex justify-center gap-2">
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                                >
+                                    Previous
+                                </button>
+                                <span className="flex items-center px-4 text-sm font-medium text-neutral-600">
+                                    Page {meta.page} of {meta.last_page}
+                                </span>
+                                <button
+                                    onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
+                                    disabled={page === meta.last_page}
+                                    className="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

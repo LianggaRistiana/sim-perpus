@@ -31,8 +31,8 @@ const ReturnForm: React.FC = () => {
             }
             setTransaction(trans);
 
-            const studentsData = await api.getStudents();
-            const foundStudent = studentsData.find(s => s.id === trans.studentId);
+            const studentsResponse = await api.getStudents();
+            const foundStudent = studentsResponse.data.find(s => s.id === trans.studentId);
             setStudent(foundStudent || null);
 
         } catch (error) {

@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, Tag, AlignLeft } from 'lucide-react';
+import { Save, User, Hash } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
-import type { Category } from '../../types';
+import type { Student } from '../../types';
 import BackButton from '../../components/BackButton';
 import { LoadingScreen } from '../../components/LoadingScreen';
 
-const CategoryForm: React.FC = () => {
+const StudentForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const isEditMode = !!id;
 
-    const [formData, setFormData] = useState<Partial<Category>>({
+    const [formData, setFormData] = useState<Partial<Student>>({
         name: '',
-        description: ''
+        user_number: '',
     });
     const [loading, setLoading] = useState(false);
+    const { showToast } = useToast();
 
     useEffect(() => {
         if (isEditMode) {
@@ -24,60 +25,57 @@ const CategoryForm: React.FC = () => {
         }
     }, [id]);
 
+
     const fetchData = async () => {
         if (!id) return;
         setLoading(true);
         try {
-            const data = await api.getCategoryById(id);
+            const data = await api.getStudentById(id);
             if (data) {
                 setFormData({
                     name: data.name,
-                    description: data.description
+                    user_number: data.user_number,
                 });
             }
         } catch (error) {
-            console.error('Error fetching category:', error);
+            console.error('Error fetching student:', error);
+            showToast('Gagal memuat data siswa', 'error');
         } finally {
             setLoading(false);
         }
     };
-
-    const { showToast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
             if (isEditMode && id) {
-                const response = await api.updateCategory(id, {
-                    name: formData.name,
-                    description: formData.description
-                });
+                const response = await api.updateStudent(id, formData);
                 if (response) {
-                    showToast(response.message || 'Kategori berhasil diperbarui', 'success');
-                    navigate('/dashboard/categories');
+                    showToast('Siswa berhasil diperbarui', 'success');
+                    navigate('/dashboard/students');
                 } else {
-                    showToast('Gagal memperbarui kategori', 'error');
+                    showToast('Gagal memperbarui siswa', 'error');
                 }
             } else {
-                const response = await api.addCategory(formData as Omit<Category, 'id'>);
+                const response = await api.addStudent(formData as Omit<Student, 'id'>);
                 if (response) {
-                    showToast(response.message || 'Kategori berhasil ditambahkan', 'success');
-                    navigate('/dashboard/categories');
+                    showToast('Siswa berhasil ditambahkan', 'success');
+                    navigate('/dashboard/students');
                 } else {
-                    showToast('Gagal menambahkan kategori', 'error');
+                    showToast('Gagal menambahkan siswa', 'error');
                 }
             }
         } catch (error) {
-            console.error('Error saving category:', error);
-            showToast('Terjadi kesalahan saat menyimpan kategori', 'error');
+            console.error('Error saving student:', error);
+            showToast('Terjadi kesalahan saat menyimpan siswa', 'error');
         } finally {
             setLoading(false);
         }
     };
 
     if (loading && isEditMode && !formData.name) {
-        return <LoadingScreen message="Memuat data kategori..." />;
+        return <LoadingScreen message="Memuat data siswa..." />;
     }
 
     return (
@@ -85,27 +83,26 @@ const CategoryForm: React.FC = () => {
             {/* Header Section */}
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
-                    <BackButton to="/dashboard/categories" />
+                    <BackButton to='/dashboard/students' />
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-                            {isEditMode ? 'Edit Kategori' : 'Tambah Kategori Baru'}
+                            {isEditMode ? 'Edit Siswa' : 'Tambah Siswa Baru'}
                         </h1>
                         <p className="text-sm text-neutral-500">
-                            {isEditMode ? 'Perbarui informasi dan detail kategori buku' : 'Tambahkan kategori baru untuk pengelompokan buku'}
+                            {isEditMode ? 'Perbarui informasi dan data siswa' : 'Tambahkan data siswa baru ke dalam sistem'}
                         </p>
                     </div>
                 </div>
             </div>
             <div className="mx-auto max-w-2xl">
-
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <div className="flex items-center gap-2">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                                    <Tag size={18} />
+                                    <User size={18} />
                                 </div>
-                                <h2 className="text-lg font-bold text-neutral-900">Informasi Kategori</h2>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Siswa</h2>
                             </div>
                             <button
                                 type="submit"
@@ -122,14 +119,14 @@ const CategoryForm: React.FC = () => {
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
-                                            <Tag size={14} className="text-neutral-400" />
-                                            Nama Kategori
+                                            <User size={14} className="text-neutral-400" />
+                                            Nama Lengkap
                                         </div>
                                     </label>
                                     <input
                                         type="text"
                                         required
-                                        placeholder="Contoh: Fiksi, Sains, Sejarah"
+                                        placeholder="Contoh: Budi Santoso"
                                         className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -138,17 +135,17 @@ const CategoryForm: React.FC = () => {
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
-                                            <AlignLeft size={14} className="text-neutral-400" />
-                                            Deskripsi
+                                            <Hash size={14} className="text-neutral-400" />
+                                            NIS / User Number
                                         </div>
                                     </label>
-                                    <textarea
+                                    <input
+                                        type="text"
                                         required
-                                        rows={4}
-                                        placeholder="Deskripsi singkat mengenai kategori ini..."
+                                        placeholder="Contoh: 12345678"
                                         className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
-                                        value={formData.description}
-                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        value={formData.user_number}
+                                        onChange={e => setFormData({ ...formData, user_number: e.target.value })}
                                     />
                                 </div>
                             </div>
@@ -160,4 +157,4 @@ const CategoryForm: React.FC = () => {
     );
 };
 
-export default CategoryForm;
+export default StudentForm;

@@ -28,7 +28,7 @@ const MemberReport: React.FC = () => {
                     api.getMostActiveStudents()
                 ]);
 
-                setStudents(allStudents);
+                setStudents(allStudents.data);
                 setMostActiveStudents(mostActive.map(i => ({ label: i.name, value: i.count })));
             } catch (error) {
                 console.error('Error fetching member report data:', error);
@@ -83,7 +83,7 @@ const MemberReport: React.FC = () => {
 
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-neutral-900">{selectedStudent.name}</h1>
-                    <p className="text-neutral-600">NIS: {selectedStudent.nis}</p>
+                    <p className="text-neutral-600">User Number: {selectedStudent.user_number}</p>
                 </div>
 
                 {detailLoading ? (
@@ -164,7 +164,7 @@ const MemberReport: React.FC = () => {
                             <User size={20} />
                         </div>
                         <h3 className="mb-1 font-bold text-neutral-900">{student.name}</h3>
-                        <p className="text-sm text-neutral-600">NIS: {student.nis}</p>
+                        <p className="text-sm text-neutral-600">User Number: {student.user_number}</p>
                         <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
                             Lihat Statistik <BarChart2 size={14} className="ml-1" />
                         </div>

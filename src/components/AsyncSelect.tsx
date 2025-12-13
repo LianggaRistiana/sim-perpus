@@ -30,27 +30,10 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
     const [initialLoaded, setInitialLoaded] = useState(false);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
     const observerTarget = useRef<HTMLDivElement>(null);
 
-    // Initial load when opening
-    useEffect(() => {
-        if (isOpen && !initialLoaded) {
-            fetchOptions(1, '', true);
-        }
-    }, [isOpen]);
-
-    // Debounced search
-    useEffect(() => {
-        if (!isOpen) return;
-        const timeoutId = setTimeout(() => {
-            if (initialLoaded) {
-                fetchOptions(1, keyword, true);
-            }
-        }, 500);
-        return () => clearTimeout(timeoutId);
-    }, [keyword]);
-
-    const fetchOptions = async (pageNum: number, search: string, replace: boolean) => {
+    const fetchOptions = useCallback(async (pageNum: number, search: string, replace: boolean) => {
         setLoading(true);
         try {
             const result = await loadOptions({ page: pageNum, keyword: search });
@@ -63,7 +46,26 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         } finally {
             setLoading(false);
         }
-    };
+    }, [loadOptions]);
+
+    // Initial load when opening
+    useEffect(() => {
+        if (isOpen && !initialLoaded) {
+            fetchOptions(1, '', true);
+        }
+    }, [isOpen, initialLoaded, fetchOptions]);
+
+    // Debounced search
+    useEffect(() => {
+        if (!isOpen) return;
+        const timeoutId = setTimeout(() => {
+            if (initialLoaded) {
+                // Reset to page 1 for new search
+                fetchOptions(1, keyword, true);
+            }
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [keyword, isOpen, initialLoaded, fetchOptions]);
 
     // Infinite scroll observer
     const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -71,18 +73,18 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         if (target.isIntersecting && hasMore && !loading) {
             fetchOptions(page + 1, keyword, false);
         }
-    }, [hasMore, loading, page, keyword]);
+    }, [hasMore, loading, page, keyword, fetchOptions]);
 
     useEffect(() => {
         const option = {
-            root: null,
+            root: listRef.current, // Use the proper container as root
             rootMargin: '20px',
-            threshold: 1.0
+            threshold: 0.1 // Lower threshold for better triggering
         };
         const observer = new IntersectionObserver(handleObserver, option);
         if (observerTarget.current) observer.observe(observerTarget.current);
         return () => observer.disconnect();
-    }, [handleObserver]);
+    }, [handleObserver, isOpen]); // Re-attach when isOpen changes to ensure ref is mounted
 
     // Close on click outside
     useEffect(() => {
@@ -109,7 +111,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         <div className="relative" ref={dropdownRef}>
             {label && <label className="mb-2 block text-sm font-medium text-neutral-700">{label}</label>}
             <div
-                className={`flex w-full cursor-pointer items-center justify-between rounded-lg border bg-white p-2.5 ${isOpen ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-300'}`}
+                className={`flex w-full cursor-pointer items-center justify-between rounded-lg border  p-2 ${isOpen ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-300'}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={`block truncate ${!value ? 'text-neutral-400' : 'text-neutral-900'}`}>
@@ -132,7 +134,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                             <input
                                 type="text"
-                                className="w-full rounded-md border border-neutral-200 bg-neutral-50 py-1.5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
+                                className="w-full rounded-md border border-neutral-200 bg-transparent py-1.5 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none"
                                 placeholder="Search..."
                                 value={keyword}
                                 onChange={(e) => setKeyword(e.target.value)}
@@ -140,7 +142,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
                             />
                         </div>
                     </div>
-                    <div className="max-h-48 overflow-y-auto">
+                    <div ref={listRef} className="max-h-48 overflow-y-auto">
                         {options.map((option) => (
                             <div
                                 key={option.id}
