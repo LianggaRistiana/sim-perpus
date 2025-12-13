@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, Book, Calendar, User, Building, Quote, Pencil } from 'lucide-react';
+import { Save, Plus, Trash2, Book, Calendar, User, Building, Pencil, Hash } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
 import type { BookMaster, Category, BookItem } from '../../types';
+import BackButton from '../../components/BackButton';
 
 const BookForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -163,16 +164,11 @@ const BookForm: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-neutral-50/50 pb-32 pt-8 p-6 md:p-8 animate-in fade-in duration-500">
-            <div className="mx-auto max-w-4xl">
+            <div className="mx-auto ">
                 {/* Header Section */}
                 <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate('/dashboard/books')}
-                            className="group flex h-10 w-10 items-center justify-center rounded-xl bg-white text-neutral-500 shadow-sm transition-all hover:bg-neutral-50 hover:text-neutral-900 border border-neutral-200/60"
-                        >
-                            <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
-                        </button>
+                        <BackButton to="/dashboard/books" />
                         <div>
                             <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
                                 {isEditMode ? 'Edit Buku' : 'Tambah Buku Baru'}
@@ -188,10 +184,12 @@ const BookForm: React.FC = () => {
                     {/* Main Information Card */}
                     <div className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'lg:sticky lg:top-8' : ''}`}>
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <h2 className="flex items-center gap-2 text-base font-semibold text-neutral-900">
-                                <Book size={18} className="text-neutral-500" />
-                                Informasi Utama
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                    <Book size={18} />
+                                </div>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Buku</h2>
+                            </div>
                             <button
                                 type="submit"
                                 disabled={submitting}
@@ -271,7 +269,7 @@ const BookForm: React.FC = () => {
                                 <div>
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
-                                            <Quote size={14} className="text-neutral-400" />
+                                            <Hash size={14} className="text-neutral-400" />
                                             ISBN
                                         </div>
                                     </label>

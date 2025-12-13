@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Book, User, Building, Calendar, Hash, Tag } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
 import type { BookMaster, BookItem } from '../../types';
+import BackButton from '../../components/BackButton';
 
 const BookDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -78,13 +79,7 @@ const BookDetail: React.FC = () => {
         <div className="flex h-full flex-col bg-neutral-50 p-8">
             <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/dashboard/books')}
-                        className="rounded-lg p-2 hover:bg-neutral-200"
-                    // className="rounded-lg bg-white p-2 text-neutral-600 shadow-sm hover:bg-neutral-50 hover:text-neutral-900"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
+                    <BackButton to="/dashboard/books" />
                     <div>
                         <h1 className="text-2xl font-bold text-neutral-900">Detail Buku</h1>
                         <p className="text-neutral-600">Informasi lengkap dan daftar salinan</p>
@@ -112,36 +107,65 @@ const BookDetail: React.FC = () => {
                 {/* Book Info */}
                 <div className="space-y-6 lg:col-span-1">
                     <div className="h-[calc(100vh-14rem)] overflow-y-auto rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                        <h2 className="mb-4 text-lg font-bold text-neutral-900">Informasi Buku</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs font-medium uppercase text-neutral-500">Judul</label>
-                                <p className="mt-1 font-medium text-neutral-900">{book.title}</p>
+                        <div className="mb-6 flex items-center gap-2 border-b border-neutral-100 pb-4">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                <Book size={18} />
                             </div>
-                            <div>
-                                <label className="text-xs font-medium uppercase text-neutral-500">Penulis</label>
-                                <p className="mt-1 text-neutral-700">{book.author}</p>
-                            </div>
-                            <div>
-                                <label className="text-xs font-medium uppercase text-neutral-500">Penerbit</label>
-                                <p className="mt-1 text-neutral-700">{book.publisher}</p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-medium uppercase text-neutral-500">Tahun</label>
-                                    <p className="mt-1 text-neutral-700">{book.year}</p>
+                            <h2 className="text-lg font-bold text-neutral-900">Informasi Buku</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
+                                <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
+                                    <Tag size={12} />
+                                    <span>Judul Buku</span>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium uppercase text-neutral-500">ISBN</label>
-                                    <p className="mt-1 text-neutral-700">{book.isbn}</p>
-                                </div>
+                                <p className="text-lg font-medium text-neutral-900 leading-snug">{book.title}</p>
                             </div>
-                            <div>
-                                <label className="text-xs font-medium uppercase text-neutral-500">Kategori</label>
-                                <div className="mt-1">
-                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                                        {book.category?.name || 'Unknown'}
-                                    </span>
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
+                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
+                                        <User size={12} />
+                                        <span>Penulis</span>
+                                    </div>
+                                    <p className="text-neutral-700 font-medium">{book.author}</p>
+                                </div>
+
+                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
+                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
+                                        <Building size={12} />
+                                        <span>Penerbit</span>
+                                    </div>
+                                    <p className="text-neutral-700 font-medium">{book.publisher}</p>
+                                </div>
+
+                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
+                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
+                                        <Calendar size={12} />
+                                        <span>Tahun Terbit</span>
+                                    </div>
+                                    <p className="text-neutral-700 font-medium">{book.year}</p>
+                                </div>
+
+                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
+                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
+                                        <Hash size={12} />
+                                        <span>ISBN</span>
+                                    </div>
+                                    <p className="font-mono text-neutral-700 font-medium">{book.isbn}</p>
+                                </div>
+
+                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
+                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
+                                        <Book size={12} />
+                                        <span>Kategori</span>
+                                    </div>
+                                    <div className="mt-1">
+                                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                            {book.category?.name || 'Unknown'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
