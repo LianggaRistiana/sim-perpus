@@ -15,6 +15,7 @@ import type {
 } from "../../types/transaction-api.types";
 import BackButton from "../../components/BackButton";
 import { LoadingScreen } from "../../components/LoadingScreen";
+import { ConditionBadge } from "../../components/ConditionBadge";
 
 const TransactionDetail: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
@@ -264,11 +265,35 @@ const TransactionDetail: React.FC = () => {
 											Admin Penerima
 										</p>
 										<p className="text-neutral-900">
-											Admin #
-											{returnTransaction.admin?.id ||
-												returnTransaction.admin?.name ||
-												"-"}
+											Admin {returnTransaction.admin?.name || "-"}
 										</p>
+									</div>
+								</div>
+								{/* Notes Section - Aggregated from items */}
+								<div className="flex items-start gap-3 pt-2 border-t border-neutral-50">
+									<div className="mt-0.5 h-5 w-5 text-neutral-400" />
+									<div className="w-full">
+										<p className="text-sm font-medium text-neutral-500 mb-1">
+											Catatan Pengembalian
+										</p>
+										{returnTransaction.details?.some((d) => d.notes) ? (
+											<ul className="list-disc list-inside text-sm text-neutral-600 space-y-1">
+												{returnTransaction.details
+													.filter((d) => d.notes)
+													.map((d, idx) => (
+														<li key={idx} className="break-words">
+															<span className="font-medium text-neutral-900">
+																{d.book_item?.book_master?.title}:
+															</span>{" "}
+															{d.notes}
+														</li>
+													))}
+											</ul>
+										) : (
+											<p className="text-sm text-neutral-400 italic">
+												Tidak ada catatan
+											</p>
+										)}
 									</div>
 								</div>
 							</div>
@@ -329,9 +354,7 @@ const TransactionDetail: React.FC = () => {
 											{item.book_item?.book_master.author || "-"}
 										</td>
 										<td className="px-4 py-3">
-											<span className="inline-flex rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700">
-												{item.condition_at_borrow}
-											</span>
+											<ConditionBadge condition={item.condition_at_borrow} />
 										</td>
 
 										<td className="px-4 py-3">
@@ -349,18 +372,9 @@ const TransactionDetail: React.FC = () => {
 													);
 													return returnItem &&
 														returnItem.condition_at_return ? (
-														<span
-															className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-																returnItem.condition_at_return.toLowerCase() ===
-																"good"
-																	? "bg-green-100 text-green-700"
-																	: returnItem.condition_at_return.toLowerCase() ===
-																	  "new"
-																	? "bg-blue-100 text-blue-700"
-																	: "bg-red-100 text-red-700"
-															}`}>
-															{returnItem.condition_at_return}
-														</span>
+														<ConditionBadge
+															condition={returnItem.condition_at_return}
+														/>
 													) : (
 														<span className="text-neutral-400">-</span>
 													);
