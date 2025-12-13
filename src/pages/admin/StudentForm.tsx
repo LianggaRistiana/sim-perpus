@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import type { Student } from '../../types';
+import BackButton from '../../components/BackButton';
 
 const StudentForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -74,14 +75,9 @@ const StudentForm: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-neutral-50 p-8">
-            <div className="mx-auto max-w-2xl">
+            <div className="mx-auto">
                 <div className="mb-8 flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/dashboard/students')}
-                        className="rounded-lg p-2 hover:bg-neutral-200"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
+                    <BackButton to='/dashboard/students'></BackButton>
                     <div>
                         <h1 className="text-2xl font-bold text-neutral-900">
                             {isEditMode ? 'Edit Siswa' : 'Tambah Siswa Baru'}
@@ -92,7 +88,7 @@ const StudentForm: React.FC = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6 mx-auto max-w-xl">
                     <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                         <div className="space-y-4">
                             <div>
