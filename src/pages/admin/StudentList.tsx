@@ -12,6 +12,7 @@ const StudentList: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [keyword, setKeyword] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [meta, setMeta] = useState<PaginatedResponse<Student>['meta']>({
@@ -39,12 +40,12 @@ const StudentList: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [page, keyword]);
+    }, [page, keyword, itemsPerPage]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await api.getStudents({ page, limit: 10, keyword });
+            const response = await api.getStudents({ page, limit: itemsPerPage, keyword });
             setStudents(response.data);
             setMeta(response.meta);
         } catch (error) {
@@ -81,7 +82,7 @@ const StudentList: React.FC = () => {
     };
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50 p-8">
+        <div className="flex h-full flex-col bg-neutral-50  px-8 pt-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-neutral-900">Manajemen Anggota</h1>
@@ -173,6 +174,10 @@ const StudentList: React.FC = () => {
                 totalItems={meta.total}
                 itemsPerPage={meta.per_page}
                 onPageChange={setPage}
+                onItemsPerPageChange={(limit) => {
+                    setItemsPerPage(limit);
+                    setPage(1);
+                }}
             />
 
 

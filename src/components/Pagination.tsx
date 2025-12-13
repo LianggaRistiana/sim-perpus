@@ -7,6 +7,7 @@ interface PaginationProps {
     totalItems: number;
     itemsPerPage: number;
     onPageChange: (page: number) => void;
+    onItemsPerPageChange?: (itemsPerPage: number) => void;
 }
 
 export const Pagination: React.FC<PaginationProps> = ({
@@ -15,11 +16,14 @@ export const Pagination: React.FC<PaginationProps> = ({
     totalItems,
     itemsPerPage,
     onPageChange,
+    onItemsPerPageChange,
 }) => {
+    // ... existing state ...
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // ... useEffect and handlers ...
     useEffect(() => {
         if (isEditing && inputRef.current) {
             inputRef.current.focus();
@@ -70,14 +74,29 @@ export const Pagination: React.FC<PaginationProps> = ({
                 </button>
             </div>
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
+                <div className="flex items-center gap-4">
+                    {onItemsPerPageChange && (
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+                                className="block items-center rounded-md border-0 h-8  px-2 text-sm text-neutral-900 ring-1 ring-inset ring-neutral-300 focus:ring-2 focus:ring-neutral-600 sm:text-sm sm:leading-6 cursor-pointer hover:bg-neutral-200"
+                            >
+                                <option value={10}>10 data</option>
+                                <option value={25}>25 data</option>
+                                <option value={50}>50 data</option>
+                                <option value={100}>100 data</option>
+                            </select>
+                        </div>
+                    )}
                     <p className="text-sm text-neutral-700">
                         Menampilkan <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> sampai <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> dari <span className="font-medium">{totalItems}</span> hasil
-                        <span className="mx-2 text-neutral-300">|</span>
-                        Halaman <span className="font-medium">{currentPage}</span> dari <span className="font-medium">{totalPages}</span>
                     </p>
                 </div>
-                <div>
+                <div className="flex items-center gap-4">
+                    <p className="text-sm text-neutral-700">
+                        Halaman <span className="font-medium">{currentPage}</span> dari <span className="font-medium">{totalPages}</span>
+                    </p>
                     <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                         <button
                             onClick={() => onPageChange(Math.max(1, currentPage - 1))}

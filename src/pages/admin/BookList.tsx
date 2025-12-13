@@ -15,6 +15,7 @@ const BookList: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [meta, setMeta] = useState<PaginatedResponse<BookMaster>['meta']>({
         page: 1,
         per_page: 10,
@@ -44,14 +45,14 @@ const BookList: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [page, searchTerm, selectedCategory]);
+    }, [page, searchTerm, selectedCategory, itemsPerPage]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const response = await api.getBooks({
                 page,
-                limit: 10,
+                limit: itemsPerPage,
                 keyword: searchTerm,
                 category_id: selectedCategory?.id
             });
@@ -109,7 +110,7 @@ const BookList: React.FC = () => {
 
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50 p-8">
+        <div className="flex h-full flex-col bg-neutral-50 px-8 pt-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-neutral-900">Manajemen Buku</h1>
@@ -215,6 +216,10 @@ const BookList: React.FC = () => {
                 totalItems={meta.total}
                 itemsPerPage={meta.per_page}
                 onPageChange={setPage}
+                onItemsPerPageChange={(limit) => {
+                    setItemsPerPage(limit);
+                    setPage(1);
+                }}
             />
 
 
