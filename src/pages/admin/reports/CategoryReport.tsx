@@ -73,7 +73,7 @@ const CategoryReport: React.FC = () => {
 
     if (selectedCategory) {
         return (
-            <div className="p-6">
+            <div className="flex h-screen flex-col overflow-hidden p-6">
                 <button
                     onClick={handleBack}
                     className="mb-6 flex items-center text-sm font-medium text-neutral-600 hover:text-blue-600"
@@ -82,7 +82,7 @@ const CategoryReport: React.FC = () => {
                     Kembali ke Daftar Laporan
                 </button>
 
-                <div className="mb-8">
+                <div className="mb-6">
                     <h1 className="text-2xl font-bold text-neutral-900">{selectedCategory.name}</h1>
                     <p className="text-neutral-600">{selectedCategory.description}</p>
                 </div>
@@ -92,7 +92,7 @@ const CategoryReport: React.FC = () => {
                         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
                     </div>
                 ) : categoryStats && (
-                    <div className="space-y-6">
+                    <div className="flex-1 space-y-6 overflow-y-auto pr-2">
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
@@ -130,38 +130,42 @@ const CategoryReport: React.FC = () => {
     }
 
     return (
-        <div className="p-6">
-            <h1 className="mb-8 text-2xl font-bold text-neutral-900">Laporan Kategori</h1>
+        <div className="flex h-screen flex-col overflow-hidden p-6">
+            <h1 className="mb-6 text-2xl font-bold text-neutral-900">Laporan Kategori</h1>
 
-            {/* Global Stats */}
-            <div className="mb-10 grid gap-6 md:grid-cols-2">
-                <ReportChart
-                    title="Kategori Paling Sering Dipinjam"
-                    data={mostBorrowedCategories}
-                    color="bg-green-500"
-                />
-                <ReportChart
-                    title="Kategori Paling Lama Dipinjam (Hari)"
-                    data={longestBorrowedCategories}
-                    color="bg-purple-500"
-                />
-            </div>
+            <div className="flex-1 space-y-8 overflow-y-auto pr-2">
+                {/* Global Stats */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    <ReportChart
+                        title="Kategori Paling Sering Dipinjam"
+                        data={mostBorrowedCategories}
+                        color="bg-green-500"
+                    />
+                    <ReportChart
+                        title="Kategori Paling Lama Dipinjam (Hari)"
+                        data={longestBorrowedCategories}
+                        color="bg-purple-500"
+                    />
+                </div>
 
-            <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Kategori</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {categories.map((category) => (
-                    <button
-                        key={category.id}
-                        onClick={() => handleCategoryClick(category)}
-                        className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-                    >
-                        <h3 className="mb-2 font-bold text-neutral-900">{category.name}</h3>
-                        <p className="text-sm text-neutral-600 line-clamp-2">{category.description}</p>
-                        <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
-                            Lihat Statistik <BarChart2 size={14} className="ml-1" />
-                        </div>
-                    </button>
-                ))}
+                <div>
+                    <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Kategori</h2>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {categories.map((category) => (
+                            <button
+                                key={category.id}
+                                onClick={() => handleCategoryClick(category)}
+                                className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                            >
+                                <h3 className="mb-2 font-bold text-neutral-900">{category.name}</h3>
+                                <p className="text-sm text-neutral-600 line-clamp-2">{category.description}</p>
+                                <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
+                                    Lihat Statistik <BarChart2 size={14} className="ml-1" />
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );

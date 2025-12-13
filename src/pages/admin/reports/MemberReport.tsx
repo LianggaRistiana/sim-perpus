@@ -72,7 +72,7 @@ const MemberReport: React.FC = () => {
 
     if (selectedStudent) {
         return (
-            <div className="p-6">
+            <div className="flex h-screen flex-col overflow-hidden p-6">
                 <button
                     onClick={handleBack}
                     className="mb-6 flex items-center text-sm font-medium text-neutral-600 hover:text-blue-600"
@@ -81,7 +81,7 @@ const MemberReport: React.FC = () => {
                     Kembali ke Daftar Laporan
                 </button>
 
-                <div className="mb-8">
+                <div className="mb-6">
                     <h1 className="text-2xl font-bold text-neutral-900">{selectedStudent.name}</h1>
                     <p className="text-neutral-600">User Number: {selectedStudent.user_number}</p>
                 </div>
@@ -91,7 +91,7 @@ const MemberReport: React.FC = () => {
                         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
                     </div>
                 ) : studentStats && (
-                    <div className="space-y-6">
+                    <div className="flex-1 space-y-6 overflow-y-auto pr-2">
                         <div className="grid gap-6 md:grid-cols-3">
                             <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
@@ -140,36 +140,40 @@ const MemberReport: React.FC = () => {
     }
 
     return (
-        <div className="p-6">
-            <h1 className="mb-8 text-2xl font-bold text-neutral-900">Laporan Anggota</h1>
+        <div className="flex h-screen flex-col overflow-hidden p-6">
+            <h1 className="mb-6 text-2xl font-bold text-neutral-900">Laporan Anggota</h1>
 
-            {/* Global Stats */}
-            <div className="mb-10 grid gap-6 md:grid-cols-2">
-                <ReportChart
-                    title="Anggota Paling Aktif (Jumlah Peminjaman)"
-                    data={mostActiveStudents}
-                    color="bg-orange-500"
-                />
-            </div>
+            <div className="flex-1 space-y-8 overflow-y-auto pr-2">
+                {/* Global Stats */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    <ReportChart
+                        title="Anggota Paling Aktif (Jumlah Peminjaman)"
+                        data={mostActiveStudents}
+                        color="bg-orange-500"
+                    />
+                </div>
 
-            <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Anggota</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {students.map((student) => (
-                    <button
-                        key={student.id}
-                        onClick={() => handleStudentClick(student)}
-                        className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-                    >
-                        <div className="mb-3 rounded-full bg-neutral-100 p-2 text-neutral-600">
-                            <User size={20} />
-                        </div>
-                        <h3 className="mb-1 font-bold text-neutral-900">{student.name}</h3>
-                        <p className="text-sm text-neutral-600">User Number: {student.user_number}</p>
-                        <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
-                            Lihat Statistik <BarChart2 size={14} className="ml-1" />
-                        </div>
-                    </button>
-                ))}
+                <div>
+                    <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Anggota</h2>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {students.map((student) => (
+                            <button
+                                key={student.id}
+                                onClick={() => handleStudentClick(student)}
+                                className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                            >
+                                <div className="mb-3 rounded-full bg-neutral-100 p-2 text-neutral-600">
+                                    <User size={20} />
+                                </div>
+                                <h3 className="mb-1 font-bold text-neutral-900">{student.name}</h3>
+                                <p className="text-sm text-neutral-600">User Number: {student.user_number}</p>
+                                <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
+                                    Lihat Statistik <BarChart2 size={14} className="ml-1" />
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );

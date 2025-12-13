@@ -127,10 +127,13 @@ export interface CategoryDistributionItem {
 
 export interface InventoryBookItem {
   item_id: string;
-  code: number;
-  condition: string;
-  status: string;
-  created_at: string;
+  code: string;
+  condition: string;                // "good" | "excellent" | "poor" | "Unknown"
+  status: string;                   // "borrowed" | "available" | "lost" | "unknown"
+  is_borrowed: boolean;             // Convenience flag
+  is_available: boolean;            // Convenience flag
+  is_lost: boolean;                 // Convenience flag
+  created_at: string;               // ISO 8601 format
 }
 
 export interface InventoryBook {
@@ -140,8 +143,12 @@ export interface InventoryBook {
   publisher: string;
   year: number;
   isbn: string;
-  category: string;
+  category: string | null;
   total_items: number;
+  borrowed_count: number;           // NEW: Count of borrowed items
+  available_count: number;          // NEW: Count of available items
+  lost_count: number;               // NEW: Count of lost items
+  availability_percentage: number;  // NEW: (available / total) * 100
   items: InventoryBookItem[];
 }
 
@@ -169,4 +176,25 @@ export interface InventoryReportResponse {
   message: string;
   data: InventoryBook[];
   pagination: InventoryPagination;
+}
+
+// In-Demand Books Types
+export interface InDemandBook {
+  book_id: string;
+  title: string;
+  author: string;
+  publisher: string;
+  isbn: string;
+  category: string | null;
+  total_items: number;
+  currently_borrowed: number;       // How many copies are borrowed RIGHT NOW
+  currently_available: number;      // How many copies are available RIGHT NOW
+  demand_percentage: number;        // (currently_borrowed / total_items) * 100
+}
+
+export interface InDemandBooksResponse {
+  success: boolean;
+  message: string;
+  data: InDemandBook[];
+  note: string;
 }

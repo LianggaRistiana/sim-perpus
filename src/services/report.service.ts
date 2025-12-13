@@ -3,7 +3,8 @@ import { apiClient } from '../lib/api-client';
 import type {
   LibraryOverviewResponse,
   CategoryDistributionResponse,
-  InventoryReportResponse
+  InventoryReportResponse,
+  InDemandBooksResponse
 } from '../types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -191,6 +192,24 @@ export const reportService = {
       return response;
     } catch (error) {
       console.error('Failed to fetch inventory report:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get in-demand books report
+   * @param limit - Maximum number of books to return (default: 10)
+   * @returns List of currently most borrowed books
+   */
+  getInDemand: async (limit: number = 10) => {
+    try {
+      const query = new URLSearchParams();
+      query.append('limit', limit.toString());
+
+      const response = await apiClient.get<InDemandBooksResponse>(`/library/reports/in-demand?${query.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch in-demand books:', error);
       throw error;
     }
   },

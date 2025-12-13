@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
-import type { LibraryOverview, CategoryDistributionItem, InventoryBook } from '../../../types';
-import ReportChart from '../../../components/ReportChart';
+import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemandBook } from '../../../types';
 import { BookOpen, FileText, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const LibraryReportPage: React.FC = () => {
@@ -12,6 +11,10 @@ const LibraryReportPage: React.FC = () => {
     // State for category distribution section
     const [categories, setCategories] = useState<CategoryDistributionItem[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+    // State for in-demand section
+    const [inDemandBooks, setInDemandBooks] = useState<InDemandBook[]>([]);
+    const [inDemandLoading, setInDemandLoading] = useState(true);
 
     // State for inventory section
     const [inventory, setInventory] = useState<InventoryBook[]>([]);
@@ -51,6 +54,22 @@ const LibraryReportPage: React.FC = () => {
             }
         };
         fetchCategories();
+    }, []);
+
+    // Fetch in-demand books data
+    useEffect(() => {
+        const fetchInDemand = async () => {
+            try {
+                setInDemandLoading(true);
+                const data = await api.getInDemand(10);
+                setInDemandBooks(data);
+            } catch (error) {
+                console.error('Error fetching in-demand books:', error);
+            } finally {
+                setInDemandLoading(false);
+            }
+        };
+        fetchInDemand();
     }, []);
 
     // Fetch inventory data with pagination
@@ -162,6 +181,83 @@ const LibraryReportPage: React.FC = () => {
                         </div>
                     ) : (
                         <p className="text-neutral-500">Gagal memuat data ringkasan.</p>
+                    )}
+                </div>
+
+                {/* In-Demand Books Section */}
+                <div>
+                    <h2 className="mb-4 text-lg font-bold text-neutral-900">Buku Paling Diminati Saat Ini</h2>
+
+                    {inDemandLoading ? (
+                        <div className="flex h-32 items-center justify-center">
+                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                        </div>
+                    ) : inDemandBooks.length > 0 ? (
+                        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                            <div className="space-y-4">
+                                {inDemandBooks.map((book, index) => {
+                                    const getDemandColor = (percentage: number) => {
+                                        if (percentage >= 80) return 'bg-red-500';
+                                        if (percentage >= 50) return 'bg-yellow-500';
+                                        return 'bg-green-500';
+                                    };
+
+                                    const getDemandBadge = (percentage: number) => {
+                                        if (percentage >= 80) return { text: 'Permintaan Tinggi', color: 'bg-red-100 text-red-700' };
+                                        if (percentage >= 50) return { text: 'Permintaan Sedang', color: 'bg-yellow-100 text-yellow-700' };
+                                        return { text: 'Permintaan Normal', color: 'bg-green-100 text-green-700' };
+                                    };
+
+                                    const badge = getDemandBadge(book.demand_percentage);
+
+                                    return (
+                                        <div key={book.book_id} className="flex items-start gap-4 rounded-lg border border-neutral-100 p-4 hover:bg-neutral-50">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-600">
+                                                {index + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="mb-1 flex items-start justify-between">
+                                                    <div>
+                                                        <h3 className="font-bold text-neutral-900">{book.title}</h3>
+                                                        <p className="text-sm text-neutral-600">{book.author} • {book.publisher}</p>
+                                                        {book.category && (
+                                                            <span className="mt-1 inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                                                                {book.category}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${badge.color}`}>
+                                                        {badge.text}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 flex items-center gap-4">
+                                                    <div className="flex-1">
+                                                        <div className="mb-1 flex justify-between text-sm">
+                                                            <span className="text-neutral-600">Dipinjam saat ini</span>
+                                                            <span className="font-medium text-neutral-900">
+                                                                {book.currently_borrowed}/{book.total_items} ({Math.round(book.demand_percentage)}%)
+                                                            </span>
+                                                        </div>
+                                                        <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                                                            <div
+                                                                className={`h-full rounded-full ${getDemandColor(book.demand_percentage)}`}
+                                                                style={{ width: `${book.demand_percentage}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <p className="text-xs text-neutral-500">Tersedia</p>
+                                                        <p className="text-lg font-bold text-neutral-900">{book.currently_available}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-neutral-500">Tidak ada buku yang sedang dipinjam.</p>
                     )}
                 </div>
 
@@ -291,12 +387,51 @@ const LibraryReportPage: React.FC = () => {
                                             <p className="text-sm text-neutral-500">ISBN: {book.isbn}</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
-                                            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                                                {book.category}
-                                            </span>
+                                            {book.category && (
+                                                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                                                    {book.category}
+                                                </span>
+                                            )}
                                             <span className="text-xs text-neutral-500">
                                                 {book.total_items} eksemplar
                                             </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Availability Stats */}
+                                    <div className="mb-3 rounded-lg bg-neutral-50 p-3">
+                                        <div className="mb-2 flex justify-between text-sm">
+                                            <span className="text-neutral-600">Ketersediaan</span>
+                                            <span className="font-medium text-neutral-900">
+                                                {book.available_count}/{book.total_items} ({Math.round(book.availability_percentage)}%)
+                                            </span>
+                                        </div>
+                                        <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
+                                            <div
+                                                className={`h-full rounded-full ${book.availability_percentage > 50
+                                                    ? 'bg-green-500'
+                                                    : book.availability_percentage > 20
+                                                        ? 'bg-yellow-500'
+                                                        : 'bg-red-500'
+                                                    }`}
+                                                style={{ width: `${book.availability_percentage}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="flex gap-4 text-xs">
+                                            <div>
+                                                <span className="text-neutral-500">Tersedia: </span>
+                                                <span className="font-medium text-green-600">{book.available_count}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-neutral-500">Dipinjam: </span>
+                                                <span className="font-medium text-orange-600">{book.borrowed_count}</span>
+                                            </div>
+                                            {book.lost_count > 0 && (
+                                                <div>
+                                                    <span className="text-neutral-500">Hilang: </span>
+                                                    <span className="font-medium text-red-600">{book.lost_count}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
