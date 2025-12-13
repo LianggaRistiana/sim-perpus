@@ -4,6 +4,7 @@ import { Upload, Trash2, Search, ChevronLeft, ChevronRight, Edit, Plus } from 'l
 import { api } from '../../services/api';
 import type { Student, PaginatedResponse } from '../../types';
 import { useToast } from '../../components/Toast';
+import { DeleteModal } from '../../components/DeleteModal';
 
 const StudentList: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
@@ -18,6 +19,10 @@ const StudentList: React.FC = () => {
         last_page: 1,
         timestamp: ''
     });
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -48,15 +53,28 @@ const StudentList: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus siswa ini?')) {
-            const response = await api.deleteStudent(id);
-            if (response) { // Assuming api.deleteStudent returns data on success or matches the pattern
+    const handleDelete = (id: string) => {
+        setStudentToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!studentToDelete) return;
+
+        try {
+            const response = await api.deleteStudent(studentToDelete);
+            if (response) {
                 showToast('Siswa berhasil dihapus', 'success');
                 fetchData();
             } else {
                 showToast('Gagal menghapus siswa', 'error');
             }
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            showToast('Gagal menghapus siswa', 'error');
+        } finally {
+            setShowDeleteModal(false);
+            setStudentToDelete(null);
         }
     };
 
@@ -202,6 +220,16 @@ const StudentList: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                title="Hapus Siswa?"
+                message="Apakah Anda yakin ingin menghapus siswa ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

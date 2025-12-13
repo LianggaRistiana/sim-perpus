@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, ChevronLeft, ChevronRight, Plus, Edit, Trash2 } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
+import { DeleteModal } from '../../components/DeleteModal';
 import type { Category, PaginatedResponse } from '../../types';
 
 const CategoryList: React.FC = () => {
@@ -18,6 +19,10 @@ const CategoryList: React.FC = () => {
         last_page: 1,
         timestamp: ''
     });
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
     const navigate = useNavigate();
 
@@ -48,15 +53,28 @@ const CategoryList: React.FC = () => {
 
     const { showToast } = useToast();
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
-            const response = await api.deleteCategory(id);
+    const handleDelete = (id: string) => {
+        setCategoryToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!categoryToDelete) return;
+
+        try {
+            const response = await api.deleteCategory(categoryToDelete);
             if (response) {
                 showToast(response.message || 'Kategori berhasil dihapus', 'success');
                 fetchData();
             } else {
                 showToast('Gagal menghapus kategori', 'error');
             }
+        } catch (error) {
+            console.error('Error deleting category:', error);
+            showToast('Gagal menghapus kategori', 'error');
+        } finally {
+            setShowDeleteModal(false);
+            setCategoryToDelete(null);
         }
     };
 
@@ -196,6 +214,16 @@ const CategoryList: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                title="Hapus Kategori?"
+                message="Apakah Anda yakin ingin menghapus kategori ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

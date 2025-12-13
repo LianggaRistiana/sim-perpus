@@ -143,9 +143,9 @@ const BookList: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex-1 min-h-0 rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
-                <div className="flex-1 overflow-auto">
-                    <table className="w-full text-left text-sm">
+            <div className="flex-1 min-h-0 rounded-xl border mb-6 border-neutral-200 bg-white shadow-sm overflow-hidden flex flex-col">
+                <div className="flex-1 overflow-auto ">
+                    <table className="w-full text-left text-sm ">
                         <thead className="sticky top-0 z-10 bg-neutral-50 text-neutral-500">
                             <tr>
                                 <th className="px-6 py-4 font-medium">Judul</th>
