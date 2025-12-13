@@ -7,6 +7,7 @@ import { Modal } from '../../components/Modal';
 import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, Category, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 const BookForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -153,14 +154,7 @@ const BookForm: React.FC = () => {
     };
 
     if (loading && isEditMode && !formData.id) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-                <div className="text-center">
-                    <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-neutral-300 border-t-neutral-900 mx-auto"></div>
-                    <p className="text-neutral-600">Memuat data buku...</p>
-                </div>
-            </div>
-        );
+        return <LoadingScreen message="Memuat data buku..." />;
     }
 
     return (
