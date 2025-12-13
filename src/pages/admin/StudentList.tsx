@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Upload, Trash2, Search, ChevronLeft, ChevronRight, Edit, Plus } from 'lucide-react';
+import { Upload, Trash2, Search, Edit, Plus } from 'lucide-react';
+import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
 import type { Student, PaginatedResponse } from '../../types';
 import { useToast } from '../../components/Toast';
@@ -169,57 +170,13 @@ const StudentList: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3 sm:px-6">
-                <div className="flex flex-1 justify-between sm:hidden">
-                    <button
-                        onClick={() => setPage(Math.max(1, page - 1))}
-                        disabled={page === 1}
-                        className="relative inline-flex items-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        onClick={() => setPage(Math.min(meta.last_page, page + 1))}
-                        disabled={page === meta.last_page}
-                        className="relative ml-3 inline-flex items-center rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                    >
-                        Next
-                    </button>
-                </div>
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-sm text-neutral-700">
-                            Menampilkan <span className="font-medium">{(meta.page - 1) * meta.per_page + 1}</span> sampai <span className="font-medium">{Math.min(meta.page * meta.per_page, meta.total)}</span> dari <span className="font-medium">{meta.total}</span> hasil
-                        </p>
-                    </div>
-                    <div>
-                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                            <button
-                                onClick={() => setPage(Math.max(1, page - 1))}
-                                disabled={page === 1}
-                                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Previous</span>
-                                <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                            <button
-                                aria-current="page"
-                                className="relative z-10 inline-flex items-center bg-neutral-900 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-600"
-                            >
-                                {page}
-                            </button>
-                            <button
-                                onClick={() => setPage(Math.min(meta.last_page, page + 1))}
-                                disabled={page === meta.last_page}
-                                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Next</span>
-                                <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                            </button>
-                        </nav>
-                    </div>
-                </div>
-            </div>
+            <Pagination
+                currentPage={page}
+                totalPages={meta.last_page}
+                totalItems={meta.total}
+                itemsPerPage={meta.per_page}
+                onPageChange={setPage}
+            />
 
 
             <DeleteModal
