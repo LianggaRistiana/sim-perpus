@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, FileText, AlertCircle, X, FileSpreadsheet, Trash2, Edit2, Check } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
+import { DeleteModal } from '../../components/DeleteModal';
 import type { Student } from '../../types';
 import BackButton from '../../components/BackButton';
 
@@ -18,6 +19,10 @@ const StudentUpload: React.FC = () => {
     // Edit state
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<Omit<Student, 'id'>>({ user_number: '', name: '' });
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
     const processFile = (file: File) => {
         if (!file.name.endsWith('.csv')) {
@@ -145,19 +150,27 @@ const StudentUpload: React.FC = () => {
     };
 
     const handleDeleteRow = (index: number) => {
-        if (window.confirm('Yakin ingin menghapus baris ini dari preview?')) {
-            const newData = previewData.filter((_, i) => i !== index);
-            setPreviewData(newData);
-            if (editingIndex === index) {
-                cancelEditing();
-            } else if (editingIndex !== null && editingIndex > index) {
-                setEditingIndex(editingIndex - 1);
-            }
+        setDeleteIndex(index);
+        setShowDeleteModal(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteIndex === null) return;
+
+        const newData = previewData.filter((_, i) => i !== deleteIndex);
+        setPreviewData(newData);
+        if (editingIndex === deleteIndex) {
+            cancelEditing();
+        } else if (editingIndex !== null && editingIndex > deleteIndex) {
+            setEditingIndex(editingIndex - 1);
         }
+
+        setShowDeleteModal(false);
+        setDeleteIndex(null);
     };
 
     return (
-        <div className="flex h-[calc(100vh-64px)] flex-col gap-4 bg-neutral-50 p-6 md:flex-row">
+        <div className="flex h-[calc(100vh-64px)] flex-col gap-4 bg-neutral-50 p-6 md:flex-row animate-in fade-in duration-500">
             {/* Left Column: Upload & Config */}
             <div className="flex w-full flex-col gap-6 md:w-1/3 md:min-w-[400px]">
                 <div className="flex items-center gap-4">
@@ -378,6 +391,14 @@ const StudentUpload: React.FC = () => {
                     </div>
                 )}
             </div>
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleConfirmDelete}
+                title="Hapus Data Preview?"
+                message="Apakah Anda yakin ingin menghapus data ini dari preview? Tindakan ini hanya menghapus dari daftar sementara, bukan file asli."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save } from 'lucide-react';
+import { Save, User, Hash } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import type { Student } from '../../types';
@@ -73,63 +73,89 @@ const StudentForm: React.FC = () => {
         }
     };
 
+    if (loading && isEditMode && !formData.name) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-neutral-50">
+                <div className="text-center">
+                    <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-neutral-300 border-t-neutral-900 mx-auto"></div>
+                    <p className="text-neutral-600">Memuat data siswa...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-neutral-50 p-8">
-            <div className="mx-auto">
-                <div className="mb-8 flex items-center gap-4">
-                    <BackButton to='/dashboard/students'></BackButton>
+        <div className="min-h-screen bg-neutral-50/50 pb-32 pt-8 p-6 md:p-8 animate-in fade-in duration-500">
+            {/* Header Section */}
+            <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                    <BackButton to='/dashboard/students' />
                     <div>
-                        <h1 className="text-2xl font-bold text-neutral-900">
+                        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
                             {isEditMode ? 'Edit Siswa' : 'Tambah Siswa Baru'}
                         </h1>
-                        <p className="text-neutral-600">
-                            {isEditMode ? 'Perbarui informasi siswa' : 'Masukkan detail siswa baru'}
+                        <p className="text-sm text-neutral-500">
+                            {isEditMode ? 'Perbarui informasi dan data siswa' : 'Tambahkan data siswa baru ke dalam sistem'}
                         </p>
                     </div>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6 mx-auto max-w-xl">
-                    <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-neutral-700">Nama Lengkap</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
+            </div>
+            <div className="mx-auto max-w-2xl">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
+                        <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                    <User size={18} />
+                                </div>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Siswa</h2>
                             </div>
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-neutral-700">User Number</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
-                                    value={formData.user_number}
-                                    onChange={e => setFormData({ ...formData, user_number: e.target.value })}
-                                />
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="flex items-center gap-2 rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-neutral-900/20 hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/10 disabled:opacity-70 disabled:shadow-none transition-all"
+                            >
+                                <Save size={16} />
+                                {loading ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                        </div>
+
+                        <div className="p-6 md:p-8">
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <User size={14} className="text-neutral-400" />
+                                            Nama Lengkap
+                                        </div>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Contoh: Budi Santoso"
+                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Hash size={14} className="text-neutral-400" />
+                                            NIS / User Number
+                                        </div>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Contoh: 12345678"
+                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        value={formData.user_number}
+                                        onChange={e => setFormData({ ...formData, user_number: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="flex justify-end gap-4">
-                        <button
-                            type="button"
-                            onClick={() => navigate('/dashboard/students')}
-                            className="rounded-lg px-6 py-2.5 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-70"
-                        >
-                            <Save size={20} />
-                            {loading ? 'Menyimpan...' : 'Simpan Siswa'}
-                        </button>
                     </div>
                 </form>
             </div>
