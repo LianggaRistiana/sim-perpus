@@ -5,6 +5,7 @@ import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
+import { TableLoading, TableEmpty } from '../../components/TableState';
 import { AsyncSelect, type Option } from '../../components/AsyncSelect';
 import type { BookMaster, PaginatedResponse } from '../../types';
 
@@ -158,17 +159,13 @@ const BookList: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-neutral-100">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">
-                                        Memuat data...
-                                    </td>
-                                </tr>
+                                <TableLoading colSpan={5} />
                             ) : books.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-neutral-500">
-                                        Tidak ada buku ditemukan.
-                                    </td>
-                                </tr>
+                                <TableEmpty
+                                    colSpan={5}
+                                    message="Tidak ada buku ditemukan"
+                                    description="Coba cari dengan kata kunci lain atau pilih kategori yang berbeda."
+                                />
                             ) : (
                                 books.map((book) => (
                                     <tr

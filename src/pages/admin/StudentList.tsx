@@ -6,6 +6,7 @@ import { api } from '../../services/api';
 import type { Student, PaginatedResponse } from '../../types';
 import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
+import { TableLoading, TableEmpty } from '../../components/TableState';
 
 const StudentList: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
@@ -129,17 +130,13 @@ const StudentList: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-neutral-100">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
-                                        Memuat data...
-                                    </td>
-                                </tr>
+                                <TableLoading colSpan={3} />
                             ) : students.length === 0 ? (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
-                                        Tidak ada siswa ditemukan.
-                                    </td>
-                                </tr>
+                                <TableEmpty
+                                    colSpan={3}
+                                    message="Tidak ada siswa ditemukan"
+                                    description="Coba cari dengan kata kunci lain atau tambahkan siswa baru."
+                                />
                             ) : (
                                 students.map((student) => (
                                     <tr key={student.id} className="hover:bg-neutral-50 cursor-pointer" onClick={() => navigate(`/dashboard/students/${student.id}`)}>

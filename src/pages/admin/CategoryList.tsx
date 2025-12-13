@@ -5,6 +5,7 @@ import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
+import { TableLoading, TableEmpty } from '../../components/TableState';
 import type { Category, PaginatedResponse } from '../../types';
 
 const CategoryList: React.FC = () => {
@@ -121,17 +122,13 @@ const CategoryList: React.FC = () => {
                         </thead>
                         <tbody className="divide-y divide-neutral-100">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
-                                        Memuat data...
-                                    </td>
-                                </tr>
+                                <TableLoading colSpan={4} />
                             ) : categories.length === 0 ? (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
-                                        Tidak ada kategori ditemukan.
-                                    </td>
-                                </tr>
+                                <TableEmpty
+                                    colSpan={4}
+                                    message="Tidak ada kategori ditemukan"
+                                    description="Coba cari dengan kata kunci lain atau tambahkan kategori baru."
+                                />
                             ) : (
                                 categories.map((category) => (
                                     <tr key={category.id} className="hover:bg-neutral-50 cursor-pointer" onClick={() => navigate(`/dashboard/categories/${category.id}`)}>
