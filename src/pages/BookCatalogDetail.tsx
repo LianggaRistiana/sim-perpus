@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Calendar, Building2, Hash, Tag } from 'lucide-react';
 import { api } from '../services/api';
 import type { BookMaster, Category, BookItem } from '../types';
-import dummyCover from '../assets/images/dummy_cover_book.jpg';
 
 const BookCatalogDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -11,30 +10,40 @@ const BookCatalogDetail: React.FC = () => {
     const [category, setCategory] = useState<Category | null>(null);
     const [items, setItems] = useState<BookItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [imageError, setImageError] = useState(false);
 
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         if (!id) return;
-    //         try {
-    //             const bookData = await api.getBookById(id);
-    //             if (bookData) {
-    //                 setBook(bookData);
-    //                 const categories = await api.getCategories();
-    //                 const categoryData = categories.find(c => c.id === bookData.categoryId);
-    //                 setCategory(categoryData || null);
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!id) return;
+            setLoading(true);
+            try {
+                const bookData = await api.getBookById(id);
+                if (bookData) {
+                    setBook(bookData);
 
-    //                 const itemsData = await api.getBookItems(id);
-    //                 setItems(itemsData);
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching book details:', error);
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-    //     fetchData();
-    // }, [id]);
+                    // Fetch category if not included in book response
+                    if (bookData.category) {
+                        setCategory(bookData.category);
+                    } else if (bookData.categoryId) {
+                        try {
+                            const categoryData = await api.getCategoryById(bookData.categoryId);
+                            if (categoryData) setCategory(categoryData);
+                        } catch (err) {
+                            console.error('Failed to fetch category', err);
+                        }
+                    }
+
+                    // Fetch book items (copies)
+                    const itemsData = await api.getBookItems(id);
+                    setItems(itemsData);
+                }
+            } catch (error) {
+                console.error('Error fetching book details:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [id]);
 
     if (loading) {
         return (
@@ -68,19 +77,13 @@ const BookCatalogDetail: React.FC = () => {
                 <div className="overflow-hidden rounded-2xl bg-white shadow-sm border border-neutral-200 mb-8">
                     <div className="grid md:grid-cols-3">
                         {/* Left Column: Image/Placeholder */}
-                        <div className="flex items-center justify-center bg-neutral-100 p-0 md:border-r border-neutral-200 overflow-hidden relative min-h-[300px]">
-                            {!imageError ? (
-                                <img
-                                    src={dummyCover}
-                                    alt={`Cover of ${book.title}`}
-                                    className="h-full w-full object-cover"
-                                    onError={() => setImageError(true)}
-                                />
-                            ) : (
-                                <div className="p-12">
-                                    <BookOpen className="h-32 w-32 text-neutral-300" />
-                                </div>
-                            )}
+                        <div className="flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 p-0 md:border-r border-neutral-200 overflow-hidden relative min-h-[400px]">
+                            <div className="absolute inset-0 bg-white/10" />
+                            <BookOpen className="h-32 w-32 text-white/90 drop-shadow-md relative z-10" />
+
+                            {/* Decorative circles */}
+                            <div className="absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+                            <div className="absolute -top-16 -left-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
                         </div>
 
                         {/* Right Column: Details */}

@@ -30,27 +30,10 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
     const [initialLoaded, setInitialLoaded] = useState(false);
 
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
     const observerTarget = useRef<HTMLDivElement>(null);
 
-    // Initial load when opening
-    useEffect(() => {
-        if (isOpen && !initialLoaded) {
-            fetchOptions(1, '', true);
-        }
-    }, [isOpen]);
-
-    // Debounced search
-    useEffect(() => {
-        if (!isOpen) return;
-        const timeoutId = setTimeout(() => {
-            if (initialLoaded) {
-                fetchOptions(1, keyword, true);
-            }
-        }, 500);
-        return () => clearTimeout(timeoutId);
-    }, [keyword]);
-
-    const fetchOptions = async (pageNum: number, search: string, replace: boolean) => {
+    const fetchOptions = useCallback(async (pageNum: number, search: string, replace: boolean) => {
         setLoading(true);
         try {
             const result = await loadOptions({ page: pageNum, keyword: search });
@@ -63,7 +46,26 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         } finally {
             setLoading(false);
         }
-    };
+    }, [loadOptions]);
+
+    // Initial load when opening
+    useEffect(() => {
+        if (isOpen && !initialLoaded) {
+            fetchOptions(1, '', true);
+        }
+    }, [isOpen, initialLoaded, fetchOptions]);
+
+    // Debounced search
+    useEffect(() => {
+        if (!isOpen) return;
+        const timeoutId = setTimeout(() => {
+            if (initialLoaded) {
+                // Reset to page 1 for new search
+                fetchOptions(1, keyword, true);
+            }
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [keyword, isOpen, initialLoaded, fetchOptions]);
 
     // Infinite scroll observer
     const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -71,18 +73,18 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         if (target.isIntersecting && hasMore && !loading) {
             fetchOptions(page + 1, keyword, false);
         }
-    }, [hasMore, loading, page, keyword]);
+    }, [hasMore, loading, page, keyword, fetchOptions]);
 
     useEffect(() => {
         const option = {
-            root: null,
+            root: listRef.current, // Use the proper container as root
             rootMargin: '20px',
-            threshold: 1.0
+            threshold: 0.1 // Lower threshold for better triggering
         };
         const observer = new IntersectionObserver(handleObserver, option);
         if (observerTarget.current) observer.observe(observerTarget.current);
         return () => observer.disconnect();
-    }, [handleObserver]);
+    }, [handleObserver, isOpen]); // Re-attach when isOpen changes to ensure ref is mounted
 
     // Close on click outside
     useEffect(() => {
@@ -140,7 +142,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
                             />
                         </div>
                     </div>
-                    <div className="max-h-48 overflow-y-auto">
+                    <div ref={listRef} className="max-h-48 overflow-y-auto">
                         {options.map((option) => (
                             <div
                                 key={option.id}
