@@ -80,7 +80,7 @@ export const studentService = {
     ].sort((a, b) => b.count - a.count);
   },
   
-  getStudentReportDetails: async (studentId: string): Promise<{
+  getStudentReportDetails: async (_studentId: string): Promise<{
     monthlyActivity: { month: string; count: number }[];
     totalBorrows: number;
     currentlyBorrowed: number;

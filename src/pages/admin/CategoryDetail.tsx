@@ -23,7 +23,7 @@ const CategoryDetail: React.FC = () => {
                 if (categoryData) {
                     setCategory(categoryData);
                     // Filter books for this category
-                    const categoryBooks = allBooks.filter(b => b.categoryId === id);
+                    const categoryBooks = allBooks.data.filter(b => b.categoryId === id);
                     setBooks(categoryBooks);
                 } else {
                     console.error('Category not found');

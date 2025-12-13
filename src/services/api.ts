@@ -2,7 +2,7 @@ import { authService } from './auth.service';
 import { categoryService } from './category.service';
 import { bookService } from './book.service';
 import { studentService } from './student.service';
-import { transactionService } from './transaction.service';
+import { transactionApiService } from './transaction-api.service';
 import { reportService } from './report.service';
 
 export const api = {
@@ -10,6 +10,6 @@ export const api = {
   ...categoryService,
   ...bookService,
   ...studentService,
-  ...transactionService,
+  ...transactionApiService,
   ...reportService,
 };

@@ -47,7 +47,7 @@ const BookReport: React.FC = () => {
                     api.getDamagedBooks()
                 ]);
 
-                setBooks(allBooks);
+                setBooks(allBooks.data);
                 setMostBorrowedBooks(mostBorrowed.map(i => ({ label: i.title, value: i.count })));
                 setLongestBorrowedBooks(longestBorrowed.map(i => ({ label: i.title, value: i.days })));
                 setDamagedBooks(damaged);

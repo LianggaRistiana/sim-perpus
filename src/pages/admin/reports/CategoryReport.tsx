@@ -29,7 +29,7 @@ const CategoryReport: React.FC = () => {
                     api.getLongestBorrowedCategories()
                 ]);
 
-                setCategories(cats);
+                setCategories(cats.data);
                 setMostBorrowedCategories(mostBorrowed.map(i => ({ label: i.name, value: i.count })));
                 setLongestBorrowedCategories(longestBorrowed.map(i => ({ label: i.name, value: i.days })));
             } catch (error) {
