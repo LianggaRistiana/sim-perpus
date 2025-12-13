@@ -79,10 +79,28 @@ export interface ApiReturnTransaction {
 	details: ApiTransactionDetail[];
 }
 
-export interface ApiResponse<T> {
+export interface TransactionQueryParams {
+	page?: number;
+	per_page?: number;
+	status?: string;
+	borrower_id?: string;
+	overdue?: boolean;
+	start_date?: string;
+	end_date?: string;
+	search?: string;
+}
+
+export interface ApiPaginatedResponse<T> {
 	status: string;
-	message?: string;
-	data: T;
+	data: T[];
+	meta: {
+		page: number;
+		per_page: number;
+		total: number;
+		last_page: number;
+		from?: number;
+		to?: number;
+	};
 }
 
 export interface ApiResponse<T> {

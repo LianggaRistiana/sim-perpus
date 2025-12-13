@@ -1,62 +1,125 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Trash } from "lucide-react";
+import { Save, Trash } from "lucide-react";
+import { apiClient } from "../../lib/api-client";
 import { api } from "../../services/api";
-
-import type { Student, BookItem } from "../../types";
+import BackButton from "../../components/BackButton";
+import { LoadingScreen } from "../../components/LoadingScreen";
+import { useToast } from "../../components/Toast";
+import { AsyncSelect, type Option } from "../../components/AsyncSelect";
+import type { BookItem, PaginatedResponse } from "../../types";
 
 const BorrowForm: React.FC = () => {
 	const navigate = useNavigate();
-	const [students, setStudents] = useState<Student[]>([]);
-	const [bookItems, setBookItems] = useState<BookItem[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { showToast } = useToast();
+	const [loading, setLoading] = useState(false);
 
-	const [selectedStudent, setSelectedStudent] = useState("");
-	const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]); // Multi-book support
-	const [currentBookId, setCurrentBookId] = useState(""); // For the selector
+	const [selectedStudent, setSelectedStudent] = useState<Option | null>(null);
+	const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
+	const [selectedBookItems, setSelectedBookItems] = useState<BookItem[]>([]);
+	const [currentBook, setCurrentBook] = useState<Option | null>(null);
 	const [duration, setDuration] = useState(7);
 
-	useEffect(() => {
-		fetchData();
-	}, []);
-
-	const fetchData = async () => {
-		setLoading(true);
+	const loadStudentOptions = async ({
+		page,
+		keyword,
+	}: {
+		page: number;
+		keyword: string;
+	}) => {
 		try {
-			const [studentsData, itemsData] = await Promise.all([
-				api.getStudents(),
-				api.getBookItems(undefined, "available"),
-			]);
-
-			setStudents(studentsData.data);
-			setBookItems(
-				itemsData.filter((item) => item.status.toLowerCase() === "available")
-			);
+			const response = await api.getStudents({ page, limit: 10, keyword });
+			return {
+				options: response.data.map((s) => ({
+					id: s.id,
+					label: `${s.user_number} - ${s.name}`,
+				})),
+				hasMore: response.meta.page < response.meta.last_page,
+			};
 		} catch (error) {
-			console.error("Error fetching data:", error);
-		} finally {
-			setLoading(false);
+			console.error("Failed to load students", error);
+			return { options: [], hasMore: false };
+		}
+	};
+
+	const loadBookOptions = async ({
+		keyword,
+		page,
+	}: {
+		page: number;
+		keyword: string;
+	}) => {
+		try {
+			// Direct API call to support pagination and filtering without modifying global service
+			const query = new URLSearchParams();
+			query.append("page", page.toString());
+			query.append("limit", "20");
+			query.append("status", "available");
+			if (keyword) query.append("keyword", keyword);
+
+			const response = await apiClient.get<PaginatedResponse<any>>(
+				`/book-items?${query.toString()}`
+			);
+
+			// Map backend response
+			const items = response.data.map((item) => ({
+				id: item.id,
+				masterId: item.book_master_id,
+				code: item.code,
+				condition: item.condition,
+				status: item.status,
+				createdAt: new Date(item.createdAt),
+				book_master: item.book_master
+					? {
+							...item.book_master,
+							categoryId:
+								item.book_master.category_id || item.book_master.categoryId,
+					  }
+					: undefined,
+			})) as BookItem[];
+
+			// Filter out already selected books (best effort client-side for current page)
+			const availableItems = items.filter(
+				(i) => !selectedBookIds.includes(i.id)
+			);
+
+			return {
+				options: availableItems.map((b) => ({
+					id: b.id,
+					label: `${b.code} - ${b.book_master?.title || "Unknown Title"}`,
+					original: b,
+				})),
+				hasMore: response.meta?.page < response.meta?.last_page,
+			};
+		} catch (error) {
+			console.error("Failed to load books", error);
+			return { options: [], hasMore: false };
 		}
 	};
 
 	const handleAddBook = () => {
-		if (!currentBookId) return;
-		if (selectedBookIds.includes(currentBookId)) {
-			alert("Buku ini sudah ditambahkan ke daftar");
+		if (!currentBook) return;
+		if (selectedBookIds.includes(currentBook.id)) {
+			showToast("Buku ini sudah ditambahkan ke daftar", "error");
 			return;
 		}
-		setSelectedBookIds([...selectedBookIds, currentBookId]);
-		setCurrentBookId("");
+
+		setSelectedBookIds([...selectedBookIds, currentBook.id]);
+		// Type assertion since we know 'original' exists from our loadBookOptions
+		const bookItem = (currentBook as any).original as BookItem;
+		setSelectedBookItems([...selectedBookItems, bookItem]);
+		setCurrentBook(null);
 	};
 
 	const handleRemoveBook = (id: string) => {
 		setSelectedBookIds(selectedBookIds.filter((bookId) => bookId !== id));
+		setSelectedBookItems(selectedBookItems.filter((item) => item.id !== id));
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!selectedStudent || selectedBookIds.length === 0) {
-			alert("Pilih siswa dan minimal satu buku");
+			showToast("Pilih siswa dan minimal satu buku", "error");
 			return;
 		}
 
@@ -67,37 +130,30 @@ const BorrowForm: React.FC = () => {
 			dueDate.setDate(dueDate.getDate() + duration);
 
 			await api.createBorrowTransaction({
-				borrower_id: selectedStudent,
+				borrower_id: selectedStudent.id,
 				borrow_date: borrowDate.toISOString().split("T")[0],
 				due_date: dueDate.toISOString().split("T")[0],
 				items: selectedBookIds,
 			});
+			showToast("Transaksi berhasil dibuat", "success");
 			navigate("/dashboard/transactions");
 		} catch (error) {
 			console.error("Error creating transaction:", error);
-			alert("Gagal membuat transaksi");
+			showToast("Gagal membuat transaksi", "error");
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	// Helper to get book details
-	const getBookDetails = (id: string) => bookItems.find((b) => b.id === id);
-
-	// Filter available books for selector (exclude already selected)
-	const availableToSelect = bookItems.filter(
-		(b) => !selectedBookIds.includes(b.id)
-	);
+	if (loading) {
+		return <LoadingScreen />;
+	}
 
 	return (
 		<div className="min-h-screen bg-neutral-50 p-8">
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-8 flex items-center gap-4">
-					<button
-						onClick={() => navigate("/dashboard/transactions")}
-						className="rounded-lg p-2 hover:bg-neutral-200">
-						<ArrowLeft size={24} />
-					</button>
+					<BackButton to="/dashboard/transactions" />
 					<div>
 						<h1 className="text-2xl font-bold text-neutral-900">
 							Peminjaman Baru
@@ -119,18 +175,12 @@ const BorrowForm: React.FC = () => {
 										<label className="mb-2 block text-sm font-medium text-neutral-700">
 											Pilih Siswa
 										</label>
-										<select
-											required
-											className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
+										<AsyncSelect
+											placeholder="Cari siswa..."
+											loadOptions={loadStudentOptions}
 											value={selectedStudent}
-											onChange={(e) => setSelectedStudent(e.target.value)}>
-											<option value="">-- Pilih Siswa --</option>
-											{students.map((s) => (
-												<option key={s.id} value={s.id}>
-													{s.user_number} - {s.name}
-												</option>
-											))}
-										</select>
+											onChange={setSelectedStudent}
+										/>
 									</div>
 
 									<div>
@@ -157,29 +207,20 @@ const BorrowForm: React.FC = () => {
 								<div className="space-y-4">
 									<div>
 										<label className="mb-2 block text-sm font-medium text-neutral-700">
-											Pilih Buku (Available)
+											Cari Buku (Available)
 										</label>
-										<select
-											className="w-full rounded-lg border border-neutral-300 p-2.5 focus:border-blue-500 focus:outline-none"
-											value={currentBookId}
-											onChange={(e) => setCurrentBookId(e.target.value)}>
-											<option value="">-- Pilih Buku --</option>
-											{availableToSelect.map((item) => (
-												<option key={item.id} value={item.id}>
-													{item.code} - {item.book_master?.title}
-												</option>
-											))}
-										</select>
-										{bookItems.length === 0 && !loading && (
-											<p className="mt-1 text-xs text-red-500">
-												Tidak ada buku tersedia.
-											</p>
-										)}
+										<AsyncSelect
+											key={selectedBookIds.length} // Force reset options when selection changes to filter out selected
+											placeholder="Cari buku..."
+											loadOptions={loadBookOptions}
+											value={currentBook}
+											onChange={setCurrentBook}
+										/>
 									</div>
 									<button
 										type="button"
 										onClick={handleAddBook}
-										disabled={!currentBookId}
+										disabled={!currentBook}
 										className="w-full rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50">
 										Tambah ke Daftar
 									</button>
@@ -206,40 +247,36 @@ const BorrowForm: React.FC = () => {
 										<div className="flex h-64 flex-col items-center justify-center rounded-lg border border-dashed border-neutral-300 text-neutral-500">
 											<p>Belum ada buku yang dipilih</p>
 											<p className="text-sm">
-												Silakan pilih buku di panel kiri
+												Silakan cari dan tambahkan buku di panel kiri
 											</p>
 										</div>
 									) : (
 										<div className="space-y-4 overflow-y-auto lg:h-[calc(35vh-2rem)] pr-2">
-											{selectedBookIds.map((id, index) => {
-												const book = getBookDetails(id);
-												if (!book) return null;
-												return (
-													<div
-														key={id}
-														className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 p-4">
-														<div className="flex items-center gap-4">
-															<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white font-mono text-sm font-bold text-neutral-500 shadow-sm">
-																{index + 1}
-															</div>
-															<div>
-																<p className="font-medium text-neutral-900">
-																	{book.book_master?.title}
-																</p>
-																<p className="text-sm text-neutral-500">
-																	{book.code} • {book.book_master?.author}
-																</p>
-															</div>
+											{selectedBookItems.map((book, index) => (
+												<div
+													key={book.id}
+													className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 p-4">
+													<div className="flex items-center gap-4">
+														<div className="flex h-8 w-8 items-center justify-center rounded-full bg-white font-mono text-sm font-bold text-neutral-500 shadow-sm">
+															{index + 1}
 														</div>
-														<button
-															type="button"
-															onClick={() => handleRemoveBook(id)}
-															className="rounded-lg p-2 text-red-500 hover:bg-red-50">
-															<Trash size={15} />
-														</button>
+														<div>
+															<p className="font-medium text-neutral-900">
+																{book.book_master?.title}
+															</p>
+															<p className="text-sm text-neutral-500">
+																{book.code} • {book.book_master?.author}
+															</p>
+														</div>
 													</div>
-												);
-											})}
+													<button
+														type="button"
+														onClick={() => handleRemoveBook(book.id)}
+														className="rounded-lg p-2 text-red-500 hover:bg-red-50">
+														<Trash size={15} />
+													</button>
+												</div>
+											))}
 										</div>
 									)}
 								</div>

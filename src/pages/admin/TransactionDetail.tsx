@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-	ArrowLeft,
 	User,
 	Calendar,
 	Clock,
@@ -14,6 +13,8 @@ import type {
 	ApiBorrowTransaction,
 	ApiReturnTransaction,
 } from "../../types/transaction-api.types";
+import BackButton from "../../components/BackButton";
+import { LoadingScreen } from "../../components/LoadingScreen";
 
 const TransactionDetail: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
@@ -61,11 +62,7 @@ const TransactionDetail: React.FC = () => {
 	}, [id]);
 
 	if (loading) {
-		return (
-			<div className="flex min-h-screen items-center justify-center">
-				<div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-			</div>
-		);
+		return <LoadingScreen />;
 	}
 
 	if (!transaction) {
@@ -90,23 +87,22 @@ const TransactionDetail: React.FC = () => {
 	return (
 		<div className="flex h-screen flex-col bg-neutral-50 overflow-hidden">
 			<div className="shrink-0 p-8 pb-4">
-				<Link
-					to="/dashboard/transactions"
-					className="mb-4 inline-flex items-center text-sm font-medium text-neutral-600 hover:text-blue-600">
-					<ArrowLeft className="mr-2 h-4 w-4" />
-					Kembali ke Daftar Transaksi
-				</Link>
 				<div className="flex items-center justify-between">
-					<h1 className="text-2xl font-bold text-neutral-900">
-						Detail Transaksi #{transaction.transaction_code}
-					</h1>
-					{transaction.status === "borrowed" && (
-						<Link
-							to={`/dashboard/transactions/${transaction.id}/return`}
-							className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-							Proses Pengembalian
-						</Link>
-					)}
+					<div className="mb-4 flex items-center gap-4">
+						<BackButton to="/dashboard/transactions" />
+						<h1 className="text-2xl font-bold text-neutral-900">
+							Detail Transaksi #{transaction.transaction_code}
+						</h1>
+					</div>
+					<div className="mb-4 flex items-center gap-4">
+						{transaction.status === "borrowed" && (
+							<Link
+								to={`/dashboard/transactions/${transaction.id}/return`}
+								className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+								Proses Pengembalian
+							</Link>
+						)}
+					</div>
 				</div>
 			</div>
 

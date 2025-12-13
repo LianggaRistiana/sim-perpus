@@ -5,14 +5,29 @@ import type {
 	CreateBorrowTransactionPayload,
 	CreateReturnTransactionPayload,
 	ApiResponse,
+	TransactionQueryParams,
+	ApiPaginatedResponse,
 } from "../types/transaction-api.types";
 
 export const transactionApiService = {
-	getBorrowTransactions: async (): Promise<ApiBorrowTransaction[]> => {
-		const response = await apiClient.get<ApiResponse<ApiBorrowTransaction[]>>(
-			`/transactions`
+	getBorrowTransactions: async (
+		params?: TransactionQueryParams
+	): Promise<ApiPaginatedResponse<ApiBorrowTransaction>> => {
+		const query = new URLSearchParams();
+		if (params) {
+			if (params.page) query.append("page", params.page.toString());
+			if (params.per_page) query.append("per_page", params.per_page.toString());
+			if (params.status) query.append("status", params.status);
+			if (params.borrower_id) query.append("borrower_id", params.borrower_id);
+			if (params.overdue) query.append("overdue", "1");
+			if (params.search) query.append("search", params.search);
+			if (params.start_date) query.append("start_date", params.start_date);
+			if (params.end_date) query.append("end_date", params.end_date);
+		}
+
+		return await apiClient.get<ApiPaginatedResponse<ApiBorrowTransaction>>(
+			`/transactions?${query.toString()}`
 		);
-		return response.data;
 	},
 
 	getBorrowTransactionById: async (

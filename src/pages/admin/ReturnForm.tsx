@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { api } from "../../services/api";
+import BackButton from "../../components/BackButton";
+import { LoadingScreen } from "../../components/LoadingScreen";
+import { useToast } from "../../components/Toast";
 import type {
 	ApiBorrowTransaction,
 	ReturnItemPayload,
@@ -9,6 +12,7 @@ import type {
 
 const ReturnForm: React.FC = () => {
 	const navigate = useNavigate();
+	const { showToast } = useToast();
 	const { id } = useParams<{ id: string }>();
 
 	const [transaction, setTransaction] = useState<ApiBorrowTransaction | null>(
@@ -40,9 +44,10 @@ const ReturnForm: React.FC = () => {
 				};
 			});
 			setReturnItems(initialItems);
+			setReturnItems(initialItems);
 		} catch (error) {
 			console.error("Error fetching data:", error);
-			alert("Transaksi tidak ditemukan");
+			showToast("Transaksi tidak ditemukan", "error");
 			navigate("/dashboard/transactions");
 		} finally {
 			setLoading(false);
@@ -65,7 +70,7 @@ const ReturnForm: React.FC = () => {
 				navigate("/dashboard/transactions");
 			} catch (error) {
 				console.error("Error processing return:", error);
-				alert("Gagal memproses pengembalian");
+				showToast("Gagal memproses pengembalian", "error");
 			} finally {
 				setLoading(false);
 			}
@@ -86,7 +91,7 @@ const ReturnForm: React.FC = () => {
 		}));
 	};
 
-	if (loading) return <div className="p-8">Memuat...</div>;
+	if (loading) return <LoadingScreen />;
 	if (!transaction)
 		return <div className="p-8">Transaksi tidak ditemukan.</div>;
 
@@ -95,11 +100,7 @@ const ReturnForm: React.FC = () => {
 			<div className="mx-auto max-w-6xl">
 				<div className="mb-8 flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<button
-							onClick={() => navigate("/dashboard/transactions")}
-							className="rounded-lg p-2 hover:bg-neutral-200 text-neutral-600">
-							<ArrowLeft size={24} />
-						</button>
+						<BackButton to="/dashboard/transactions" />
 						<div>
 							<h1 className="text-2xl font-bold text-neutral-900">
 								Pengembalian Buku
