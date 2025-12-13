@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Edit, Trash2, Book, User, Building, Calendar, Hash, Tag } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
-import { Modal } from '../../components/Modal';
+import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
 
@@ -103,7 +103,7 @@ const BookDetail: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-3">
+            <div className="grid gap-4 lg:grid-cols-3 animate-in fade-in duration-500">
                 {/* Book Info */}
                 <div className="space-y-6 lg:col-span-1">
                     <div className="h-[calc(100vh-14rem)] overflow-y-auto rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -221,39 +221,14 @@ const BookDetail: React.FC = () => {
                 </div>
             </div>
 
-            <Modal
+            <DeleteModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
-                width="max-w-sm"
-                footer={
-                    <>
-                        <button
-                            type="button"
-                            onClick={() => setShowDeleteModal(false)}
-                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
-                        >
-                            Ya, Hapus
-                        </button>
-                    </>
-                }
-            >
-                <div className="text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
-                        <Trash2 size={24} />
-                    </div>
-                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">Hapus Buku?</h3>
-                    <p className="text-sm text-neutral-500">
-                        Apakah Anda yakin ingin menghapus buku ini beserta seluruh salinannya? Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                </div>
-            </Modal>
+                onConfirm={handleConfirmDelete}
+                title="Hapus Buku?"
+                message="Apakah Anda yakin ingin menghapus buku ini beserta seluruh salinannya? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

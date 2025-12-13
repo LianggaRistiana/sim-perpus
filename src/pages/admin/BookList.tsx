@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
+import { DeleteModal } from '../../components/DeleteModal';
 import { AsyncSelect, type Option } from '../../components/AsyncSelect';
 import type { BookMaster, PaginatedResponse } from '../../types';
 
@@ -22,6 +23,10 @@ const BookList: React.FC = () => {
 
     const [inputValue, setInputValue] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<Option | null>(null);
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [bookToDelete, setBookToDelete] = useState<string | null>(null);
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -75,15 +80,28 @@ const BookList: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus buku ini?')) {
-            const response = await api.deleteBook(id);
+    const handleDelete = (id: string) => {
+        setBookToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!bookToDelete) return;
+
+        try {
+            const response = await api.deleteBook(bookToDelete);
             if (response) {
                 showToast(response.message || 'Buku berhasil dihapus', 'success');
                 fetchData();
             } else {
                 showToast('Gagal menghapus buku', 'error');
             }
+        } catch (error) {
+            console.error('Error deleting book:', error);
+            showToast('Gagal menghapus buku', 'error');
+        } finally {
+            setShowDeleteModal(false);
+            setBookToDelete(null);
         }
     };
 
@@ -245,6 +263,16 @@ const BookList: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+
+            <DeleteModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDelete}
+                title="Hapus Buku?"
+                message="Apakah Anda yakin ingin menghapus buku ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };

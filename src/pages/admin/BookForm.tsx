@@ -4,6 +4,7 @@ import { Save, Plus, Trash2, Book, Calendar, User, Building, Pencil, Hash } from
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
+import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, Category, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
 
@@ -358,7 +359,7 @@ const BookForm: React.FC = () => {
                                                 <div>
                                                     <div className="mb-1 flex items-center gap-2">
                                                         <span className="font-mono text-sm font-bold text-neutral-900">{item.code}</span>
-                                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${item.status === 'Available' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+                                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${item.status === 'available' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
                                                             }`}>
                                                             {item.status}
                                                         </span>
@@ -431,39 +432,14 @@ const BookForm: React.FC = () => {
                 </div>
             </Modal>
 
-            <Modal
+            <DeleteModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
-                width="max-w-sm"
-                footer={
-                    <>
-                        <button
-                            type="button"
-                            onClick={() => setShowDeleteModal(false)}
-                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
-                        >
-                            Ya, Hapus
-                        </button>
-                    </>
-                }
-            >
-                <div className="text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
-                        <Trash2 size={24} />
-                    </div>
-                    <h3 className="mb-2 text-lg font-semibold text-neutral-900">Hapus Salinan Buku?</h3>
-                    <p className="text-sm text-neutral-500">
-                        Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                </div>
-            </Modal>
+                onConfirm={handleConfirmDelete}
+                title="Hapus Salinan Buku?"
+                message="Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan."
+                confirmLabel="Ya, Hapus"
+            />
         </div>
     );
 };
