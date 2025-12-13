@@ -82,7 +82,7 @@ const StudentList: React.FC = () => {
     };
 
     return (
-        <div className="flex h-full flex-col bg-neutral-50  px-8 pt-8">
+        <div className="flex h-full flex-col bg-neutral-50 px-8 pt-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-neutral-900">Manajemen Anggota</h1>
