@@ -4,7 +4,11 @@ import type {
   LibraryOverviewResponse,
   CategoryDistributionResponse,
   InventoryReportResponse,
-  InDemandBooksResponse
+  InDemandBooksResponse,
+  PopularBooksResponse,
+  StudentActivityResponse,
+  BorrowingTrendsResponse,
+  StudentHistoryResponse
 } from '../types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -210,6 +214,83 @@ export const reportService = {
       return response.data;
     } catch (error) {
       console.error('Failed to fetch in-demand books:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get popular books report (most borrowed books)
+   * @param limit - Maximum number of books to return (default: 10)
+   * @returns List of most borrowed books
+   */
+  getPopularBooks: async (limit: number = 10) => {
+    try {
+      const query = new URLSearchParams();
+      query.append('limit', limit.toString());
+
+      const response = await apiClient.get<PopularBooksResponse>(`/library/reports/popular-books?${query.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch popular books:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get student activity report
+   * @param params - Optional parameters: user_id for specific student, page and per_page for pagination
+   * @returns Student borrowing statistics (paginated or single student)
+   */
+  getStudentActivity: async (params?: { user_id?: string; page?: number; per_page?: number }) => {
+    try {
+      const query = new URLSearchParams();
+      if (params?.user_id) query.append('user_id', params.user_id);
+      if (params?.page) query.append('page', params.page.toString());
+      if (params?.per_page) query.append('per_page', params.per_page.toString());
+
+      const response = await apiClient.get<StudentActivityResponse>(`/library/reports/student-activity?${query.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch student activity:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get borrowing trends report (monthly statistics)
+   * @param year - Year for analysis (default: current year)
+   * @returns Monthly borrowing trends for the specified year
+   */
+  getBorrowingTrends: async (year?: number) => {
+    try {
+      const query = new URLSearchParams();
+      if (year) query.append('year', year.toString());
+
+      const response = await apiClient.get<BorrowingTrendsResponse>(`/library/reports/trends?${query.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch borrowing trends:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get student borrowing history
+   * @param userId - User ID to get history for
+   * @param page - Page number (default: 1)
+   * @param perPage - Items per page (default: 20)
+   * @returns Complete borrowing history for the student
+   */
+  getStudentHistory: async (userId: string, page: number = 1, perPage: number = 20) => {
+    try {
+      const query = new URLSearchParams();
+      query.append('page', page.toString());
+      query.append('per_page', perPage.toString());
+
+      const response = await apiClient.get<StudentHistoryResponse>(`/library/reports/student/${userId}/history?${query.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch student history:', error);
       throw error;
     }
   },

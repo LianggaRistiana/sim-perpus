@@ -198,3 +198,101 @@ export interface InDemandBooksResponse {
   data: InDemandBook[];
   note: string;
 }
+
+// Popular Books Report Types
+export interface PopularBook {
+  id: string;
+  title: string;
+  author: string;
+  publisher: string;
+  isbn: string;
+  category: string | null;
+  total_borrowed: number;
+}
+
+export interface PopularBooksResponse {
+  success: boolean;
+  message: string;
+  data: PopularBook[];
+}
+
+// Student Activity Report Types
+export interface StudentActivity {
+  id: string;
+  name: string;
+  email: string;
+  user_number: string;
+  total_borrowings: number;
+  active_borrowings: number;
+  returned_count: number;
+}
+
+export interface StudentActivityResponse {
+  success: boolean;
+  message: string;
+  data: StudentActivity[];
+  pagination?: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
+}
+
+// Borrowing Trends Report Types
+export interface MonthlyTrend {
+  month: number;
+  month_name: string;
+  total_borrowings: number;
+  active: number;
+  returned: number;
+}
+
+export interface BorrowingTrendsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    year: number;
+    monthly_trends: MonthlyTrend[];
+  };
+}
+
+// Student Borrowing History Types
+export interface BorrowingHistoryBook {
+  title: string;
+  author: string;
+  isbn: string;
+  item_code: string;
+  category: string;
+}
+
+export interface BorrowingHistoryTransaction {
+  transaction_id: string;
+  transaction_code: string;
+  borrow_date: string;
+  due_date: string;
+  return_date: string | null;
+  status: 'borrowed' | 'returned';
+  books: BorrowingHistoryBook[];
+}
+
+export interface StudentHistoryResponse {
+  success: boolean;
+  message: string;
+  data: {
+    student: {
+      id: string;
+      name: string;
+      email: string;
+      user_number: string;
+    };
+    history: BorrowingHistoryTransaction[];
+  };
+  pagination: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
+}
+

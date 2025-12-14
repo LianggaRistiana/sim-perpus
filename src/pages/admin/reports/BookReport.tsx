@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { api } from '../../../services/api';
 import type { BookItem, BookMaster } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
+import { Pagination } from '../../../components/Pagination';
+import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { AlertTriangle, ArrowLeft, BookOpen, BarChart2, Copy, Clock } from 'lucide-react';
 
 const BookReport: React.FC = () => {
@@ -32,25 +34,31 @@ const BookReport: React.FC = () => {
     const [mostBorrowedBooks, setMostBorrowedBooks] = useState<{ label: string; value: number }[]>([]);
     const [longestBorrowedBooks, setLongestBorrowedBooks] = useState<{ label: string; value: number }[]>([]);
     const [damagedBooks, setDamagedBooks] = useState<BookItem[]>([]);
+    const [damagedBooksPage, setDamagedBooksPage] = useState(1);
+    const [damagedBooksPerPage, setDamagedBooksPerPage] = useState(10);
+    const [totalDamagedBooks, setTotalDamagedBooks] = useState(0);
 
     const [loading, setLoading] = useState(true);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [damagedBooksLoading, setDamagedBooksLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [allBooks, mostBorrowed, longestBorrowed, damaged] = await Promise.all([
+                const [allBooks, popularBooks, longestBorrowed] = await Promise.all([
                     api.getBooks(),
-                    api.getMostBorrowedBooks(),
-                    api.getLongestBorrowedBooks(),
-                    api.getDamagedBooks()
+                    api.getPopularBooks(10), // Use new API method
+                    api.getLongestBorrowedBooks()
                 ]);
 
-                setBooks(allBooks);
-                setMostBorrowedBooks(mostBorrowed.map(i => ({ label: i.title, value: i.count })));
+                setBooks(allBooks.data);
+                // Transform API response to chart format
+                setMostBorrowedBooks(popularBooks.map(book => ({
+                    label: book.title,
+                    value: book.total_borrowed
+                })));
                 setLongestBorrowedBooks(longestBorrowed.map(i => ({ label: i.title, value: i.days })));
-                setDamagedBooks(damaged);
             } catch (error) {
                 console.error('Error fetching book report data:', error);
             } finally {
@@ -59,6 +67,30 @@ const BookReport: React.FC = () => {
         };
         fetchData();
     }, []);
+
+    const fetchDamagedBooks = useCallback(async () => {
+        setDamagedBooksLoading(true);
+        try {
+            const damaged = await api.getDamagedBooks();
+            // Filter only poor and damaged conditions (exclude good and fair)
+            const filteredDamaged = damaged.filter(book =>
+                book.condition.toLowerCase() === 'poor' || book.condition.toLowerCase() === 'damaged'
+            );
+            // Simple client-side pagination
+            const startIndex = (damagedBooksPage - 1) * damagedBooksPerPage;
+            const endIndex = startIndex + damagedBooksPerPage;
+            setDamagedBooks(filteredDamaged.slice(startIndex, endIndex));
+            setTotalDamagedBooks(filteredDamaged.length);
+        } catch (error) {
+            console.error('Error fetching damaged books:', error);
+        } finally {
+            setDamagedBooksLoading(false);
+        }
+    }, [damagedBooksPage, damagedBooksPerPage]);
+
+    useEffect(() => {
+        fetchDamagedBooks();
+    }, [fetchDamagedBooks]);
 
     const handleBookClick = async (book: BookMaster) => {
         setSelectedBook(book);
@@ -87,6 +119,21 @@ const BookReport: React.FC = () => {
         setBookStats(null);
     };
 
+    const getConditionBadgeClass = (condition: string) => {
+        switch (condition.toLowerCase()) {
+            case 'good':
+                return 'bg-green-50 text-green-700';
+            case 'fair':
+                return 'bg-yellow-50 text-yellow-700';
+            case 'poor':
+                return 'bg-orange-50 text-orange-700';
+            case 'damaged':
+                return 'bg-red-50 text-red-700';
+            default:
+                return 'bg-gray-50 text-gray-700';
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -97,7 +144,7 @@ const BookReport: React.FC = () => {
 
     if (selectedBook) {
         return (
-            <div className="p-6">
+            <div className="flex h-screen flex-col overflow-hidden p-6">
                 <button
                     onClick={handleBack}
                     className="mb-6 flex items-center text-sm font-medium text-neutral-600 hover:text-blue-600"
@@ -116,7 +163,7 @@ const BookReport: React.FC = () => {
                         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
                     </div>
                 ) : bookStats && (
-                    <div className="space-y-6">
+                    <div className="flex-1 space-y-6 overflow-y-auto pr-2">
                         <div className="grid gap-6 md:grid-cols-3">
                             <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
@@ -173,8 +220,8 @@ const BookReport: React.FC = () => {
                                                     key={item.id}
                                                     onClick={() => setActiveTab(item.id)}
                                                     className={`whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors ${activeTab === item.id
-                                                            ? 'border-blue-600 text-blue-600'
-                                                            : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                                                        ? 'border-blue-600 text-blue-600'
+                                                        : 'border-transparent text-neutral-500 hover:text-neutral-700'
                                                         }`}
                                                 >
                                                     {item.code}
@@ -199,8 +246,8 @@ const BookReport: React.FC = () => {
                                                                 Kondisi: {item.condition}
                                                             </span>
                                                             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.status === 'Available' ? 'bg-green-100 text-green-700' :
-                                                                    item.status === 'Borrowed' ? 'bg-orange-100 text-orange-700' :
-                                                                        'bg-red-100 text-red-700'
+                                                                item.status === 'Borrowed' ? 'bg-orange-100 text-orange-700' :
+                                                                    'bg-red-100 text-red-700'
                                                                 }`}>
                                                                 {item.status}
                                                             </span>
@@ -238,8 +285,8 @@ const BookReport: React.FC = () => {
                                                                             </td>
                                                                             <td className="px-4 py-3">
                                                                                 <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${tx.status === 'Returned' ? 'bg-green-100 text-green-700' :
-                                                                                        tx.status === 'Borrowed' ? 'bg-blue-100 text-blue-700' :
-                                                                                            'bg-red-100 text-red-700'
+                                                                                    tx.status === 'Borrowed' ? 'bg-blue-100 text-blue-700' :
+                                                                                        'bg-red-100 text-red-700'
                                                                                     }`}>
                                                                                     {tx.status === 'Returned' ? 'Dikembalikan' :
                                                                                         tx.status === 'Borrowed' ? 'Dipinjam' : 'Terlambat'}
@@ -270,79 +317,103 @@ const BookReport: React.FC = () => {
     }
 
     return (
-        <div className="p-6">
-            <h1 className="mb-8 text-2xl font-bold text-neutral-900">Laporan Buku</h1>
+        <div className="flex h-screen flex-col overflow-hidden p-6">
+            <h1 className="mb-6 text-2xl font-bold text-neutral-900">Laporan Buku</h1>
 
-            {/* Global Stats */}
-            <div className="mb-10 grid gap-6 md:grid-cols-2">
-                <ReportChart
-                    title="Buku Paling Sering Dipinjam"
-                    data={mostBorrowedBooks}
-                    color="bg-blue-500"
-                />
-                <ReportChart
-                    title="Buku Paling Lama Dipinjam (Hari)"
-                    data={longestBorrowedBooks}
-                    color="bg-indigo-500"
-                />
-            </div>
-
-            <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Buku</h2>
-            <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {books.map((book) => (
-                    <button
-                        key={book.id}
-                        onClick={() => handleBookClick(book)}
-                        className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-                    >
-                        <h3 className="mb-1 font-bold text-neutral-900 line-clamp-1">{book.title}</h3>
-                        <p className="text-sm text-neutral-600">{book.author}</p>
-                        <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
-                            Lihat Statistik <BarChart2 size={14} className="ml-1" />
-                        </div>
-                    </button>
-                ))}
-            </div>
-
-            {/* Damaged Books Section */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                <div className="mb-6 flex items-center gap-2">
-                    <AlertTriangle className="text-red-500" size={24} />
-                    <h3 className="text-lg font-bold text-neutral-900">Daftar Buku Rusak</h3>
+            <div className="flex-1 space-y-8 overflow-y-auto pr-2">
+                {/* Global Stats */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    <ReportChart
+                        title="Buku Paling Sering Dipinjam"
+                        data={mostBorrowedBooks}
+                        color="bg-blue-500"
+                    />
+                    <ReportChart
+                        title="Buku Paling Lama Dipinjam (Hari)"
+                        data={longestBorrowedBooks}
+                        color="bg-indigo-500"
+                    />
                 </div>
 
-                {damagedBooks.length === 0 ? (
-                    <p className="text-neutral-500">Tidak ada buku yang rusak.</p>
-                ) : (
-                    <div className="overflow-x-auto">
+                <div>
+                    <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Buku</h2>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {books.map((book) => (
+                            <button
+                                key={book.id}
+                                onClick={() => handleBookClick(book)}
+                                className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                            >
+                                <h3 className="mb-1 font-bold text-neutral-900 line-clamp-1">{book.title}</h3>
+                                <p className="text-sm text-neutral-600">{book.author}</p>
+                                <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
+                                    Lihat Statistik <BarChart2 size={14} className="ml-1" />
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Damaged Books Section */}
+                <div>
+                    <div className="mb-4 flex items-center gap-2">
+                        <AlertTriangle className="text-red-500" size={24} />
+                        <h3 className="text-lg font-bold text-neutral-900">Daftar Buku Rusak</h3>
+                    </div>
+
+                    <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-neutral-50 text-neutral-500">
                                 <tr>
-                                    <th className="px-4 py-3 font-medium">Kode Buku</th>
-                                    <th className="px-4 py-3 font-medium">Kondisi</th>
-                                    <th className="px-4 py-3 font-medium">Status</th>
-                                    <th className="px-4 py-3 font-medium">Tanggal Masuk</th>
+                                    <th className="px-6 py-4 font-medium">Kode Buku</th>
+                                    <th className="px-6 py-4 font-medium">Kondisi</th>
+                                    <th className="px-6 py-4 font-medium">Status</th>
+                                    <th className="px-6 py-4 font-medium">Tanggal Masuk</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-neutral-200">
-                                {damagedBooks.map((book) => (
-                                    <tr key={book.id}>
-                                        <td className="px-4 py-3 font-medium text-neutral-900">{book.code}</td>
-                                        <td className="px-4 py-3">
-                                            <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-                                                {book.condition}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-neutral-600">{book.status}</td>
-                                        <td className="px-4 py-3 text-neutral-600">
-                                            {new Date(book.createdAt).toLocaleDateString('id-ID')}
-                                        </td>
-                                    </tr>
-                                ))}
+                            <tbody className="divide-y divide-neutral-100">
+                                {damagedBooksLoading ? (
+                                    <TableLoading colSpan={4} />
+                                ) : damagedBooks.length === 0 ? (
+                                    <TableEmpty
+                                        colSpan={4}
+                                        message="Tidak ada buku rusak"
+                                        description="Semua buku dalam kondisi baik."
+                                    />
+                                ) : (
+                                    damagedBooks.map((book) => (
+                                        <tr key={book.id} className="hover:bg-neutral-50">
+                                            <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getConditionBadgeClass(book.condition)}`}>
+                                                    {book.condition}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-neutral-600">{book.status}</td>
+                                            <td className="px-6 py-4 text-neutral-600">
+                                                {new Date(book.createdAt).toLocaleDateString('id-ID')}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
-                )}
+
+                    {totalDamagedBooks > 0 && (
+                        <Pagination
+                            currentPage={damagedBooksPage}
+                            totalPages={Math.ceil(totalDamagedBooks / damagedBooksPerPage)}
+                            totalItems={totalDamagedBooks}
+                            itemsPerPage={damagedBooksPerPage}
+                            onPageChange={setDamagedBooksPage}
+                            onItemsPerPageChange={(limit) => {
+                                setDamagedBooksPerPage(limit);
+                                setDamagedBooksPage(1);
+                            }}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

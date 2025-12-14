@@ -23,13 +23,21 @@ const MemberReport: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [allStudents, mostActive] = await Promise.all([
+                const [allStudents, studentActivity] = await Promise.all([
                     api.getStudents(),
-                    api.getMostActiveStudents()
+                    api.getStudentActivity({ page: 1, per_page: 10 }) // Get top 10 active students
                 ]);
 
                 setStudents(allStudents.data);
-                setMostActiveStudents(mostActive.map(i => ({ label: i.name, value: i.count })));
+                // Transform student activity to chart format (top active students)
+                setMostActiveStudents(studentActivity.data
+                    .sort((a, b) => b.total_borrowings - a.total_borrowings)
+                    .slice(0, 10)
+                    .map(student => ({ 
+                        label: student.name, 
+                        value: student.total_borrowings 
+                    }))
+                );
             } catch (error) {
                 console.error('Error fetching member report data:', error);
             } finally {
@@ -43,12 +51,29 @@ const MemberReport: React.FC = () => {
         setSelectedStudent(student);
         setDetailLoading(true);
         try {
-            const stats = await api.getStudentReportDetails(student.id);
+            // Use the new student history API
+            const historyResponse = await api.getStudentHistory(student.id, 1, 20);
+            
+            // Transform the history data to match the expected format
+            const monthlyActivity = historyResponse.data.history.reduce((acc, transaction) => {
+                const month = new Date(transaction.borrow_date).toLocaleString('default', { month: 'short' });
+                const existing = acc.find(item => item.label === month);
+                if (existing) {
+                    existing.value += 1;
+                } else {
+                    acc.push({ label: month, value: 1 });
+                }
+                return acc;
+            }, [] as { label: string; value: number }[]);
+
+            const currentlyBorrowed = historyResponse.data.history.filter(h => h.status === 'borrowed').length;
+            const returned = historyResponse.data.history.filter(h => h.status === 'returned').length;
+
             setStudentStats({
-                monthlyActivity: stats.monthlyActivity.map(i => ({ label: i.month, value: i.count })),
-                totalBorrows: stats.totalBorrows,
-                currentlyBorrowed: stats.currentlyBorrowed,
-                overdueCount: stats.overdueCount
+                monthlyActivity,
+                totalBorrows: historyResponse.data.history.length,
+                currentlyBorrowed,
+                overdueCount: 0 // Overdue logic would need to check due_date vs current date
             });
         } catch (error) {
             console.error('Error fetching student details:', error);

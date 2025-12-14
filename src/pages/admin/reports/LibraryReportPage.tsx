@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
-import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemandBook } from '../../../types';
-import { BookOpen, FileText, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemandBook, MonthlyTrend } from '../../../types';
+import { Pagination } from '../../../components/Pagination';
+import { TableLoading, TableEmpty } from '../../../components/TableState';
+import { BookOpen, FileText, FolderOpen, TrendingUp } from 'lucide-react';
 
 const LibraryReportPage: React.FC = () => {
     // State for overview section
@@ -15,6 +17,11 @@ const LibraryReportPage: React.FC = () => {
     // State for in-demand section
     const [inDemandBooks, setInDemandBooks] = useState<InDemandBook[]>([]);
     const [inDemandLoading, setInDemandLoading] = useState(true);
+
+    // State for borrowing trends section
+    const [trends, setTrends] = useState<MonthlyTrend[]>([]);
+    const [trendsYear, setTrendsYear] = useState<number>(new Date().getFullYear());
+    const [trendsLoading, setTrendsLoading] = useState(true);
 
     // State for inventory section
     const [inventory, setInventory] = useState<InventoryBook[]>([]);
@@ -72,6 +79,22 @@ const LibraryReportPage: React.FC = () => {
         fetchInDemand();
     }, []);
 
+    // Fetch borrowing trends data
+    useEffect(() => {
+        const fetchTrends = async () => {
+            try {
+                setTrendsLoading(true);
+                const data = await api.getBorrowingTrends(trendsYear);
+                setTrends(data.monthly_trends);
+            } catch (error) {
+                console.error('Error fetching borrowing trends:', error);
+            } finally {
+                setTrendsLoading(false);
+            }
+        };
+        fetchTrends();
+    }, [trendsYear]);
+
     // Fetch inventory data with pagination
     useEffect(() => {
         const fetchInventory = async () => {
@@ -90,44 +113,6 @@ const LibraryReportPage: React.FC = () => {
         fetchInventory();
     }, [currentPage]);
 
-    const handlePreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-    const getStatusBadgeClass = (status: string) => {
-        switch (status.toLowerCase()) {
-            case 'available':
-                return 'bg-green-100 text-green-700';
-            case 'borrowed':
-                return 'bg-orange-100 text-orange-700';
-            case 'damaged':
-            case 'lost':
-                return 'bg-red-100 text-red-700';
-            default:
-                return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    const getConditionBadgeClass = (condition: string) => {
-        switch (condition.toLowerCase()) {
-            case 'good':
-                return 'bg-green-100 text-green-700';
-            case 'fair':
-                return 'bg-yellow-100 text-yellow-700';
-            case 'poor':
-                return 'bg-red-100 text-red-700';
-            default:
-                return 'bg-gray-100 text-gray-700';
-        }
-    };
 
     return (
         <div className="flex h-screen flex-col overflow-hidden p-6">
@@ -261,6 +246,84 @@ const LibraryReportPage: React.FC = () => {
                     )}
                 </div>
 
+                {/* Borrowing Trends Section */}
+                <div>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-neutral-900">Tren Peminjaman Bulanan</h2>
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="year-select" className="text-sm text-neutral-600">Tahun:</label>
+                            <select
+                                id="year-select"
+                                value={trendsYear}
+                                onChange={(e) => setTrendsYear(Number(e.target.value))}
+                                className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                            >
+                                {[2024, 2023, 2022, 2021].map(year => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {trendsLoading ? (
+                        <div className="flex h-64 items-center justify-center">
+                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                        </div>
+                    ) : trends.length > 0 ? (
+                        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                            <div className="mb-6 flex items-center gap-2 text-sm text-neutral-600">
+                                <TrendingUp size={16} />
+                                <span>Data peminjaman per bulan untuk tahun {trendsYear}</span>
+                            </div>
+                            <div className="space-y-4">
+                                {trends.map((trend, index) => {
+                                    const maxValue = Math.max(...trends.map(t => t.total_borrowings), 1);
+                                    return (
+                                        <div key={index} className="flex flex-col gap-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium text-neutral-700">{trend.month_name}</span>
+                                                <div className="flex gap-4 text-xs">
+                                                    <span className="text-neutral-500">Total: <strong className="text-neutral-900">{trend.total_borrowings}</strong></span>
+                                                    <span className="text-orange-600">Aktif: <strong>{trend.active}</strong></span>
+                                                    <span className="text-green-600">Kembali: <strong>{trend.returned}</strong></span>
+                                                </div>
+                                            </div>
+                                            <div className="h-8 w-full overflow-hidden rounded-lg bg-neutral-100">
+                                                <div className="flex h-full">
+                                                    {/* Returned (green) */}
+                                                    <div
+                                                        className="bg-green-500"
+                                                        style={{ width: `${(trend.returned / maxValue) * 100}%` }}
+                                                        title={`Dikembalikan: ${trend.returned}`}
+                                                    ></div>
+                                                    {/* Active (orange) */}
+                                                    <div
+                                                        className="bg-orange-500"
+                                                        style={{ width: `${(trend.active / maxValue) * 100}%` }}
+                                                        title={`Aktif: ${trend.active}`}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-6 flex justify-center gap-6 text-xs">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-3 w-3 rounded-sm bg-green-500"></div>
+                                    <span className="text-neutral-600">Dikembalikan</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-3 w-3 rounded-sm bg-orange-500"></div>
+                                    <span className="text-neutral-600">Aktif</span>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-neutral-500">Tidak ada data tren peminjaman untuk tahun {trendsYear}.</p>
+                    )}
+                </div>
+
                 {/* Category Distribution Section */}
                 <div>
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Distribusi Kategori Buku</h2>
@@ -333,177 +396,85 @@ const LibraryReportPage: React.FC = () => {
                 </div>
 
                 {/* Inventory Section */}
-                <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                    <div className="mb-6 flex items-center justify-between">
-                        <div>
-                            <h2 className="text-lg font-bold text-neutral-900">Inventori Buku</h2>
-                            <p className="text-sm text-neutral-600">Total: {totalItems.toLocaleString()} buku</p>
-                        </div>
+                <div>
+                    <h2 className="mb-4 text-lg font-bold text-neutral-900">Inventori Buku</h2>
 
-                        {/* Pagination Controls */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={handlePreviousPage}
-                                    disabled={currentPage === 1}
-                                    className="flex items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    <ChevronLeft size={16} />
-                                    Sebelumnya
-                                </button>
-                                <span className="text-sm text-neutral-600">
-                                    Halaman {currentPage} dari {totalPages}
-                                </span>
-                                <button
-                                    onClick={handleNextPage}
-                                    disabled={currentPage === totalPages}
-                                    className="flex items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    Selanjutnya
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        )}
+                    <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-neutral-50 text-neutral-500">
+                                <tr>
+                                    <th className="px-6 py-4 font-medium">Buku</th>
+                                    <th className="px-6 py-4 font-medium">ISBN</th>
+                                    <th className="px-6 py-4 font-medium">Kategori</th>
+                                    <th className="px-6 py-4 font-medium">Total Eksemplar</th>
+                                    <th className="px-6 py-4 font-medium">Tersedia</th>
+                                    <th className="px-6 py-4 font-medium">Ketersediaan</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100">
+
+                                {inventoryLoading ? (
+                                    <TableLoading colSpan={6} />
+                                ) : inventory.length === 0 ? (
+                                    <TableEmpty
+                                        colSpan={6}
+                                        message="Tidak ada data inventori"
+                                        description="Belum ada buku yang terdaftar dalam sistem."
+                                    />
+                                ) : (
+                                    inventory.map((book) => (
+                                        <tr key={book.book_id} className="hover:bg-neutral-50">
+                                            <td className="px-6 py-4">
+                                                <div>
+                                                    <p className="font-medium text-neutral-900">{book.title}</p>
+                                                    <p className="text-sm text-neutral-600">{book.author} • {book.publisher} ({book.year})</p>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-neutral-600">{book.isbn}</td>
+                                            <td className="px-6 py-4">
+                                                {book.category && (
+                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                                                        {book.category}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-center font-medium text-neutral-900">{book.total_items}</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="font-medium text-green-600">{book.available_count}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
+                                                        <div
+                                                            className={`h-full rounded-full ${book.availability_percentage > 50
+                                                                ? 'bg-green-500'
+                                                                : book.availability_percentage > 20
+                                                                    ? 'bg-yellow-500'
+                                                                    : 'bg-red-500'
+                                                                }`}
+                                                            style={{ width: `${book.availability_percentage}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="text-xs text-neutral-600 w-12 text-right">
+                                                        {Math.round(book.availability_percentage)}%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
 
-                    {inventoryLoading ? (
-                        <div className="flex h-64 items-center justify-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        </div>
-                    ) : inventory.length > 0 ? (
-                        <div className="space-y-4">
-                            {inventory.map((book) => (
-                                <div
-                                    key={book.book_id}
-                                    className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-blue-300 hover:shadow-md"
-                                >
-                                    {/* Book Header */}
-                                    <div className="mb-3 flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-neutral-900">{book.title}</h3>
-                                            <p className="text-sm text-neutral-600">
-                                                {book.author} • {book.publisher} ({book.year})
-                                            </p>
-                                            <p className="text-sm text-neutral-500">ISBN: {book.isbn}</p>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            {book.category && (
-                                                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                                                    {book.category}
-                                                </span>
-                                            )}
-                                            <span className="text-xs text-neutral-500">
-                                                {book.total_items} eksemplar
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Availability Stats */}
-                                    <div className="mb-3 rounded-lg bg-neutral-50 p-3">
-                                        <div className="mb-2 flex justify-between text-sm">
-                                            <span className="text-neutral-600">Ketersediaan</span>
-                                            <span className="font-medium text-neutral-900">
-                                                {book.available_count}/{book.total_items} ({Math.round(book.availability_percentage)}%)
-                                            </span>
-                                        </div>
-                                        <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-neutral-200">
-                                            <div
-                                                className={`h-full rounded-full ${book.availability_percentage > 50
-                                                    ? 'bg-green-500'
-                                                    : book.availability_percentage > 20
-                                                        ? 'bg-yellow-500'
-                                                        : 'bg-red-500'
-                                                    }`}
-                                                style={{ width: `${book.availability_percentage}%` }}
-                                            ></div>
-                                        </div>
-                                        <div className="flex gap-4 text-xs">
-                                            <div>
-                                                <span className="text-neutral-500">Tersedia: </span>
-                                                <span className="font-medium text-green-600">{book.available_count}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-neutral-500">Dipinjam: </span>
-                                                <span className="font-medium text-orange-600">{book.borrowed_count}</span>
-                                            </div>
-                                            {book.lost_count > 0 && (
-                                                <div>
-                                                    <span className="text-neutral-500">Hilang: </span>
-                                                    <span className="font-medium text-red-600">{book.lost_count}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Book Items Table */}
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left text-sm">
-                                            <thead className="bg-neutral-50 text-neutral-500">
-                                                <tr>
-                                                    <th className="px-3 py-2 font-medium">Kode</th>
-                                                    <th className="px-3 py-2 font-medium">Kondisi</th>
-                                                    <th className="px-3 py-2 font-medium">Status</th>
-                                                    <th className="px-3 py-2 font-medium">Tanggal Masuk</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-neutral-200">
-                                                {book.items.map((item) => (
-                                                    <tr key={item.item_id} className="hover:bg-neutral-50">
-                                                        <td className="px-3 py-2 font-medium text-neutral-900">
-                                                            {item.code}
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <span
-                                                                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${getConditionBadgeClass(item.condition)}`}
-                                                            >
-                                                                {item.condition}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-3 py-2">
-                                                            <span
-                                                                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${getStatusBadgeClass(item.status)}`}
-                                                            >
-                                                                {item.status}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-3 py-2 text-neutral-600">
-                                                            {new Date(item.created_at).toLocaleDateString('id-ID')}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-neutral-500">Tidak ada data inventori.</p>
-                    )}
-
-                    {/* Bottom Pagination */}
-                    {totalPages > 1 && !inventoryLoading && (
-                        <div className="mt-6 flex items-center justify-center gap-2">
-                            <button
-                                onClick={handlePreviousPage}
-                                disabled={currentPage === 1}
-                                className="flex items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <ChevronLeft size={16} />
-                                Sebelumnya
-                            </button>
-                            <span className="text-sm text-neutral-600">
-                                Halaman {currentPage} dari {totalPages}
-                            </span>
-                            <button
-                                onClick={handleNextPage}
-                                disabled={currentPage === totalPages}
-                                className="flex items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                Selanjutnya
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
+                    {totalItems > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalItems={totalItems}
+                            itemsPerPage={perPage}
+                            onPageChange={setCurrentPage}
+                        />
                     )}
                 </div>
             </div>
