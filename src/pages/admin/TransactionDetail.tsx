@@ -171,9 +171,8 @@ const TransactionDetail: React.FC = () => {
 										Jatuh Tempo
 									</p>
 									<p
-										className={`font-medium ${
-											isOverdue ? "text-red-600" : "text-neutral-900"
-										}`}>
+										className={`font-medium ${isOverdue ? "text-red-600" : "text-neutral-900"
+											}`}>
 										{new Date(transaction.due_date).toLocaleDateString(
 											"id-ID",
 											{
@@ -203,18 +202,17 @@ const TransactionDetail: React.FC = () => {
 								<div>
 									<p className="text-sm font-medium text-neutral-500">Status</p>
 									<span
-										className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-											transaction.status === "returned"
+										className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${transaction.status === "returned"
 												? "bg-green-50 text-green-700"
 												: isOverdue
-												? "bg-red-50 text-red-700"
-												: "bg-blue-50 text-blue-700"
-										}`}>
+													? "bg-red-50 text-red-700"
+													: "bg-blue-50 text-blue-700"
+											}`}>
 										{transaction.status === "returned"
 											? "Dikembalikan"
 											: isOverdue
-											? "Terlambat"
-											: "Dipinjam"}
+												? "Terlambat"
+												: "Dipinjam"}
 									</span>
 								</div>
 							</div>
@@ -265,7 +263,7 @@ const TransactionDetail: React.FC = () => {
 											Admin Penerima
 										</p>
 										<p className="text-neutral-900">
-											Admin {returnTransaction.admin?.name || "-"}
+											{returnTransaction.admin?.name || "-"}
 										</p>
 									</div>
 								</div>
@@ -385,21 +383,20 @@ const TransactionDetail: React.FC = () => {
 										</td>
 										<td className="px-4 py-3">
 											<span
-												className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-													(
+												className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(
 														item.book_item?.status || "unknown"
 													).toLowerCase() === "available"
 														? "bg-green-100 text-green-700"
 														: (
+															item.book_item?.status || "unknown"
+														).toLowerCase() === "borrowed"
+															? "bg-blue-100 text-blue-700"
+															: (
 																item.book_item?.status || "unknown"
-														  ).toLowerCase() === "borrowed"
-														? "bg-blue-100 text-blue-700"
-														: (
-																item.book_item?.status || "unknown"
-														  ).toLowerCase() === "lost"
-														? "bg-red-100 text-red-700"
-														: "bg-neutral-100 text-neutral-700"
-												}`}>
+															).toLowerCase() === "lost"
+																? "bg-red-100 text-red-700"
+																: "bg-neutral-100 text-neutral-700"
+													}`}>
 												{item.book_item?.status || "-"}
 											</span>
 										</td>
