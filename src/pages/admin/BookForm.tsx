@@ -175,9 +175,9 @@ const BookForm: React.FC = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className={isEditMode ? "grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start" : "space-y-6"}>
+                <form onSubmit={handleSubmit} className={isEditMode ? "grid grid-cols-1 gap-6 lg:grid-cols-2" : "space-y-6"}>
                     {/* Main Information Card */}
-                    <div className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'lg:sticky lg:top-8' : ''}`}>
+                    <div className={`flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'lg:sticky lg:top-8' : ''}`}>
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <div className="flex items-center gap-2">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -324,7 +324,7 @@ const BookForm: React.FC = () => {
 
                     {/* Copies Management Section (Only in Edit Mode) */}
                     {isEditMode && (
-                        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
+                        <div className="flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
                             <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                                 <h2 className="text-base font-semibold text-neutral-900">Daftar Salinan Buku</h2>
                                 <button

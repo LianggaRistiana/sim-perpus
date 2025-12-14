@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
@@ -24,8 +24,16 @@ const BookList: React.FC = () => {
         timestamp: ''
     });
 
+    const [searchParams] = useSearchParams();
     const [inputValue, setInputValue] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<Option | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<Option | null>(() => {
+        const catId = searchParams.get('categoryId');
+        const catName = searchParams.get('categoryName');
+        if (catId && catName) {
+            return { id: catId, label: catName };
+        }
+        return null;
+    });
 
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Plus, CheckCircle, Clock, AlertCircle, Search } from "lucide-react";
 import { api } from "../../services/api";
 import type {
@@ -20,9 +20,10 @@ const TransactionList: React.FC = () => {
 	);
 
 	// Filter State
+	const [searchParams] = useSearchParams();
 	const [page, setPage] = useState(1);
 	const [perPage, setPerPage] = useState(10);
-	const [search, setSearch] = useState("");
+	const [search, setSearch] = useState(() => searchParams.get('search') || "");
 	const [status, setStatus] = useState("");
 	const [overdue] = useState(false);
 	const [startDate, setStartDate] = useState("");

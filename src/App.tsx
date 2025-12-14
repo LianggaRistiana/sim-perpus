@@ -18,6 +18,7 @@ import AdminBookDetail from './pages/admin/BookDetail';
 import StudentList from './pages/admin/StudentList';
 import StudentUpload from './pages/admin/StudentUpload';
 import StudentForm from './pages/admin/StudentForm';
+import StudentDetail from './pages/admin/StudentDetail';
 import CategoryList from './pages/admin/CategoryList';
 import CategoryDetail from './pages/admin/CategoryDetail';
 import CategoryForm from './pages/admin/CategoryForm';
@@ -53,6 +54,7 @@ function App() {
 
             <Route path="students" element={<StudentList />} />
             <Route path="students/new" element={<StudentForm />} />
+            <Route path="students/:id" element={<StudentDetail />} />
             <Route path="students/:id/edit" element={<StudentForm />} />
             <Route path="students/upload" element={<StudentUpload />} />
 

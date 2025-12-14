@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 const BookDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -67,9 +68,8 @@ const BookDetail: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex h-full items-center justify-center bg-neutral-50">
-                <div className="text-neutral-500">Memuat detail buku...</div>
-            </div>
+            <LoadingScreen message='Memuat detail buku...'>
+            </LoadingScreen>
         );
     }
 
@@ -176,7 +176,17 @@ const BookDetail: React.FC = () => {
                 <div className="lg:col-span-2">
                     <div className="flex flex-col h-[calc(100vh-14rem)] rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
                         <div className="shrink-0 border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <h2 className="font-bold text-neutral-900">Daftar Salinan Buku ({items.length})</h2>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                                        <Book size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold text-neutral-900">Daftar Salinan Buku</h2>
+                                </div>
+                                <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600">
+                                    {items.length} Salinan
+                                </span>
+                            </div>
                         </div>
                         <div className="flex-1 overflow-auto">
                             <table className="w-full text-left text-sm">
