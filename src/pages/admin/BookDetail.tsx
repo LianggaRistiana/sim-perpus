@@ -217,13 +217,12 @@ const BookDetail: React.FC = () => {
                                         <th className="px-6 py-3 font-medium">Kode Buku</th>
                                         <th className="px-6 py-3 font-medium">Kondisi</th>
                                         <th className="px-6 py-3 font-medium">Status</th>
-                                        <th className="px-6 py-3 font-medium">Dibuat Pada</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-neutral-100">
                                     {items.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-neutral-500">
+                                            <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
                                                 Belum ada salinan buku.
                                             </td>
                                         </tr>
@@ -239,9 +238,6 @@ const BookDetail: React.FC = () => {
                                                         }`}>
                                                         {item.status}
                                                     </span>
-                                                </td>
-                                                <td className="px-6 py-3 text-neutral-500">
-                                                    {new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                             </tr>
                                         ))

@@ -5,8 +5,9 @@ import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
 import { DeleteModal } from '../../components/DeleteModal';
-import type { BookMaster, Category, BookItem } from '../../types';
+import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
+import { AsyncSelect, type Option } from '../../components/AsyncSelect';
 import { LoadingScreen } from '../../components/LoadingScreen';
 
 const BookForm: React.FC = () => {
@@ -23,7 +24,7 @@ const BookForm: React.FC = () => {
         isbn: ''
     });
 
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<Option | null>(null);
     const [bookItems, setBookItems] = useState<BookItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -38,15 +39,21 @@ const BookForm: React.FC = () => {
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchCategories();
         if (isEditMode) {
             fetchBookData();
         }
     }, [id]);
 
-    const fetchCategories = async () => {
-        const response = await api.getCategories({ limit: 100 });
-        setCategories(response.data);
+    const loadCategoryOptions = async ({ page, keyword }: { page: number; keyword: string }) => {
+        try {
+            const response = await api.getCategories({ page, limit: 10, keyword });
+            return {
+                options: response.data.map(c => ({ id: c.id, label: c.name })),
+                hasMore: response.meta.page < response.meta.last_page
+            };
+        } catch (error) {
+            return { options: [], hasMore: false };
+        }
     };
 
     const fetchBookData = async () => {
@@ -56,6 +63,9 @@ const BookForm: React.FC = () => {
             const book = await api.getBookById(id);
             if (book) {
                 setFormData(book);
+                if (book.category) {
+                    setSelectedCategory({ id: book.category.id, label: book.category.name });
+                }
                 const items = await api.getBookItems(id);
                 setBookItems(items);
             }
@@ -282,17 +292,15 @@ const BookForm: React.FC = () => {
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         Kategori
                                     </label>
-                                    <select
-                                        required
-                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
-                                        value={formData.categoryId}
-                                        onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                                    >
-                                        <option value="">Pilih Kategori</option>
-                                        {categories.map(c => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
-                                        ))}
-                                    </select>
+                                    <AsyncSelect
+                                        placeholder="Pilih Kategori"
+                                        loadOptions={loadCategoryOptions}
+                                        value={selectedCategory}
+                                        onChange={(option) => {
+                                            setSelectedCategory(option);
+                                            setFormData({ ...formData, categoryId: option?.id || '' });
+                                        }}
+                                    />
                                 </div>
 
                                 {!isEditMode && (
