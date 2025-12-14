@@ -152,6 +152,9 @@ const BookList: React.FC = () => {
                             value={selectedCategory}
                             onChange={setSelectedCategory}
                             loadOptions={loadCategoryOptions}
+                            className='bg-transparent'
+                            borderActive='border-blue-500'
+                            ringActive='ring-blue-500'
                         />
                     </div>
                 </div>
