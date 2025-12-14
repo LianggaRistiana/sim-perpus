@@ -137,9 +137,13 @@ const BorrowForm: React.FC = () => {
 			});
 			showToast("Transaksi berhasil dibuat", "success");
 			navigate("/dashboard/transactions");
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Error creating transaction:", error);
-			showToast("Gagal membuat transaksi", "error");
+			const message =
+				error.response?.error?.message ||
+				error.response?.data?.message ||
+				"Buku yang dipilih sedang dipinjam";
+			showToast(message, "error");
 		} finally {
 			setLoading(false);
 		}
