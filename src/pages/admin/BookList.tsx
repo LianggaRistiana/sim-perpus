@@ -157,6 +157,19 @@ const BookList: React.FC = () => {
                             ringActive='ring-blue-500'
                         />
                     </div>
+<div className="flex items-center">
+                        <button
+                            onClick={() => {
+                                setInputValue('');
+                                setSelectedCategory(null);
+                                setParams(prev => ({ ...prev, page: 1, keyword: '', category_id: '' }));
+                            }}
+                            className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors"
+                        >
+                            <Trash2 size={18} />
+                            Hapus Filter
+                        </button>
+                    </div>
                 </div>
             </div>
 
