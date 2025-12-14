@@ -10,6 +10,8 @@ import {
     BarChart3
 } from 'lucide-react';
 
+import { Modal } from './Modal';
+
 interface SidebarProps {
     isOpen: boolean;
     onClose: () => void;
@@ -20,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
     const location = useLocation();
     const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     // Keep Master Data dropdown open if we are in a submenu
     useEffect(() => {
@@ -171,13 +174,45 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
 
             <div className="w-full border-t border-neutral-800 p-4">
                 <button
-                    onClick={onLogout}
+                    onClick={() => setIsLogoutModalOpen(true)}
                     className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-400 hover:bg-neutral-800 hover:text-red-300 transition-colors"
                 >
                     <LogOut size={20} />
                     Keluar
                 </button>
             </div>
+
+            <Modal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                title="Konfirmasi Keluar"
+                width="max-w-sm"
+                footer={
+                    <>
+                        <button
+                            onClick={() => setIsLogoutModalOpen(false)}
+                            className="rounded-xl px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            onClick={onLogout}
+                            className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-600/20 hover:bg-red-700 hover:shadow-xl hover:shadow-red-600/10 transition-all"
+                        >
+                            Ya, Keluar
+                        </button>
+                    </>
+                }
+            >
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+                        <LogOut size={24} />
+                    </div>
+                    <div className="text-sm text-neutral-600">
+                        Apakah Anda yakin ingin keluar dari aplikasi?
+                    </div>
+                </div>
+            </Modal>
         </aside>
     );
 };
