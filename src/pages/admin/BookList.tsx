@@ -124,20 +124,23 @@ const BookList: React.FC = () => {
                     <h1 className="text-2xl font-bold text-neutral-900">Manajemen Buku</h1>
                     <p className="text-neutral-600">Kelola daftar buku perpustakaan</p>
                 </div>
-                <Link
-                    to="/dashboard/books/new"
-                    className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-                >
-                    <Plus size={20} />
-                    Tambah Buku
-                </Link>
-                <Link
-                    to="/dashboard/books/upload"
-                    className="flex items-center gap-2 rounded-lg bg-white border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
-                >
-                    <Upload size={20} />
-                    Upload CSV
-                </Link>
+                <div className='flex cols-2 gap-2'>
+
+                    <Link
+                        to="/dashboard/books/new"
+                        className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                    >
+                        <Plus size={20} />
+                        <span className='hidden md:block'>Tambah Buku</span>
+                    </Link>
+                    <Link
+                        to="/dashboard/books/upload"
+                        className="flex items-center gap-2 rounded-lg bg-white border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                    >
+                        <Upload size={20} />
+                        <span className='hidden md:block'>Upload CSV</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Filters */}
