@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, Plus, Trash2, Book, Calendar, User, Building, Pencil, Hash } from 'lucide-react';
+import { Save, Plus, Trash2, Book, Calendar, User, Building, Pencil, Hash, Search } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
@@ -9,6 +10,8 @@ import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
 import { AsyncSelect, type Option } from '../../components/AsyncSelect';
 import { LoadingScreen } from '../../components/LoadingScreen';
+import StatusBookBadge from '../../components/StatusBookBadge';
+import ConditionBadge from '../../components/ConditionBadge';
 
 const BookForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,6 +32,14 @@ const BookForm: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [loadingItems, setLoadingItems] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [totalItems, setTotalItems] = useState(0);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [debouncedKeyword, setDebouncedKeyword] = useState('');
+
     // Modal State
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [copyCondition, setCopyCondition] = useState('good');
@@ -38,6 +49,19 @@ const BookForm: React.FC = () => {
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedKeyword(searchKeyword);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchKeyword]);
+
+    useEffect(() => {
+        if (id) {
+            fetchItems(id, 1, true);
+        }
+    }, [debouncedKeyword]);
 
     useEffect(() => {
         if (isEditMode) {
@@ -67,8 +91,7 @@ const BookForm: React.FC = () => {
                 if (book.category) {
                     setSelectedCategory({ id: book.category.id, label: book.category.name });
                 }
-                const items = await api.getBookItems(id);
-                setBookItems(items);
+                // Initial items fetch handled by debounce effect
             }
         } catch (error) {
             console.error('Error fetching book:', error);
@@ -76,6 +99,47 @@ const BookForm: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const fetchItems = async (bookId: string, pageNum: number, reset: boolean = false) => {
+        if (!reset && (!hasMore || loadingItems)) return;
+
+        setLoadingItems(true);
+        try {
+            const response = await api.getBookItemsPaginated({
+                masterId: bookId,
+                page: pageNum,
+                limit: 20,
+                keyword: debouncedKeyword
+            });
+
+            if (reset) {
+                setBookItems(response.data);
+            } else {
+                setBookItems(prev => [...prev, ...response.data]);
+            }
+
+            setTotalItems(response.meta.total);
+            setHasMore(response.meta.page < response.meta.last_page);
+            setPage(pageNum);
+        } catch (error) {
+            console.error('Error fetching items:', error);
+            showToast('Gagal memuat salinan buku', 'error');
+        } finally {
+            setLoadingItems(false);
+        }
+    };
+
+    const loadMoreItems = () => {
+        if (id && !loadingItems && hasMore) {
+            fetchItems(id, page + 1);
+        }
+    };
+
+    const handleScroll = useInfiniteScroll({
+        onLoadMore: loadMoreItems,
+        hasMore,
+        isLoading: loadingItems,
+    });
 
     const { showToast } = useToast();
 
@@ -151,7 +215,9 @@ const BookForm: React.FC = () => {
                 }
             }
 
-            fetchBookData();
+            if (id) {
+                await fetchItems(id, 1, true);
+            }
             setShowCopyModal(false);
         } catch (error) {
             console.error('Error saving copy:', error);
@@ -165,11 +231,11 @@ const BookForm: React.FC = () => {
     };
 
     const handleConfirmDelete = async () => {
-        if (!itemToDelete) return;
+        if (!itemToDelete || !id) return;
         try {
             await api.deleteBookItem(itemToDelete);
             showToast('Salinan buku berhasil dihapus', 'success');
-            fetchBookData();
+            await fetchItems(id, 1, true);
             setShowDeleteModal(false);
         } catch (error) {
             console.error('Error deleting copy:', error);
@@ -347,20 +413,42 @@ const BookForm: React.FC = () => {
                     {/* Copies Management Section (Only in Edit Mode) */}
                     {isEditMode && (
                         <div className="w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
-                            <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                                <h2 className="text-base font-semibold text-neutral-900">Daftar Salinan Buku</h2>
-                                <button
-                                    type="button"
-                                    onClick={openAddModal}
-                                    className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-neutral-900 shadow-sm ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-900 hover:ring-neutral-300 transition-all"
-                                >
-                                    <Plus size={14} />
-                                    Tambah Salinan
-                                </button>
+                            <div className=" border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+                                <div className='flex items-center justify-between'>
+                                    <div className="flex items-center gap-2">
+                                        <h2 className="text-base font-semibold text-neutral-900">Daftar Salinan Buku</h2>
+                                        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                                            {totalItems}
+                                        </span>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={openAddModal}
+                                        className="flex items-center gap-2 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-neutral-900 shadow-sm ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-900 hover:ring-neutral-300 transition-all"
+                                    >
+                                        <Plus size={14} />
+                                        <span className="hidden md:inline">Tambah Salinan</span>
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center gap-2 border-0 border-neutral-200  pt-2">
+                                    <Search size={16} className="text-neutral-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Cari kode buku..."
+                                        className="w-40 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+                                        value={searchKeyword}
+                                        onChange={(e) => setSearchKeyword(e.target.value)}
+                                    />
+                                </div>
                             </div>
 
-                            <div className="p-6 h-[calc(100vh-18rem)] overflow-y-auto">
-                                {bookItems.length === 0 ? (
+                            <div
+                                className="p-6 h-[calc(100vh-18rem)] overflow-y-auto"
+                                onScroll={handleScroll}
+                            >
+                                {bookItems.length === 0 && !loadingItems ? (
                                     <div className="flex flex-col items-center justify-center py-8 text-center">
                                         <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
                                             <Book size={20} />
@@ -375,12 +463,9 @@ const BookForm: React.FC = () => {
                                                 <div>
                                                     <div className="mb-1 flex items-center gap-2">
                                                         <span className="font-mono text-sm font-bold text-neutral-900">{item.code}</span>
-                                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${item.status === 'available' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                                                            }`}>
-                                                            {item.status}
-                                                        </span>
+                                                        <StatusBookBadge status={item.status} />
                                                     </div>
-                                                    <p className="text-xs text-neutral-500">{item.condition}</p>
+                                                    <p className="text-xs text-neutral-500">Kondisi : <ConditionBadge condition={item.condition} /></p>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <button
@@ -402,6 +487,11 @@ const BookForm: React.FC = () => {
                                                 </div>
                                             </div>
                                         ))}
+                                        {loadingItems && (
+                                            <div className="py-4 text-center text-sm text-neutral-500">
+                                                Memuat lebih banyak...
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -441,9 +531,9 @@ const BookForm: React.FC = () => {
                         value={copyCondition}
                         onChange={(e) => setCopyCondition(e.target.value)}
                     >
-                        <option value="good">Good</option>
-                        <option value="fair">Fair</option>
-                        <option value="poor">Poor</option>
+                        <option value="good">Baik</option>
+                        <option value="fair">Cukup Baik</option>
+                        <option value="poor">Rusak</option>
                     </select>
                 </div>
                 {!editingItem && (

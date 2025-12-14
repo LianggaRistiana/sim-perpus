@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useInfiniteScroll } from '../../hooks/useInfiniteScroll';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Edit, Trash2, Book, User, Building, Calendar, Hash, Tag } from 'lucide-react';
+import { Edit, Trash2, Book, User, Building, Calendar, Hash, Tag, Search } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
 import { LoadingScreen } from '../../components/LoadingScreen';
+import ConditionBadge from '../../components/ConditionBadge';
+import StatusBookBadge from '../../components/StatusBookBadge';
 
 const BookDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -17,6 +20,27 @@ const BookDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    // Pagination State
+    const [page, setPage] = useState(1);
+    const [loadingItems, setLoadingItems] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [totalItems, setTotalItems] = useState(0);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [debouncedKeyword, setDebouncedKeyword] = useState('');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedKeyword(searchKeyword);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchKeyword]);
+
+    useEffect(() => {
+        if (id) {
+            fetchItems(id, 1, true);
+        }
+    }, [debouncedKeyword]);
+
     useEffect(() => {
         if (id) {
             fetchData(id);
@@ -26,14 +50,20 @@ const BookDetail: React.FC = () => {
     const fetchData = async (bookId: string) => {
         setLoading(true);
         try {
-            const [bookData, itemsData] = await Promise.all([
-                api.getBookById(bookId),
-                api.getBookItems(bookId)
-            ]);
+            const bookData = await api.getBookById(bookId);
 
             if (bookData) {
                 setBook(bookData);
-                setItems(itemsData || []);
+                // Initial items fetch is now handled by the debouncedKeyword effect or manual call if needed, 
+                // but since debouncedKeyword is initially '', it triggers. 
+                // However, we want to ensure we fetch if we just navigated here.
+                // The [debouncedKeyword] effect handles the initial load if debouncedKeyword is ''? 
+                // Actually, initial render has '' -> ''. Effect runs.
+                // But fetchData also calls fetchItems(bookId, 1, true). We should remove that explicit call if the effect handles it, 
+                // OR ensure we don't double fetch.
+                // Simpler: Remove the explicit fetchItems(bookId, 1, true) from fetchData and let the effect handler do it?
+                // Or keep it and rely on logic. 
+                // Let's modify fetchData to NOT fetch items, and let the effect do it.
             } else {
                 showToast('Buku tidak ditemukan', 'error');
                 navigate('/dashboard/books');
@@ -45,6 +75,47 @@ const BookDetail: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const fetchItems = async (bookId: string, pageNum: number, reset: boolean = false) => {
+        if (!reset && (!hasMore || loadingItems)) return;
+
+        setLoadingItems(true);
+        try {
+            const response = await api.getBookItemsPaginated({
+                masterId: bookId,
+                page: pageNum,
+                limit: 20,
+                keyword: debouncedKeyword
+            });
+
+            if (reset) {
+                setItems(response.data);
+            } else {
+                setItems(prev => [...prev, ...response.data]);
+            }
+
+            setTotalItems(response.meta.total);
+            setHasMore(response.meta.page < response.meta.last_page);
+            setPage(pageNum);
+        } catch (error) {
+            console.error('Error fetching items:', error);
+            showToast('Gagal memuat salinan buku', 'error');
+        } finally {
+            setLoadingItems(false);
+        }
+    };
+
+    const loadMoreItems = () => {
+        if (id && !loadingItems && hasMore) {
+            fetchItems(id, page + 1);
+        }
+    };
+
+    const handleScroll = useInfiniteScroll({
+        onLoadMore: loadMoreItems,
+        hasMore,
+        isLoading: loadingItems,
+    });
 
     const handleDelete = () => {
         setShowDeleteModal(true);
@@ -206,13 +277,26 @@ const BookDetail: React.FC = () => {
                                     <h2 className="text-lg font-bold text-neutral-900">Daftar Salinan Buku</h2>
                                 </div>
                                 <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600">
-                                    {items.length} Salinan
+                                    {totalItems} Salinan
                                 </span>
                             </div>
+                            <div className="flex w-full items-center gap-2 border-0 border-neutral-200 pl-2 pt-2">
+                                <Search size={16} className="text-neutral-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Cari kode buku..."
+                                    className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-400 border-0 "
+                                    value={searchKeyword}
+                                    onChange={(e) => setSearchKeyword(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div className="flex-1 overflow-auto">
+                        <div
+                            className="flex-1 overflow-auto"
+                            onScroll={handleScroll}
+                        >
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-neutral-50 text-neutral-500">
+                                <thead className="bg-neutral-50 text-neutral-500 sticky top-0 z-10">
                                     <tr>
                                         <th className="px-6 py-3 font-medium">Kode Buku</th>
                                         <th className="px-6 py-3 font-medium">Kondisi</th>
@@ -220,27 +304,31 @@ const BookDetail: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-neutral-100">
-                                    {items.length === 0 ? (
+                                    {items.length === 0 && !loadingItems ? (
                                         <tr>
                                             <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
                                                 Belum ada salinan buku.
                                             </td>
                                         </tr>
                                     ) : (
-                                        items.map((item) => (
-                                            <tr key={item.id} className="hover:bg-neutral-50">
-                                                <td className="px-6 py-3 font-medium text-neutral-900">{item.code}</td>
-                                                <td className="px-6 py-3 capitalize text-neutral-600">{item.condition}</td>
-                                                <td className="px-6 py-3">
-                                                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${item.status === 'available'
-                                                        ? 'bg-green-50 text-green-700'
-                                                        : 'bg-yellow-50 text-yellow-700'
-                                                        }`}>
-                                                        {item.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))
+                                        <>
+                                            {items.map((item) => (
+                                                <tr key={item.id} className="hover:bg-neutral-50">
+                                                    <td className="px-6 py-3 font-medium text-neutral-900">{item.code}</td>
+                                                    <td className="px-6 py-3 capitalize text-neutral-600"><ConditionBadge condition={item.condition} /></td>
+                                                    <td className="px-6 py-3">
+                                                        <StatusBookBadge status={item.status} />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {loadingItems && (
+                                                <tr>
+                                                    <td colSpan={3} className="px-6 py-4 text-center text-neutral-500">
+                                                        Memuat lebih banyak...
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </>
                                     )}
                                 </tbody>
                             </table>

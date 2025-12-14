@@ -120,31 +120,69 @@ export const bookService = {
 		status?: string
 	): Promise<BookItem[]> => {
 		try {
-			let url = "/book-items?limit=100";
-			if (masterId) url += `&book_master_id=${masterId}`;
-			if (status) url += `&status=${status}`;
-
-			const response = await apiClient.get<PaginatedResponse<any>>(url);
-
-			// Map backend snake_case to frontend camelCase if needed
-			return response.data.map((item) => ({
-				id: item.id,
-				masterId: item.book_master_id,
-				code: item.code,
-				condition: item.condition,
-				status: item.status,
-				createdAt: new Date(item.createdAt),
-				book_master: item.book_master
-					? {
-							...item.book_master,
-							categoryId:
-								item.book_master.category_id || item.book_master.categoryId,
-					  }
-					: undefined,
-			}));
+			const response = await bookService.getBookItemsPaginated({
+				masterId,
+				status,
+				page: 1,
+				limit: 100
+			});
+			return response.data;
 		} catch (error) {
 			console.error("Failed to fetch book items:", error);
 			return [];
+		}
+	},
+
+	getBookItemsPaginated: async (params: {
+		masterId?: string;
+		status?: string;
+		page?: number;
+		limit?: number;
+		keyword?: string;
+	}): Promise<PaginatedResponse<BookItem>> => {
+		try {
+			const query = new URLSearchParams();
+			if (params.masterId) query.append("book_master_id", params.masterId);
+			if (params.status) query.append("status", params.status);
+			if (params.page) query.append("page", params.page.toString());
+			if (params.limit) query.append("limit", params.limit.toString());
+			if (params.keyword) query.append("keyword", params.keyword);
+
+			const response = await apiClient.get<PaginatedResponse<any>>(
+				`/book-items?${query.toString()}`
+			);
+
+			return {
+				...response,
+				data: response.data.map((item) => ({
+					id: item.id,
+					masterId: item.book_master_id,
+					code: item.code,
+					condition: item.condition,
+					status: item.status,
+					createdAt: new Date(item.createdAt),
+					book_master: item.book_master
+						? {
+								...item.book_master,
+								categoryId:
+									item.book_master.category_id || item.book_master.categoryId,
+						  }
+						: undefined,
+				})),
+			};
+		} catch (error) {
+			console.error("Failed to fetch paginated book items:", error);
+			return {
+				status: "error",
+				data: [],
+				meta: {
+					page: 1,
+					per_page: 10,
+					total: 0,
+					last_page: 1,
+					timestamp: new Date().toISOString(),
+				},
+			};
 		}
 	},
 

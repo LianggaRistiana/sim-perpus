@@ -16,6 +16,7 @@ import type {
 import BackButton from "../../components/BackButton";
 import { LoadingScreen } from "../../components/LoadingScreen";
 import { ConditionBadge } from "../../components/ConditionBadge";
+import StatusBookBadge from "../../components/StatusBookBadge";
 
 const TransactionDetail: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
@@ -203,10 +204,10 @@ const TransactionDetail: React.FC = () => {
 									<p className="text-sm font-medium text-neutral-500">Status</p>
 									<span
 										className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${transaction.status === "returned"
-												? "bg-green-50 text-green-700"
-												: isOverdue
-													? "bg-red-50 text-red-700"
-													: "bg-blue-50 text-blue-700"
+											? "bg-green-50 text-green-700"
+											: isOverdue
+												? "bg-red-50 text-red-700"
+												: "bg-blue-50 text-blue-700"
 											}`}>
 										{transaction.status === "returned"
 											? "Dikembalikan"
@@ -382,23 +383,7 @@ const TransactionDetail: React.FC = () => {
 											)}
 										</td>
 										<td className="px-4 py-3">
-											<span
-												className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${(
-														item.book_item?.status || "unknown"
-													).toLowerCase() === "available"
-														? "bg-green-100 text-green-700"
-														: (
-															item.book_item?.status || "unknown"
-														).toLowerCase() === "borrowed"
-															? "bg-blue-100 text-blue-700"
-															: (
-																item.book_item?.status || "unknown"
-															).toLowerCase() === "lost"
-																? "bg-red-100 text-red-700"
-																: "bg-neutral-100 text-neutral-700"
-													}`}>
-												{item.book_item?.status || "-"}
-											</span>
+											<StatusBookBadge status={item.book_item?.status} />
 										</td>
 									</tr>
 								))}
