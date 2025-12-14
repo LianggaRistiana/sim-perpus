@@ -10,6 +10,8 @@ import type {
 	ReturnItemPayload,
 } from "../../types/transaction-api.types";
 
+import { Modal } from "../../components/Modal";
+
 const ReturnForm: React.FC = () => {
 	const navigate = useNavigate();
 	const { showToast } = useToast();
@@ -22,6 +24,7 @@ const ReturnForm: React.FC = () => {
 		Record<string, ReturnItemPayload>
 	>({});
 	const [loading, setLoading] = useState(true);
+	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
 	useEffect(() => {
 		if (id) fetchData(id);
@@ -39,11 +42,10 @@ const ReturnForm: React.FC = () => {
 				initialItems[item.book_item.id] = {
 					book_item_id: item.book_item.id,
 					status: "available",
-					condition_at_return: "good",
+					condition_at_return: (item.condition_at_borrow as any) || "good",
 					notes: "",
 				};
 			});
-			setReturnItems(initialItems);
 			setReturnItems(initialItems);
 		} catch (error) {
 			console.error("Error fetching data:", error);
@@ -54,26 +56,31 @@ const ReturnForm: React.FC = () => {
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!transaction) return;
+		setIsConfirmOpen(true);
+	};
 
-		if (window.confirm("Proses pengembalian buku?")) {
-			setLoading(true);
-			try {
-				const itemsToReturn = Object.values(returnItems);
-				await api.createReturnTransaction({
-					borrow_transaction_id: transaction.id,
-					return_date: new Date().toISOString().split("T")[0],
-					items: itemsToReturn,
-				});
-				navigate("/dashboard/transactions");
-			} catch (error) {
-				console.error("Error processing return:", error);
-				showToast("Gagal memproses pengembalian", "error");
-			} finally {
-				setLoading(false);
-			}
+	const handleConfirmSubmit = async () => {
+		if (!transaction) return;
+
+		setIsConfirmOpen(false);
+		setLoading(true);
+		try {
+			const itemsToReturn = Object.values(returnItems);
+			await api.createReturnTransaction({
+				borrow_transaction_id: transaction.id,
+				return_date: new Date().toISOString().split("T")[0],
+				items: itemsToReturn,
+			});
+			showToast("Pengembalian berhasil diproses", "success");
+			navigate("/dashboard/transactions");
+		} catch (error) {
+			console.error("Error processing return:", error);
+			showToast("Gagal memproses pengembalian", "error");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -91,7 +98,7 @@ const ReturnForm: React.FC = () => {
 		}));
 	};
 
-	if (loading) return <LoadingScreen />;
+	if (loading && !transaction) return <LoadingScreen />;
 	if (!transaction)
 		return <div className="p-8">Transaksi tidak ditemukan.</div>;
 
@@ -306,6 +313,33 @@ const ReturnForm: React.FC = () => {
 					</div>
 				</form>
 			</div>
+
+			<Modal
+				isOpen={isConfirmOpen}
+				onClose={() => setIsConfirmOpen(false)}
+				title="Konfirmasi Pengembalian"
+				footer={
+					<>
+						<button
+							type="button"
+							onClick={() => setIsConfirmOpen(false)}
+							className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100">
+							Batal
+						</button>
+						<button
+							type="button"
+							onClick={handleConfirmSubmit}
+							className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800">
+							Ya, Simpan
+						</button>
+					</>
+				}>
+				<p className="text-neutral-600">
+					Anda akan memproses pengembalian{" "}
+					<b>{transaction.details.length} buku</b>. Pastikan kondisi buku sudah
+					sesuai.
+				</p>
+			</Modal>
 		</div>
 	);
 };
