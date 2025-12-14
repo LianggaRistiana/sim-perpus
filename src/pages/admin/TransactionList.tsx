@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, CheckCircle, Clock, AlertCircle, Search, X } from "lucide-react";
+import { Plus, CheckCircle, Clock, AlertCircle, Search } from "lucide-react";
 import { api } from "../../services/api";
 import type {
 	ApiBorrowTransaction,
@@ -24,7 +24,7 @@ const TransactionList: React.FC = () => {
 	const [perPage, setPerPage] = useState(10);
 	const [search, setSearch] = useState("");
 	const [status, setStatus] = useState("");
-	const [overdue, setOverdue] = useState(false);
+	const [overdue] = useState(false);
 	const [startDate, setStartDate] = useState("");
 	const [endDate, setEndDate] = useState("");
 
@@ -95,15 +95,6 @@ const TransactionList: React.FC = () => {
 				<Clock size={12} /> Dipinjam
 			</span>
 		);
-	};
-
-	const clearFilters = () => {
-		setSearch("");
-		setStatus("");
-		setOverdue(false);
-		setStartDate("");
-		setEndDate("");
-		setPage(1);
 	};
 
 	return (
