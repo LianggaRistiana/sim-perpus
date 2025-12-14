@@ -145,7 +145,43 @@ Create a new book master record. Optionally auto-generate book items.
 
 ---
 
-## 5. Update Book
+## 5. Create Book Batch
+Create multiple book master records with their items in a single request.
+
+**Endpoint:** `POST /api/books/batch`
+
+**Middleware:** `auth:api`, `role:admin|librarian`
+
+**Body Parameters:**
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `books` | Array | Yes | Array of book objects |
+| `books.*.title` | String | Yes | Book Title |
+| `books.*.author` | String | Yes | Author Name |
+| `books.*.publisher` | String | Yes | Publisher Name |
+| `books.*.year` | Integer | Yes | Year |
+| `books.*.categoryId` | UUID | Yes | Category ID |
+| `books.*.isbn` | String | Yes | Unique ISBN |
+| `books.*.items` | Array | Yes | Array of item definitions |
+| `books.*.items.*.condition` | String | Yes | `good`, `fair`, `poor` |
+| `books.*.items.*.quantity` | Integer | Yes | Count (min 1) |
+| `books.*.items.*.status` | String | No | `available` (default), `borrowed`, `lost` |
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Operation successful",
+  "data": {
+    "created_books": 2,
+    "created_items": 12
+  }
+}
+```
+
+---
+
+## 6. Update Book
 Update an existing book master record.
 
 **Endpoint:** `PUT /api/books/{id}`
@@ -175,7 +211,7 @@ Update an existing book master record.
 
 ---
 
-## 6. Delete Book
+## 7. Delete Book
 Soft delete a book master record.
 
 **Endpoint:** `DELETE /api/books/{id}`

@@ -32,6 +32,7 @@ const BookForm: React.FC = () => {
     // Modal State
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [copyCondition, setCopyCondition] = useState('good');
+    const [copyQuantity, setCopyQuantity] = useState(1);
     const [editingItem, setEditingItem] = useState<BookItem | null>(null);
 
     // Delete Modal State
@@ -107,6 +108,7 @@ const BookForm: React.FC = () => {
         if (!id) return;
         setEditingItem(null);
         setCopyCondition('good');
+        setCopyQuantity(1);
         setShowCopyModal(true);
     };
 
@@ -128,13 +130,25 @@ const BookForm: React.FC = () => {
                 showToast('Kondisi buku berhasil diperbarui', 'success');
             } else {
                 // Add new
-                await api.addBookItem({
-                    masterId: id,
-                    code: '', // Backend generates code
-                    condition: copyCondition,
-                    status: 'available'
-                });
-                showToast('Salinan berhasil ditambahkan', 'success');
+                if (copyQuantity > 1) {
+                    await api.createBookItemBatch({
+                        book_master_id: id,
+                        items: [{
+                            condition: copyCondition,
+                            quantity: copyQuantity,
+                            status: 'available'
+                        }]
+                    });
+                    showToast(`${copyQuantity} Salinan berhasil ditambahkan`, 'success');
+                } else {
+                    await api.addBookItem({
+                        masterId: id,
+                        code: '', // Backend generates code
+                        condition: copyCondition,
+                        status: 'available'
+                    });
+                    showToast('Salinan berhasil ditambahkan', 'success');
+                }
             }
 
             fetchBookData();
@@ -432,6 +446,22 @@ const BookForm: React.FC = () => {
                         <option value="poor">Poor</option>
                     </select>
                 </div>
+                {!editingItem && (
+                    <div className="mt-4">
+                        <label className="mb-2 block text-sm font-medium text-neutral-700">Jumlah Salinan</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            value={copyQuantity}
+                            onChange={(e) => setCopyQuantity(parseInt(e.target.value) || 1)}
+                        />
+                        <p className="mt-1 text-xs text-neutral-500">
+                            Masukkan jumlah salinan yang ingin ditambahkan sekaligus.
+                        </p>
+                    </div>
+                )}
             </Modal>
 
             <DeleteModal

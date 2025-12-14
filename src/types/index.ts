@@ -48,6 +48,12 @@ export interface ApiResponse<T> {
 	data: T;
 }
 
+export interface ApiResponseMeta<T> {
+	status: string;
+	message: string;
+	meta: T;
+}
+
 export interface BookMaster {
 	id: string;
 	title: string;

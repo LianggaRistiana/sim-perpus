@@ -3,7 +3,6 @@
 ## Endpoints
 
 ### 1. List Book Items
-
 Get a paginated list of book items.
 
 - **URL**: `/api/book-items`
@@ -11,18 +10,17 @@ Get a paginated list of book items.
 - **Authentication**: Required
 
 #### Query Parameters
-
-| Parameter        | Type      | Description                                   |
-| ---------------- | --------- | --------------------------------------------- |
-| `page`           | `integer` | Page number (default: 1)                      |
-| `limit`          | `integer` | Number of items per page (default: 10)        |
-| `book_master_id` | `uuid`    | Filter by Book Master ID                      |
-| `keyword`        | `string`  | Search by Book Item Code or Book Master Title |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | `integer` | Page number (default: 1) |
+| `limit` | `integer` | Number of items per page (default: 10) |
+| `book_master_id` | `uuid` | Filter by Book Master ID |
+| `keyword` | `string` | Search by Book Item Code or Book Master Title |
+| `condition` | `string` | Filter by condition: `good`, `fair`, `poor` |
+| `status` | `string` | Filter by status: `available`, `borrowed`, `lost` |
 
 #### Success Response
-
 **Code**: `200 OK`
-
 ```json
 {
     "status": "success",
@@ -31,23 +29,7 @@ Get a paginated list of book items.
         {
             "id": "uuid...",
             "book_master_id": "uuid...",
-            "book_master": {
-                {
-                    "id": "uuid...",
-                    "title": "Book Title",
-                    "author": "Author Name",
-                    "publisher": "Publisher Name",
-                    "year": 2023,
-                    "isbn": "978-...",
-                    "categoryId": "uuid...",
-                    "category": {
-                        "id": "uuid...",
-                        "name": "Category Name"
-                    },
-                    "created_at": "timestamp",
-                    "updated_at": "timestamp"
-                },
-             },
+            "book_master": { ... },
             "code": "BK-001",
             "condition": "good",
             "status": "available",
@@ -67,7 +49,6 @@ Get a paginated list of book items.
 ---
 
 ### 2. Show Book Item
-
 Get details of a specific book item.
 
 - **URL**: `/api/book-items/{id}`
@@ -75,9 +56,7 @@ Get details of a specific book item.
 - **Authentication**: Required
 
 #### Success Response
-
 **Code**: `200 OK`
-
 ```json
 {
     "status": "success",
@@ -97,7 +76,6 @@ Get details of a specific book item.
 ---
 
 ### 3. Create Book Item
-
 Create a new book item (copy).
 
 - **URL**: `/api/book-items`
@@ -105,17 +83,14 @@ Create a new book item (copy).
 - **Authentication**: Required (`admin` or `librarian`)
 
 #### Request Body
-
-| Field            | Type     | Required | Description                                              |
-| ---------------- | -------- | -------- | -------------------------------------------------------- |
-| `book_master_id` | `uuid`   | **Yes**  | The ID of the Book Master                                |
-| `condition`      | `string` | No       | `good` (default), `damaged`, `lost`                      |
-| `status`         | `string` | No       | `available` (default), `borrowed`, `maintenance`, `lost` |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `book_master_id` | `uuid` | **Yes** | The ID of the Book Master |
+| `condition` | `string` | No | `good` (default), `damaged`, `lost` |
+| `status` | `string` | No | `available` (default), `borrowed`, `maintenance`, `lost` |
 
 #### Success Response
-
 **Code**: `201 Created`
-
 ```json
 {
     "status": "success",
@@ -130,25 +105,52 @@ Create a new book item (copy).
 
 ---
 
-### 4. Update Book Item
+### 4. Create Book Item Batch
+Create multiple book items at once.
 
-Update details of a book item. **Note**: `book_master_id` cannot be updated.
+- **URL**: `/api/book-items/batch`
+- **Method**: `POST`
+- **Authentication**: Required (`admin` or `librarian`)
+
+#### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `book_master_id` | `uuid` | **Yes** | The ID of the Book Master |
+| `items` | `array` | **Yes** | Array of item specifications |
+| `items.*.condition` | `string` | **Yes** | `good`, `fair`, `poor` |
+| `items.*.quantity` | `integer` | **Yes** | Number of items to create (min 1) |
+| `items.*.status` | `string` | No | `available` (default), `borrowed`, `lost` |
+
+#### Success Response
+**Code**: `201 Created`
+```json
+{
+    "status": "success",
+    "message": null,
+    "data": {
+        "created_count": 5
+    }
+}
+```
+
+---
+
+### 5. Update Book Item
+Update details of a book item.
+**Note**: `book_master_id` cannot be updated.
 
 - **URL**: `/api/book-items/{id}`
 - **Method**: `PUT`
 - **Authentication**: Required (`admin` or `librarian`)
 
 #### Request Body
-
-| Field       | Type     | Required | Description                                    |
-| ----------- | -------- | -------- | ---------------------------------------------- |
-| `condition` | `string` | No       | `good`, `damaged`, `lost`                      |
-| `status`    | `string` | No       | `available`, `borrowed`, `maintenance`, `lost` |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `condition` | `string` | No | `good`, `damaged`, `lost` |
+| `status` | `string` | No | `available`, `borrowed`, `maintenance`, `lost` |
 
 #### Success Response
-
 **Code**: `200 OK`
-
 ```json
 {
     "status": "success",
@@ -162,8 +164,7 @@ Update details of a book item. **Note**: `book_master_id` cannot be updated.
 
 ---
 
-### 5. Delete Book Item
-
+### 6. Delete Book Item
 Soft delete a book item.
 
 - **URL**: `/api/book-items/{id}`
@@ -171,13 +172,11 @@ Soft delete a book item.
 - **Authentication**: Required (`admin` or `librarian`)
 
 #### Success Response
-
 **Code**: `200 OK`
-
 ```json
 {
-	"status": "success",
-	"message": null,
-	"data": null
+    "status": "success",
+    "message": null,
+    "data": null
 }
 ```

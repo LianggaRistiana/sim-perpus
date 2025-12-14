@@ -12,6 +12,9 @@ const DashboardHomeWrapper = () => {
   const { user } = useOutletContext<{ user: Admin }>();
   return <DashboardHome user={user} />;
 };
+
+import BookUpload from './pages/admin/BookUpload';
+
 import BookList from './pages/admin/BookList';
 import BookForm from './pages/admin/BookForm';
 import AdminBookDetail from './pages/admin/BookDetail';
@@ -32,6 +35,7 @@ import MemberReport from './pages/admin/reports/MemberReport';
 import { ToastProvider } from './components/Toast';
 import BookCatalogDetail from './pages/BookCatalogDetail';
 
+
 function App() {
 
   return (
@@ -48,6 +52,7 @@ function App() {
 
             {/* Master Data Routes */}
             <Route path="books" element={<BookList />} />
+            <Route path="books/upload" element={<BookUpload />} />
             <Route path="books/new" element={<BookForm />} />
             <Route path="books/:id" element={<AdminBookDetail />} />
             <Route path="books/:id/edit" element={<BookForm />} />

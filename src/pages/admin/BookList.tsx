@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
@@ -130,6 +130,13 @@ const BookList: React.FC = () => {
                 >
                     <Plus size={20} />
                     Tambah Buku
+                </Link>
+                <Link
+                    to="/dashboard/books/upload"
+                    className="flex items-center gap-2 rounded-lg bg-white border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                >
+                    <Upload size={20} />
+                    Upload CSV
                 </Link>
             </div>
 

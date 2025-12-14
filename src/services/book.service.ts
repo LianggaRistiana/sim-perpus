@@ -1,9 +1,10 @@
-import { apiClient } from "../lib/api-client";
+import { apiClient, ApiError } from "../lib/api-client";
 import type {
 	BookMaster,
 	BookItem,
 	PaginatedResponse,
 	ApiResponse,
+	ApiResponseMeta,
 } from "../types";
 
 export const bookService = {
@@ -86,7 +87,34 @@ export const bookService = {
 		}
 	},
 
-	// Book Items
+    createBookBatch: async (
+        books: {
+            title: string;
+            author: string;
+            publisher: string;
+            year: number;
+            categoryId: string;
+            isbn: string;
+            items: { condition: string; quantity: number }[];
+        }[]
+    ): Promise<ApiResponseMeta<{ created_books: number; created_items: number }> | null> => {
+        try {
+            const response = await apiClient.post<ApiResponseMeta<{ created_books: number; created_items: number }>>(
+                "/books/batch",
+                { books }
+            );
+			// console.log("lolos");
+            return response;
+        } catch (error) {
+			if (error instanceof ApiError) {
+				throw error;
+			}
+            console.error("Failed to create batch books:", error);
+            return null;
+        }
+    },
+
+    // Book Items
 	getBookItems: async (
 		masterId?: string,
 		status?: string
@@ -159,6 +187,24 @@ export const bookService = {
 			return { ...response, data: newItem };
 		} catch (error) {
 			console.error("Failed to add book item:", error);
+			return null;
+		}
+	},
+
+	createBookItemBatch: async (
+		data: {
+			book_master_id: string;
+			items: { condition: string; quantity: number; status?: string }[];
+		}
+	): Promise<ApiResponse<{ created_count: number }> | null> => {
+		try {
+			const response = await apiClient.post<ApiResponse<{ created_count: number }>>(
+				"/book-items/batch",
+				data
+			);
+			return response;
+		} catch (error) {
+			console.error("Failed to create batch book items:", error);
 			return null;
 		}
 	},
