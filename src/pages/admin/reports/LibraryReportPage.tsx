@@ -36,8 +36,8 @@ const LibraryReportPage: React.FC = () => {
         const fetchOverview = async () => {
             try {
                 setOverviewLoading(true);
-                const data = await api.getLibraryOverview();
-                setOverview(data);
+                const response = await api.getLibraryOverview();
+                setOverview(response.data);
             } catch (error) {
                 console.error('Error fetching overview:', error);
             } finally {
@@ -52,8 +52,8 @@ const LibraryReportPage: React.FC = () => {
         const fetchCategories = async () => {
             try {
                 setCategoriesLoading(true);
-                const data = await api.getCategoryDistribution();
-                setCategories(data);
+                const response = await api.getCategoryDistribution();
+                setCategories(response.data);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             } finally {
@@ -68,8 +68,8 @@ const LibraryReportPage: React.FC = () => {
         const fetchInDemand = async () => {
             try {
                 setInDemandLoading(true);
-                const data = await api.getInDemand(10);
-                setInDemandBooks(data);
+                const response = await api.getInDemand(10);
+                setInDemandBooks(response.data);
             } catch (error) {
                 console.error('Error fetching in-demand books:', error);
             } finally {
@@ -84,10 +84,21 @@ const LibraryReportPage: React.FC = () => {
         const fetchTrends = async () => {
             try {
                 setTrendsLoading(true);
-                const data = await api.getBorrowingTrends(trendsYear);
-                setTrends(data.monthly_trends);
+                console.log('Fetching borrowing trends for year:', trendsYear);
+                const response = await api.getBorrowingTrends(trendsYear);
+                console.log('Borrowing trends response:', response);
+
+                // Safely access monthly_trends
+                if (response && response.data && response.data.monthly_trends) {
+                    setTrends(response.data.monthly_trends);
+                    console.log('Trends set:', response.data.monthly_trends);
+                } else {
+                    console.warn('No monthly_trends in response:', response);
+                    setTrends([]);
+                }
             } catch (error) {
                 console.error('Error fetching borrowing trends:', error);
+                setTrends([]);
             } finally {
                 setTrendsLoading(false);
             }
@@ -129,14 +140,14 @@ const LibraryReportPage: React.FC = () => {
                             <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
                         </div>
                     ) : overview ? (
-                        <div className="grid gap-6 md:grid-cols-3">
+                        <div className="grid gap-6 md:grid-cols-5">
                             <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="rounded-full bg-blue-100 p-3 text-blue-600">
                                         <BookOpen size={24} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-neutral-600">Total Judul Buku</p>
+                                        <p className="text-sm font-medium text-neutral-600">Judul Buku</p>
                                         <p className="text-2xl font-bold text-neutral-900">{overview.total_book_titles.toLocaleString()}</p>
                                     </div>
                                 </div>
@@ -147,7 +158,7 @@ const LibraryReportPage: React.FC = () => {
                                         <FileText size={24} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-neutral-600">Total Eksemplar Buku</p>
+                                        <p className="text-sm font-medium text-neutral-600">Eksemplar</p>
                                         <p className="text-2xl font-bold text-neutral-900">{overview.total_book_items.toLocaleString()}</p>
                                     </div>
                                 </div>
@@ -158,8 +169,30 @@ const LibraryReportPage: React.FC = () => {
                                         <FolderOpen size={24} />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-neutral-600">Total Kategori</p>
+                                        <p className="text-sm font-medium text-neutral-600">Kategori</p>
                                         <p className="text-2xl font-bold text-neutral-900">{overview.total_categories.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="rounded-full bg-orange-100 p-3 text-orange-600">
+                                        <TrendingUp size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-neutral-600">Dipinjam</p>
+                                        <p className="text-2xl font-bold text-neutral-900">{overview.total_borrowed.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="rounded-full bg-red-100 p-3 text-red-600">
+                                        <FileText size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-neutral-600">Terlambat</p>
+                                        <p className="text-2xl font-bold text-neutral-900">{overview.total_overdue.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>

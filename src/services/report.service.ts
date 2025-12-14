@@ -8,7 +8,9 @@ import type {
   PopularBooksResponse,
   StudentActivityResponse,
   BorrowingTrendsResponse,
-  StudentHistoryResponse
+  StudentHistoryResponse,
+  OverdueBooksResponse,
+  BookItem
 } from '../types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -159,7 +161,7 @@ export const reportService = {
   getLibraryOverview: async () => {
     try {
       const response = await apiClient.get<LibraryOverviewResponse>('/library/reports/overview');
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Failed to fetch library overview:', error);
       throw error;
@@ -173,7 +175,7 @@ export const reportService = {
   getCategoryDistribution: async () => {
     try {
       const response = await apiClient.get<CategoryDistributionResponse>('/library/reports/categories');
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Failed to fetch category distribution:', error);
       throw error;
@@ -211,7 +213,7 @@ export const reportService = {
       query.append('limit', limit.toString());
 
       const response = await apiClient.get<InDemandBooksResponse>(`/library/reports/in-demand?${query.toString()}`);
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Failed to fetch in-demand books:', error);
       throw error;
@@ -229,7 +231,7 @@ export const reportService = {
       query.append('limit', limit.toString());
 
       const response = await apiClient.get<PopularBooksResponse>(`/library/reports/popular-books?${query.toString()}`);
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Failed to fetch popular books:', error);
       throw error;
@@ -267,7 +269,7 @@ export const reportService = {
       if (year) query.append('year', year.toString());
 
       const response = await apiClient.get<BorrowingTrendsResponse>(`/library/reports/trends?${query.toString()}`);
-      return response.data;
+      return response;
     } catch (error) {
       console.error('Failed to fetch borrowing trends:', error);
       throw error;
@@ -291,6 +293,44 @@ export const reportService = {
       return response;
     } catch (error) {
       console.error('Failed to fetch student history:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get overdue books report
+   * @param page - Page number (default: 1)
+   * @param perPage - Items per page (default: 15)
+   * @returns List of overdue transactions with borrower details
+   */
+  getOverdueBooks: async (page: number = 1, perPage: number = 15) => {
+    try {
+      const query = new URLSearchParams();
+      query.append('page', page.toString());
+      query.append('per_page', perPage.toString());
+
+      const response = await apiClient.get<OverdueBooksResponse>(`/library/reports/overdue-books?${query.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('Failed to fetch overdue books:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get damaged books with multi-condition filter support
+   * @param conditions - Book conditions to filter (e.g., 'poor', 'damaged', or 'poor,damaged')
+   * @returns List of book items in specified conditions
+   */
+  getDamagedBooks: async (conditions: string = 'poor,damaged') => {
+    try {
+      const query = new URLSearchParams();
+      query.append('condition', conditions);
+
+      const response = await apiClient.get<{ data: BookItem[] }>(`/book-items?${query.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch damaged books:', error);
       throw error;
     }
   },

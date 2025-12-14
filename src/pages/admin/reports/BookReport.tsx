@@ -46,16 +46,15 @@ const BookReport: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [allBooks, popularBooks, longestBorrowed] = await Promise.all([
-                    api.getBooks(),
-                    api.getMostBorrowedBooks(),
-                    api.getLongestBorrowedBooks(),
-                    api.getDamagedBooks()
-                ]);
+                const allBooks = await api.getBooks();
+                const popularBooksRes = await api.getPopularBooks(10);
+                const longestBorrowed = await api.getLongestBorrowedBooks();
 
                 setBooks(allBooks.data);
-                setMostBorrowedBooks(mostBorrowed.map(i => ({ label: i.title, value: i.count })));
-                setLongestBorrowedBooks(longestBorrowed.map(i => ({ label: i.title, value: i.days })));
+                // popularBooksRes is PopularBooksResponse { success, message, data: PopularBook[] }
+                // So we access .data to get the PopularBook[] array
+                setMostBorrowedBooks(popularBooksRes.data.map((book) => ({ label: book.title, value: book.total_borrowed })));
+                setLongestBorrowedBooks(longestBorrowed.map((i: any) => ({ label: i.title, value: i.days })));
             } catch (error) {
                 console.error('Error fetching book report data:', error);
             } finally {
@@ -68,16 +67,13 @@ const BookReport: React.FC = () => {
     const fetchDamagedBooks = useCallback(async () => {
         setDamagedBooksLoading(true);
         try {
-            const damaged = await api.getDamagedBooks();
-            // Filter only poor and damaged conditions (exclude good and fair)
-            const filteredDamaged = damaged.filter(book =>
-                book.condition.toLowerCase() === 'poor' || book.condition.toLowerCase() === 'damaged'
-            );
-            // Simple client-side pagination
+            // Use backend filtering with multi-condition support
+            const damaged = await api.getDamagedBooks('poor,damaged');
+            // Simple client-side pagination (backend doesn't support pagination for this endpoint yet)
             const startIndex = (damagedBooksPage - 1) * damagedBooksPerPage;
             const endIndex = startIndex + damagedBooksPerPage;
-            setDamagedBooks(filteredDamaged.slice(startIndex, endIndex));
-            setTotalDamagedBooks(filteredDamaged.length);
+            setDamagedBooks(damaged.slice(startIndex, endIndex));
+            setTotalDamagedBooks(damaged.length);
         } catch (error) {
             console.error('Error fetching damaged books:', error);
         } finally {

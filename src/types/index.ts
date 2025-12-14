@@ -124,6 +124,8 @@ export interface LibraryOverview {
   total_book_titles: number;
   total_book_items: number;
   total_categories: number;
+  total_borrowed: number;
+  total_overdue: number;
 }
 
 export interface CategoryDistributionItem {
@@ -300,6 +302,39 @@ export interface StudentHistoryResponse {
     per_page: number;
     total: number;
     last_page: number;
+  };
+}
+
+// Overdue Books Report Types
+export interface OverdueBookItem {
+  title: string;
+  isbn: string;
+  code: string;
+}
+
+export interface OverdueBook {
+  transaction_id: string;
+  transaction_code: string;
+  borrower: {
+    name: string;
+    number: string;
+    email: string;
+  };
+  borrow_date: string;
+  due_date: string;
+  days_overdue: number;
+  books: OverdueBookItem[];
+}
+
+export interface OverdueBooksResponse {
+  success: boolean;
+  message: string;
+  data: OverdueBook[];
+  pagination: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
   };
 }
 

@@ -33,6 +33,9 @@ import BookReport from './pages/admin/reports/BookReport';
 import CategoryReport from './pages/admin/reports/CategoryReport';
 import MemberReport from './pages/admin/reports/MemberReport';
 import LibraryReportPage from './pages/admin/reports/LibraryReportPage';
+import StudentActivityReport from './pages/admin/reports/StudentActivityReport';
+import BorrowingTrendsReport from './pages/admin/reports/BorrowingTrendsReport';
+import OverdueBooksReport from './pages/admin/reports/OverdueBooksReport';
 import { ToastProvider } from './components/Toast';
 import BookCatalogDetail from './pages/BookCatalogDetail';
 
@@ -80,6 +83,9 @@ function App() {
             <Route path="reports/books" element={<BookReport />} />
             <Route path="reports/categories" element={<CategoryReport />} />
             <Route path="reports/members" element={<MemberReport />} />
+            <Route path="reports/student-activity" element={<StudentActivityReport />} />
+            <Route path="reports/borrowing-trends" element={<BorrowingTrendsReport />} />
+            <Route path="reports/overdue-books" element={<OverdueBooksReport />} />
           </Route>
         </Routes>
       </ToastProvider>
