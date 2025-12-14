@@ -125,24 +125,27 @@ const BookList: React.FC = () => {
                 </Link>
             </div>
 
-            <div className="mb-6 flex flex-wrap items-center gap-4">
-                <div className="relative max-w-md flex-1">
-                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
-                    <input
-                        type="text"
-                        placeholder="Cari buku..."
-                        className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
-                </div>
-                <div className="w-64">
-                    <AsyncSelect
-                        placeholder="Semua Kategori"
-                        value={selectedCategory}
-                        onChange={setSelectedCategory}
-                        loadOptions={loadCategoryOptions}
-                    />
+            {/* Filters */}
+            <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="relative lg:col-span-2">
+                        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                        <input
+                            type="text"
+                            placeholder="Cari buku..."
+                            className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <AsyncSelect
+                            placeholder="Semua Kategori"
+                            value={selectedCategory}
+                            onChange={setSelectedCategory}
+                            loadOptions={loadCategoryOptions}
+                        />
+                    </div>
                 </div>
             </div>
 
