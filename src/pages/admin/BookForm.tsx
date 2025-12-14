@@ -185,9 +185,9 @@ const BookForm: React.FC = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className={isEditMode ? "grid grid-cols-1 gap-6 lg:grid-cols-2" : "space-y-6"}>
+                <form onSubmit={handleSubmit} className={isEditMode ? "flex w-full gap-4 overflow-x-auto p-1 pb-8 lg:grid lg:grid-cols-2 lg:p-0 lg:overflow-visible snap-x snap-mandatory" : "space-y-6"}>
                     {/* Main Information Card */}
-                    <div className={`flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'lg:sticky lg:top-8' : ''}`}>
+                    <div className={`flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto lg:sticky lg:top-8' : ''}`}>
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <div className="flex items-center gap-2">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -205,7 +205,7 @@ const BookForm: React.FC = () => {
                             </button>
                         </div>
                         <div className="p-6 md:p-8 h-[calc(100vh-18rem)] overflow-y-auto">
-                            <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                                 <div className="col-span-2">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">Judul Buku</label>
                                     <div className="relative">
@@ -220,7 +220,7 @@ const BookForm: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <User size={14} className="text-neutral-400" />
@@ -237,7 +237,7 @@ const BookForm: React.FC = () => {
                                     />
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Building size={14} className="text-neutral-400" />
@@ -254,7 +254,7 @@ const BookForm: React.FC = () => {
                                     />
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Calendar size={14} className="text-neutral-400" />
@@ -271,7 +271,7 @@ const BookForm: React.FC = () => {
                                     />
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Hash size={14} className="text-neutral-400" />
@@ -332,7 +332,7 @@ const BookForm: React.FC = () => {
 
                     {/* Copies Management Section (Only in Edit Mode) */}
                     {isEditMode && (
-                        <div className="flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
+                        <div className="w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
                             <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                                 <h2 className="text-base font-semibold text-neutral-900">Daftar Salinan Buku</h2>
                                 <button
