@@ -103,9 +103,9 @@ const BookDetail: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3 animate-in fade-in duration-500">
+            <div className="flex w-full gap-4 overflow-x-auto p-1 pb-8 lg:grid lg:grid-cols-3 lg:p-0 lg:overflow-visible snap-x snap-mandatory animate-in fade-in duration-500">
                 {/* Book Info */}
-                <div className="space-y-6 lg:col-span-1">
+                <div className="w-[85vw] flex-none snap-center space-y-6 sm:w-[500px] lg:w-auto lg:col-span-1">
                     <div className="flex flex-col h-[calc(100vh-14rem)] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <div className="flex items-center gap-2">
@@ -195,7 +195,7 @@ const BookDetail: React.FC = () => {
                 </div>
 
                 {/* Items List */}
-                <div className="lg:col-span-2">
+                <div className="w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto lg:col-span-2">
                     <div className="flex flex-col h-[calc(100vh-14rem)] rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
                         <div className="shrink-0 border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <div className="flex items-center justify-between">
