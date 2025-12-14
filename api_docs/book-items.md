@@ -16,6 +16,8 @@ Get a paginated list of book items.
 | `limit` | `integer` | Number of items per page (default: 10) |
 | `book_master_id` | `uuid` | Filter by Book Master ID |
 | `keyword` | `string` | Search by Book Item Code or Book Master Title |
+| `condition` | `string` | Filter by condition: `good`, `fair`, `poor` |
+| `status` | `string` | Filter by status: `available`, `borrowed`, `lost` |
 
 #### Success Response
 **Code**: `200 OK`
@@ -103,7 +105,37 @@ Create a new book item (copy).
 
 ---
 
-### 4. Update Book Item
+### 4. Create Book Item Batch
+Create multiple book items at once.
+
+- **URL**: `/api/book-items/batch`
+- **Method**: `POST`
+- **Authentication**: Required (`admin` or `librarian`)
+
+#### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `book_master_id` | `uuid` | **Yes** | The ID of the Book Master |
+| `items` | `array` | **Yes** | Array of item specifications |
+| `items.*.condition` | `string` | **Yes** | `good`, `fair`, `poor` |
+| `items.*.quantity` | `integer` | **Yes** | Number of items to create (min 1) |
+| `items.*.status` | `string` | No | `available` (default), `borrowed`, `lost` |
+
+#### Success Response
+**Code**: `201 Created`
+```json
+{
+    "status": "success",
+    "message": null,
+    "data": {
+        "created_count": 5
+    }
+}
+```
+
+---
+
+### 5. Update Book Item
 Update details of a book item.
 **Note**: `book_master_id` cannot be updated.
 
@@ -132,7 +164,7 @@ Update details of a book item.
 
 ---
 
-### 5. Delete Book Item
+### 6. Delete Book Item
 Soft delete a book item.
 
 - **URL**: `/api/book-items/{id}`

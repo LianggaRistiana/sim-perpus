@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
 import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
+import { LoadingScreen } from '../../components/LoadingScreen';
 
 const BookDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -67,9 +68,8 @@ const BookDetail: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex h-full items-center justify-center bg-neutral-50">
-                <div className="text-neutral-500">Memuat detail buku...</div>
-            </div>
+            <LoadingScreen message='Memuat detail buku...'>
+            </LoadingScreen>
         );
     }
 
@@ -103,68 +103,90 @@ const BookDetail: React.FC = () => {
                 </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3 animate-in fade-in duration-500">
+            <div className="flex w-full gap-4 overflow-x-auto p-1 pb-8 lg:grid lg:grid-cols-3 lg:p-0 lg:overflow-visible snap-x snap-mandatory animate-in fade-in duration-500">
                 {/* Book Info */}
-                <div className="space-y-6 lg:col-span-1">
-                    <div className="h-[calc(100vh-14rem)] overflow-y-auto rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                        <div className="mb-6 flex items-center gap-2 border-b border-neutral-100 pb-4">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                                <Book size={18} />
+                <div className="w-[85vw] flex-none snap-center space-y-6 sm:w-[500px] lg:w-auto lg:col-span-1">
+                    <div className="flex flex-col h-[calc(100vh-14rem)] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
+                        <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                    <Book size={18} />
+                                </div>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Buku</h2>
                             </div>
-                            <h2 className="text-lg font-bold text-neutral-900">Informasi Buku</h2>
                         </div>
 
-                        <div className="space-y-6">
-                            <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
-                                <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
-                                    <Tag size={12} />
-                                    <span>Judul Buku</span>
-                                </div>
-                                <p className="text-lg font-medium text-neutral-900 leading-snug">{book.title}</p>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
-                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
-                                        <User size={12} />
-                                        <span>Penulis</span>
+                        <div className="flex-1 p-6 md:p-8 overflow-y-auto">
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Tag size={14} className="text-neutral-400" />
+                                            Judul Buku
+                                        </div>
+                                    </label>
+                                    <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900 leading-snug">
+                                        {book.title}
                                     </div>
-                                    <p className="text-neutral-700 font-medium">{book.author}</p>
                                 </div>
 
-                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
-                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
-                                        <Building size={12} />
-                                        <span>Penerbit</span>
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <User size={14} className="text-neutral-400" />
+                                            Penulis
+                                        </div>
+                                    </label>
+                                    <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900">
+                                        {book.author}
                                     </div>
-                                    <p className="text-neutral-700 font-medium">{book.publisher}</p>
                                 </div>
 
-                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
-                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
-                                        <Calendar size={12} />
-                                        <span>Tahun Terbit</span>
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Building size={14} className="text-neutral-400" />
+                                            Penerbit
+                                        </div>
+                                    </label>
+                                    <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900">
+                                        {book.publisher}
                                     </div>
-                                    <p className="text-neutral-700 font-medium">{book.year}</p>
                                 </div>
 
-                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
-                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
-                                        <Hash size={12} />
-                                        <span>ISBN</span>
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar size={14} className="text-neutral-400" />
+                                            Tahun Terbit
+                                        </div>
+                                    </label>
+                                    <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900">
+                                        {book.year}
                                     </div>
-                                    <p className="font-mono text-neutral-700 font-medium">{book.isbn}</p>
                                 </div>
 
-                                <div className="group rounded-lg border border-transparent p-2 transition-colors hover:border-neutral-100 hover:bg-neutral-50/50">
-                                    <div className="mb-1 flex items-center gap-2 text-xs font-semibold  tracking-wide text-neutral-500">
-                                        <Book size={12} />
-                                        <span>Kategori</span>
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Hash size={14} className="text-neutral-400" />
+                                            ISBN
+                                        </div>
+                                    </label>
+                                    <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 font-mono text-neutral-900">
+                                        {book.isbn}
                                     </div>
-                                    <div className="mt-1">
-                                        <span className="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                            {book.category?.name || 'Unknown'}
-                                        </span>
+                                </div>
+
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                                        <div className="flex items-center gap-2">
+                                            <Book size={14} className="text-neutral-400" />
+                                            Kategori
+                                        </div>
+                                    </label>
+                                    <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900">
+                                        {book.category?.name || 'Unknown'}
                                     </div>
                                 </div>
                             </div>
@@ -173,10 +195,20 @@ const BookDetail: React.FC = () => {
                 </div>
 
                 {/* Items List */}
-                <div className="lg:col-span-2">
+                <div className="w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto lg:col-span-2">
                     <div className="flex flex-col h-[calc(100vh-14rem)] rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
                         <div className="shrink-0 border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-                            <h2 className="font-bold text-neutral-900">Daftar Salinan Buku ({items.length})</h2>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                                        <Book size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold text-neutral-900">Daftar Salinan Buku</h2>
+                                </div>
+                                <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600">
+                                    {items.length} Salinan
+                                </span>
+                            </div>
                         </div>
                         <div className="flex-1 overflow-auto">
                             <table className="w-full text-left text-sm">
@@ -185,13 +217,12 @@ const BookDetail: React.FC = () => {
                                         <th className="px-6 py-3 font-medium">Kode Buku</th>
                                         <th className="px-6 py-3 font-medium">Kondisi</th>
                                         <th className="px-6 py-3 font-medium">Status</th>
-                                        <th className="px-6 py-3 font-medium">Dibuat Pada</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-neutral-100">
                                     {items.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-8 text-center text-neutral-500">
+                                            <td colSpan={3} className="px-6 py-8 text-center text-neutral-500">
                                                 Belum ada salinan buku.
                                             </td>
                                         </tr>
@@ -207,9 +238,6 @@ const BookDetail: React.FC = () => {
                                                         }`}>
                                                         {item.status}
                                                     </span>
-                                                </td>
-                                                <td className="px-6 py-3 text-neutral-500">
-                                                    {new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                             </tr>
                                         ))

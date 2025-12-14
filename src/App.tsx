@@ -12,12 +12,16 @@ const DashboardHomeWrapper = () => {
   const { user } = useOutletContext<{ user: Admin }>();
   return <DashboardHome user={user} />;
 };
+
+import BookUpload from './pages/admin/BookUpload';
+
 import BookList from './pages/admin/BookList';
 import BookForm from './pages/admin/BookForm';
 import AdminBookDetail from './pages/admin/BookDetail';
 import StudentList from './pages/admin/StudentList';
 import StudentUpload from './pages/admin/StudentUpload';
 import StudentForm from './pages/admin/StudentForm';
+import StudentDetail from './pages/admin/StudentDetail';
 import CategoryList from './pages/admin/CategoryList';
 import CategoryDetail from './pages/admin/CategoryDetail';
 import CategoryForm from './pages/admin/CategoryForm';
@@ -31,6 +35,7 @@ import MemberReport from './pages/admin/reports/MemberReport';
 import LibraryReportPage from './pages/admin/reports/LibraryReportPage';
 import { ToastProvider } from './components/Toast';
 import BookCatalogDetail from './pages/BookCatalogDetail';
+
 
 function App() {
 
@@ -48,12 +53,14 @@ function App() {
 
             {/* Master Data Routes */}
             <Route path="books" element={<BookList />} />
+            <Route path="books/upload" element={<BookUpload />} />
             <Route path="books/new" element={<BookForm />} />
             <Route path="books/:id" element={<AdminBookDetail />} />
             <Route path="books/:id/edit" element={<BookForm />} />
 
             <Route path="students" element={<StudentList />} />
             <Route path="students/new" element={<StudentForm />} />
+            <Route path="students/:id" element={<StudentDetail />} />
             <Route path="students/:id/edit" element={<StudentForm />} />
             <Route path="students/upload" element={<StudentUpload />} />
 

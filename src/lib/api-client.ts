@@ -7,11 +7,13 @@ interface ApiOptions extends RequestInit {
 export class ApiError extends Error {
   status: number;
   data: any;
+  fields?: Record<string, string[]>;
 
-  constructor(status: number, message: string, data?: any) {
+  constructor(status: number, message: string, data?: any, fields? :Record<string, string[]>) {
     super(message);
     this.status = status;
     this.data = data;
+    this.fields = fields;
   }
 }
 
@@ -25,15 +27,21 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
   if (!response.ok) {
     let message = 'An error occurred';
-    if (isJson && data.meta?.message) {
-      message = data.meta.message;
+    let fields = undefined;
+    if (isJson && data.error?.message) {
+      message = data.error.message;
     } else if (isJson && data.message) {
       message = data.message;
     } else if (typeof data === 'string') {
       message = data;
     }
     
-    throw new ApiError(response.status, message, data);
+    // let fields = [];
+    if (isJson && data.error?.fields) {
+      fields = data.error.fields;
+    }
+
+    throw new ApiError(response.status, message, data, fields);
   }
 
   return data as T;

@@ -1,69 +1,71 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Trash2, Edit, Tag, AlignLeft, Book, FileText } from 'lucide-react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { User, Hash, Edit, Trash2, FileText } from 'lucide-react';
 import { api } from '../../services/api';
-import type { Category } from '../../types';
+import type { Student } from '../../types';
 import BackButton from '../../components/BackButton';
+import { LoadingScreen } from '../../components/LoadingScreen';
 import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
-import { LoadingScreen } from '../../components/LoadingScreen';
 
-const CategoryDetail: React.FC = () => {
+const StudentDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { showToast } = useToast();
-    const [category, setCategory] = useState<Category | null>(null);
+    const [student, setStudent] = useState<Student | null>(null);
     const [loading, setLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            if (!id) return;
-            try {
-                const categoryData = await api.getCategoryById(id);
-
-                if (categoryData) {
-                    setCategory(categoryData);
-                } else {
-                    navigate('/dashboard/categories');
-                }
-            } catch (error) {
-                console.error('Error fetching category details:', error);
-                navigate('/dashboard/categories');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, [id]);
+
+    const fetchData = async () => {
+        if (!id) return;
+        setLoading(true);
+        try {
+            const data = await api.getStudentById(id);
+            if (data) {
+                setStudent(data);
+            } else {
+                navigate('/dashboard/students');
+            }
+        } catch (error) {
+            console.error('Error fetching student:', error);
+            navigate('/dashboard/students');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDelete = () => {
         setShowDeleteModal(true);
     };
 
     const confirmDelete = async () => {
-        if (!category) return;
+        if (!id) return;
+
         try {
-            const response = await api.deleteCategory(category.id);
+            const response = await api.deleteStudent(id);
             if (response) {
-                showToast('Kategori berhasil dihapus', 'success');
-                navigate('/dashboard/categories');
+                showToast('Siswa berhasil dihapus', 'success');
+                navigate('/dashboard/students');
             } else {
-                showToast('Gagal menghapus kategori', 'error');
+                showToast('Gagal menghapus siswa', 'error');
             }
         } catch (error) {
-            console.error('Error deleting category:', error);
-            showToast('Gagal menghapus kategori', 'error');
+            console.error('Error deleting student:', error);
+            showToast('Gagal menghapus siswa', 'error');
         } finally {
             setShowDeleteModal(false);
         }
     };
 
     if (loading) {
-        return <LoadingScreen message="Memuat data kategori..." />;
+        return <LoadingScreen message="Memuat data siswa..." />;
     }
 
-    if (!category) {
+    if (!student) {
         return null;
     }
 
@@ -72,23 +74,23 @@ const CategoryDetail: React.FC = () => {
             {/* Header Section */}
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
-                    <BackButton to='/dashboard/categories' />
+                    <BackButton to='/dashboard/students' />
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-                            Detail Kategori
+                            Detail Siswa
                         </h1>
                         <p className="text-sm text-neutral-500">
-                            Informasi detail kategori dan daftar buku
+                            Informasi detail data siswa
                         </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
                     <Link
-                        to={`/dashboard/categories/edit/${id}`}
+                        to={`/dashboard/students/${id}/edit`}
                         className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
                     >
                         <Edit size={18} />
-                        Edit Kategori
+                        Edit Siswa
                     </Link>
                     <button
                         onClick={handleDelete}
@@ -98,19 +100,16 @@ const CategoryDetail: React.FC = () => {
                         Hapus
                     </button>
                 </div>
-
-
             </div>
 
             <div className="mx-auto max-w-2xl space-y-8">
-                {/* Info Card */}
                 <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
                     <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                         <div className="flex items-center gap-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                                <Tag size={18} />
+                                <User size={18} />
                             </div>
-                            <h2 className="text-lg font-bold text-neutral-900">Informasi Kategori</h2>
+                            <h2 className="text-lg font-bold text-neutral-900">Informasi Siswa</h2>
                         </div>
                     </div>
 
@@ -119,48 +118,48 @@ const CategoryDetail: React.FC = () => {
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-neutral-700">
                                     <div className="flex items-center gap-2">
-                                        <Tag size={14} className="text-neutral-400" />
-                                        Nama Kategori
+                                        <User size={14} className="text-neutral-400" />
+                                        Nama Lengkap
                                     </div>
                                 </label>
                                 <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900">
-                                    {category.name}
+                                    {student.name}
                                 </div>
                             </div>
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-neutral-700">
                                     <div className="flex items-center gap-2">
-                                        <AlignLeft size={14} className="text-neutral-400" />
-                                        Deskripsi
+                                        <Hash size={14} className="text-neutral-400" />
+                                        NIS / User Number
                                     </div>
                                 </label>
-                                <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900 min-h-[46px]">
-                                    {category.description || '-'}
+                                <div className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 text-neutral-900">
+                                    {student.user_number}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 {/* Search Box */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="flex items-center gap-2">
                     <div
-                        onClick={() => navigate(`/dashboard/books?categoryId=${category.id}&categoryName=${encodeURIComponent(category.name)}`)}
+                        onClick={() => navigate(`/dashboard/transactions?search=${encodeURIComponent(student.name)}`)}
                         className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">
                             <div className="mb-4 rounded-full bg-blue-50 p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
-                                <Book size={32} />
+                                <User size={32} />
                             </div>
                             <p className="mb-1 text-base font-medium text-neutral-900">
-                                Cari buku kategori {category.name}
+                                Lihat semua peminjaman {student.name}
                             </p>
                             <p className="text-xs text-neutral-500">
-                                Klik untuk mencari semua buku dalam kategori ini
+                                Lihat semua peminjaman yang dilakukan oleh {student.name}
                             </p>
                         </div>
                     </div>
                     <div
-                        onClick={() => navigate('#')}
+                        onClick={() => navigate(``)}
                         className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">
@@ -168,10 +167,10 @@ const CategoryDetail: React.FC = () => {
                                 <FileText size={32} />
                             </div>
                             <p className="mb-1 text-base font-medium text-neutral-900">
-                                Cari Laporan kategori {category.name}
+                                Lihat laporan peminjaman {student.name}
                             </p>
                             <p className="text-xs text-neutral-500">
-                                Klik untuk mencari semua laporan dalam kategori ini
+                                Lihat laporan peminjaman yang dilakukan oleh {student.name}
                             </p>
                         </div>
                     </div>
@@ -182,12 +181,12 @@ const CategoryDetail: React.FC = () => {
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
                 onConfirm={confirmDelete}
-                title="Hapus Kategori?"
-                message={`Apakah Anda yakin ingin menghapus kategori "${category.name}"? Tindakan ini tidak dapat dibatalkan.`}
+                title="Hapus Siswa?"
+                message="Apakah Anda yakin ingin menghapus siswa ini? Tindakan ini tidak dapat dibatalkan."
                 confirmLabel="Ya, Hapus"
             />
         </div>
     );
 };
 
-export default CategoryDetail;
+export default StudentDetail;

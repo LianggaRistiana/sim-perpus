@@ -91,31 +91,34 @@ const StudentList: React.FC = () => {
                 <div className="flex gap-2">
                     <Link
                         to="/dashboard/students/new"
-                        className="flex items-center gap-2 rounded-lg bg-white border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                        className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
                     >
                         <Plus size={20} />
-                        Tambah
+                        <span className='hidden md:block'>Tambah Siswa</span>
                     </Link>
                     <Link
                         to="/dashboard/students/upload"
-                        className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                        className="flex items-center gap-2 rounded-lg bg-white border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
                     >
                         <Upload size={20} />
-                        Upload CSV
+                        <span className='hidden md:block'>Upload CSV</span>
                     </Link>
                 </div>
             </div>
 
-            <div className="mb-6 flex gap-4">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
-                    <input
-                        type="text"
-                        placeholder="Cari nama atau User Number..."
-                        className="w-full rounded-lg border border-neutral-200 py-2.5 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
+            {/* Filters */}
+            <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="relative lg:col-span-2">
+                        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                        <input
+                            type="text"
+                            placeholder="Cari nama atau User Number..."
+                            className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 

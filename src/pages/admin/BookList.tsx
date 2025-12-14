@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { Plus, Edit, Trash2, Search, Upload } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
@@ -24,8 +24,16 @@ const BookList: React.FC = () => {
         timestamp: ''
     });
 
+    const [searchParams] = useSearchParams();
     const [inputValue, setInputValue] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<Option | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<Option | null>(() => {
+        const catId = searchParams.get('categoryId');
+        const catName = searchParams.get('categoryName');
+        if (catId && catName) {
+            return { id: catId, label: catName };
+        }
+        return null;
+    });
 
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -116,33 +124,49 @@ const BookList: React.FC = () => {
                     <h1 className="text-2xl font-bold text-neutral-900">Manajemen Buku</h1>
                     <p className="text-neutral-600">Kelola daftar buku perpustakaan</p>
                 </div>
-                <Link
-                    to="/dashboard/books/new"
-                    className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-                >
-                    <Plus size={20} />
-                    Tambah Buku
-                </Link>
+                <div className='flex cols-2 gap-2'>
+
+                    <Link
+                        to="/dashboard/books/new"
+                        className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                    >
+                        <Plus size={20} />
+                        <span className='hidden md:block'>Tambah Buku</span>
+                    </Link>
+                    <Link
+                        to="/dashboard/books/upload"
+                        className="flex items-center gap-2 rounded-lg bg-white border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                    >
+                        <Upload size={20} />
+                        <span className='hidden md:block'>Upload CSV</span>
+                    </Link>
+                </div>
             </div>
 
-            <div className="mb-6 flex flex-wrap items-center gap-4">
-                <div className="relative max-w-md flex-1">
-                    <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
-                    <input
-                        type="text"
-                        placeholder="Cari buku..."
-                        className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                    />
-                </div>
-                <div className="w-64">
-                    <AsyncSelect
-                        placeholder="Semua Kategori"
-                        value={selectedCategory}
-                        onChange={setSelectedCategory}
-                        loadOptions={loadCategoryOptions}
-                    />
+            {/* Filters */}
+            <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="relative lg:col-span-2">
+                        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                        <input
+                            type="text"
+                            placeholder="Cari buku..."
+                            className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <AsyncSelect
+                            placeholder="Semua Kategori"
+                            value={selectedCategory}
+                            onChange={setSelectedCategory}
+                            loadOptions={loadCategoryOptions}
+                            className='bg-transparent'
+                            borderActive='border-blue-500'
+                            ringActive='ring-blue-500'
+                        />
+                    </div>
                 </div>
             </div>
 

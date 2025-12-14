@@ -5,8 +5,9 @@ import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
 import { Modal } from '../../components/Modal';
 import { DeleteModal } from '../../components/DeleteModal';
-import type { BookMaster, Category, BookItem } from '../../types';
+import type { BookMaster, BookItem } from '../../types';
 import BackButton from '../../components/BackButton';
+import { AsyncSelect, type Option } from '../../components/AsyncSelect';
 import { LoadingScreen } from '../../components/LoadingScreen';
 
 const BookForm: React.FC = () => {
@@ -23,7 +24,7 @@ const BookForm: React.FC = () => {
         isbn: ''
     });
 
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<Option | null>(null);
     const [bookItems, setBookItems] = useState<BookItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -31,6 +32,7 @@ const BookForm: React.FC = () => {
     // Modal State
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [copyCondition, setCopyCondition] = useState('good');
+    const [copyQuantity, setCopyQuantity] = useState(1);
     const [editingItem, setEditingItem] = useState<BookItem | null>(null);
 
     // Delete Modal State
@@ -38,15 +40,21 @@ const BookForm: React.FC = () => {
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchCategories();
         if (isEditMode) {
             fetchBookData();
         }
     }, [id]);
 
-    const fetchCategories = async () => {
-        const response = await api.getCategories({ limit: 100 });
-        setCategories(response.data);
+    const loadCategoryOptions = async ({ page, keyword }: { page: number; keyword: string }) => {
+        try {
+            const response = await api.getCategories({ page, limit: 10, keyword });
+            return {
+                options: response.data.map(c => ({ id: c.id, label: c.name })),
+                hasMore: response.meta.page < response.meta.last_page
+            };
+        } catch (error) {
+            return { options: [], hasMore: false };
+        }
     };
 
     const fetchBookData = async () => {
@@ -56,6 +64,9 @@ const BookForm: React.FC = () => {
             const book = await api.getBookById(id);
             if (book) {
                 setFormData(book);
+                if (book.category) {
+                    setSelectedCategory({ id: book.category.id, label: book.category.name });
+                }
                 const items = await api.getBookItems(id);
                 setBookItems(items);
             }
@@ -97,6 +108,7 @@ const BookForm: React.FC = () => {
         if (!id) return;
         setEditingItem(null);
         setCopyCondition('good');
+        setCopyQuantity(1);
         setShowCopyModal(true);
     };
 
@@ -118,13 +130,25 @@ const BookForm: React.FC = () => {
                 showToast('Kondisi buku berhasil diperbarui', 'success');
             } else {
                 // Add new
-                await api.addBookItem({
-                    masterId: id,
-                    code: '', // Backend generates code
-                    condition: copyCondition,
-                    status: 'available'
-                });
-                showToast('Salinan berhasil ditambahkan', 'success');
+                if (copyQuantity > 1) {
+                    await api.createBookItemBatch({
+                        book_master_id: id,
+                        items: [{
+                            condition: copyCondition,
+                            quantity: copyQuantity,
+                            status: 'available'
+                        }]
+                    });
+                    showToast(`${copyQuantity} Salinan berhasil ditambahkan`, 'success');
+                } else {
+                    await api.addBookItem({
+                        masterId: id,
+                        code: '', // Backend generates code
+                        condition: copyCondition,
+                        status: 'available'
+                    });
+                    showToast('Salinan berhasil ditambahkan', 'success');
+                }
             }
 
             fetchBookData();
@@ -175,9 +199,9 @@ const BookForm: React.FC = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className={isEditMode ? "grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start" : "space-y-6"}>
+                <form onSubmit={handleSubmit} className={isEditMode ? "flex w-full gap-4 overflow-x-auto p-1 pb-8 lg:grid lg:grid-cols-2 lg:p-0 lg:overflow-visible snap-x snap-mandatory" : "space-y-6"}>
                     {/* Main Information Card */}
-                    <div className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'lg:sticky lg:top-8' : ''}`}>
+                    <div className={`flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60 ${isEditMode ? 'w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto lg:sticky lg:top-8' : ''}`}>
                         <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                             <div className="flex items-center gap-2">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -195,7 +219,7 @@ const BookForm: React.FC = () => {
                             </button>
                         </div>
                         <div className="p-6 md:p-8 h-[calc(100vh-18rem)] overflow-y-auto">
-                            <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+                            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                                 <div className="col-span-2">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">Judul Buku</label>
                                     <div className="relative">
@@ -210,7 +234,7 @@ const BookForm: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <User size={14} className="text-neutral-400" />
@@ -227,7 +251,7 @@ const BookForm: React.FC = () => {
                                     />
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Building size={14} className="text-neutral-400" />
@@ -244,7 +268,7 @@ const BookForm: React.FC = () => {
                                     />
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Calendar size={14} className="text-neutral-400" />
@@ -261,7 +285,7 @@ const BookForm: React.FC = () => {
                                     />
                                 </div>
 
-                                <div>
+                                <div className="col-span-2 md:col-span-1">
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Hash size={14} className="text-neutral-400" />
@@ -282,17 +306,15 @@ const BookForm: React.FC = () => {
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         Kategori
                                     </label>
-                                    <select
-                                        required
-                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
-                                        value={formData.categoryId}
-                                        onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                                    >
-                                        <option value="">Pilih Kategori</option>
-                                        {categories.map(c => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
-                                        ))}
-                                    </select>
+                                    <AsyncSelect
+                                        placeholder="Pilih Kategori"
+                                        loadOptions={loadCategoryOptions}
+                                        value={selectedCategory}
+                                        onChange={(option) => {
+                                            setSelectedCategory(option);
+                                            setFormData({ ...formData, categoryId: option?.id || '' });
+                                        }}
+                                    />
                                 </div>
 
                                 {!isEditMode && (
@@ -324,7 +346,7 @@ const BookForm: React.FC = () => {
 
                     {/* Copies Management Section (Only in Edit Mode) */}
                     {isEditMode && (
-                        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
+                        <div className="w-[85vw] flex-none snap-center sm:w-[500px] lg:w-auto flex flex-col h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-neutral-200/60">
                             <div className="flex items-center justify-between border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
                                 <h2 className="text-base font-semibold text-neutral-900">Daftar Salinan Buku</h2>
                                 <button
@@ -424,6 +446,22 @@ const BookForm: React.FC = () => {
                         <option value="poor">Poor</option>
                     </select>
                 </div>
+                {!editingItem && (
+                    <div className="mt-4">
+                        <label className="mb-2 block text-sm font-medium text-neutral-700">Jumlah Salinan</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                            value={copyQuantity}
+                            onChange={(e) => setCopyQuantity(parseInt(e.target.value) || 1)}
+                        />
+                        <p className="mt-1 text-xs text-neutral-500">
+                            Masukkan jumlah salinan yang ingin ditambahkan sekaligus.
+                        </p>
+                    </div>
+                )}
             </Modal>
 
             <DeleteModal

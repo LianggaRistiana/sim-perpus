@@ -48,16 +48,13 @@ const BookReport: React.FC = () => {
             try {
                 const [allBooks, popularBooks, longestBorrowed] = await Promise.all([
                     api.getBooks(),
-                    api.getPopularBooks(10), // Use new API method
-                    api.getLongestBorrowedBooks()
+                    api.getMostBorrowedBooks(),
+                    api.getLongestBorrowedBooks(),
+                    api.getDamagedBooks()
                 ]);
 
                 setBooks(allBooks.data);
-                // Transform API response to chart format
-                setMostBorrowedBooks(popularBooks.map(book => ({
-                    label: book.title,
-                    value: book.total_borrowed
-                })));
+                setMostBorrowedBooks(mostBorrowed.map(i => ({ label: i.title, value: i.count })));
                 setLongestBorrowedBooks(longestBorrowed.map(i => ({ label: i.title, value: i.days })));
             } catch (error) {
                 console.error('Error fetching book report data:', error);

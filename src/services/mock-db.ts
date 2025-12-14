@@ -107,9 +107,9 @@ export let bookItems: BookItem[] = [
 ];
 
 export let students: Student[] = [
-  { id: '1', nis: '12345', name: 'John Doe' },
-  { id: '2', nis: '67890', name: 'Jane Smith' },
-  { id: '3', nis: '11223', name: 'Alice Johnson' },
+  { id: '1', user_number: '12345', name: 'John Doe' },
+  { id: '2', user_number: '67890', name: 'Jane Smith' },
+  { id: '3', user_number: '11223', name: 'Alice Johnson' },
 ];
 
 export const admins: Admin[] = [

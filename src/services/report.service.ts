@@ -56,7 +56,7 @@ export const reportService = {
     ].sort((a, b) => b.days - a.days);
   },
 
-  getCategoryReportDetails: async (categoryId: string): Promise<{
+  getCategoryReportDetails: async (_categoryId: string): Promise<{
     monthlyBorrows: { month: string; count: number }[];
     totalBooks: number;
     totalBorrows: number;

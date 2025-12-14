@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'STAFF' | 'LIBRARIAN';
+export type Role = "ADMIN" | "STAFF" | "LIBRARIAN";
 
 export interface User {
   id: string;
@@ -48,6 +48,12 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface ApiResponseMeta<T> {
+  status: string;
+  message: string;
+  meta: T;
+}
+
 export interface BookMaster {
   id: string;
   title: string;
@@ -67,6 +73,7 @@ export interface BookItem {
   condition: string;
   status: string;
   createdAt: Date;
+  book_master?: BookMaster;
 }
 
 export interface BorrowTransaction {

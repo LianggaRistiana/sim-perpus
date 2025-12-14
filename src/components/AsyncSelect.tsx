@@ -12,6 +12,9 @@ interface AsyncSelectProps {
     value?: Option | null;
     onChange: (value: Option | null) => void;
     loadOptions: (params: { page: number; keyword: string }) => Promise<{ options: Option[]; hasMore: boolean }>;
+    className?: string;
+    borderActive?: string;
+    ringActive?: string;
 }
 
 export const AsyncSelect: React.FC<AsyncSelectProps> = ({
@@ -19,7 +22,10 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
     placeholder = 'Select...',
     value,
     onChange,
-    loadOptions
+    loadOptions,
+    className = '',
+    borderActive = 'border-neutral-900',
+    ringActive = 'ring-neutral-900',
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [options, setOptions] = useState<Option[]>([]);
@@ -111,7 +117,10 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
         <div className="relative" ref={dropdownRef}>
             {label && <label className="mb-2 block text-sm font-medium text-neutral-700">{label}</label>}
             <div
-                className={`flex w-full cursor-pointer items-center justify-between rounded-lg border  p-2 ${isOpen ? 'border-blue-500 ring-1 ring-blue-500' : 'border-neutral-300'}`}
+                className={`flex w-full cursor-pointer items-center justify-between rounded-xl border p-2.5 transition-all ${isOpen
+                    ? `${borderActive} bg-white ring-1 ${ringActive}`
+                    : 'border-neutral-200 bg-neutral-50 hover:bg-white hover:border-neutral-300'
+                    } ${className}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className={`block truncate ${!value ? 'text-neutral-400' : 'text-neutral-900'}`}>
@@ -128,7 +137,7 @@ export const AsyncSelect: React.FC<AsyncSelectProps> = ({
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 mt-1 max-h-60 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+                <div className="absolute z-100 mt-1 max-h-60 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
                     <div className="border-b border-neutral-100 p-2">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
