@@ -3,6 +3,7 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import type { Admin } from '../types';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { authService } from '../services/auth.service';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -18,8 +19,8 @@ const Dashboard: React.FC = () => {
         setUser(JSON.parse(storedUser));
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('user');
+    const handleLogout = async () => {
+        await authService.logout();
         navigate('/login');
     };
 
