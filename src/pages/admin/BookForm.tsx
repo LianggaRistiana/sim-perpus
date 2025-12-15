@@ -43,6 +43,7 @@ const BookForm: React.FC = () => {
     // Modal State
     const [showCopyModal, setShowCopyModal] = useState(false);
     const [copyCondition, setCopyCondition] = useState('good');
+    const [copyStatus, setCopyStatus] = useState('available');
     const [copyQuantity, setCopyQuantity] = useState(1);
     const [editingItem, setEditingItem] = useState<BookItem | null>(null);
 
@@ -172,6 +173,7 @@ const BookForm: React.FC = () => {
         if (!id) return;
         setEditingItem(null);
         setCopyCondition('good');
+        setCopyStatus('available');
         setCopyQuantity(1);
         setShowCopyModal(true);
     };
@@ -179,6 +181,7 @@ const BookForm: React.FC = () => {
     const openEditModal = (item: BookItem) => {
         setEditingItem(item);
         setCopyCondition(item.condition.toLowerCase());
+        setCopyStatus(item.status.toLowerCase());
         setShowCopyModal(true);
     };
 
@@ -189,9 +192,10 @@ const BookForm: React.FC = () => {
             if (editingItem) {
                 // Update existing
                 await api.updateBookItem(editingItem.id, {
-                    condition: copyCondition
+                    condition: copyCondition,
+                    status: copyStatus
                 });
-                showToast('Kondisi buku berhasil diperbarui', 'success');
+                showToast('Kondisi dan status buku berhasil diperbarui', 'success');
             } else {
                 // Add new
                 if (copyQuantity > 1) {
@@ -209,7 +213,7 @@ const BookForm: React.FC = () => {
                         masterId: id,
                         code: '', // Backend generates code
                         condition: copyCondition,
-                        status: 'available'
+                        status: copyStatus
                     });
                     showToast('Salinan berhasil ditambahkan', 'success');
                 }
@@ -463,9 +467,12 @@ const BookForm: React.FC = () => {
                                                 <div>
                                                     <div className="mb-1 flex items-center gap-2">
                                                         <span className="font-mono text-sm font-bold text-neutral-900">{item.code}</span>
-                                                        <StatusBookBadge status={item.status} />
+                                                        {/* <StatusBookBadge status={item.status} /> */}
                                                     </div>
-                                                    <p className="text-xs text-neutral-500">Kondisi : <ConditionBadge condition={item.condition} /></p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-xs text-neutral-500">Kondisi : <ConditionBadge condition={item.condition} /></p>
+                                                        <p className="text-xs text-neutral-500">Status : <StatusBookBadge status={item.status} /></p>
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <button
@@ -536,23 +543,38 @@ const BookForm: React.FC = () => {
                         <option value="poor">Rusak</option>
                     </select>
                 </div>
-                {!editingItem && (
-                    <div className="mt-4">
-                        <label className="mb-2 block text-sm font-medium text-neutral-700">Jumlah Salinan</label>
-                        <input
-                            type="number"
-                            min="1"
-                            max="100"
-                            className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
-                            value={copyQuantity}
-                            onChange={(e) => setCopyQuantity(parseInt(e.target.value) || 1)}
-                        />
-                        <p className="mt-1 text-xs text-neutral-500">
-                            Masukkan jumlah salinan yang ingin ditambahkan sekaligus.
-                        </p>
-                    </div>
-                )}
-            </Modal>
+
+                <div className="mt-4">
+                    <label className="mb-2 block text-sm font-medium text-neutral-700">Status Buku</label>
+                    <select
+                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                        value={copyStatus}
+                        onChange={(e) => setCopyStatus(e.target.value)}
+                    >
+                        <option value="available">Tersedia</option>
+                        <option value="borrowed">Dipinjam</option>
+                        <option value="lost">Hilang</option>
+                    </select>
+                </div>
+                {
+                    !editingItem && (
+                        <div className="mt-4">
+                            <label className="mb-2 block text-sm font-medium text-neutral-700">Jumlah Salinan</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 outline-none transition-all focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+                                value={copyQuantity}
+                                onChange={(e) => setCopyQuantity(parseInt(e.target.value) || 1)}
+                            />
+                            <p className="mt-1 text-xs text-neutral-500">
+                                Masukkan jumlah salinan yang ingin ditambahkan sekaligus.
+                            </p>
+                        </div>
+                    )
+                }
+            </Modal >
 
             <DeleteModal
                 isOpen={showDeleteModal}
@@ -562,7 +584,7 @@ const BookForm: React.FC = () => {
                 message="Apakah Anda yakin ingin menghapus salinan ini? Tindakan ini tidak dapat dibatalkan."
                 confirmLabel="Ya, Hapus"
             />
-        </div>
+        </div >
     );
 };
 
