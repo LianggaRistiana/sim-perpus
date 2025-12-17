@@ -3,6 +3,7 @@ import { api } from '../../../services/api';
 import type { Student } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
 import { ArrowLeft, User, BarChart2, Clock, AlertCircle } from 'lucide-react';
+import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 
 const MemberReport: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
@@ -33,9 +34,9 @@ const MemberReport: React.FC = () => {
                 setMostActiveStudents(studentActivity.data
                     .sort((a, b) => b.total_borrowings - a.total_borrowings)
                     .slice(0, 10)
-                    .map(student => ({ 
-                        label: student.name, 
-                        value: student.total_borrowings 
+                    .map(student => ({
+                        label: student.name,
+                        value: student.total_borrowings
                     }))
                 );
             } catch (error) {
@@ -53,7 +54,7 @@ const MemberReport: React.FC = () => {
         try {
             // Use the new student history API
             const historyResponse = await api.getStudentHistory(student.id, 1, 20);
-            
+
             // Transform the history data to match the expected format
             const monthlyActivity = historyResponse.data.history.reduce((acc, transaction) => {
                 const month = new Date(transaction.borrow_date).toLocaleString('default', { month: 'short' });
@@ -89,8 +90,9 @@ const MemberReport: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex h-64 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            <div className="p-6 space-y-4">
+                <div className="h-8 w-64 animate-pulse rounded bg-neutral-200"></div>
+                <ChartSkeleton />
             </div>
         );
     }
@@ -112,8 +114,13 @@ const MemberReport: React.FC = () => {
                 </div>
 
                 {detailLoading ? (
-                    <div className="flex h-64 items-center justify-center">
-                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                    <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+                        <div className="grid gap-6 md:grid-cols-3">
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                        </div>
+                        <ChartSkeleton />
                     </div>
                 ) : studentStats && (
                     <div className="flex-1 space-y-6 overflow-y-auto pr-2">

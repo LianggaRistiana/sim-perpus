@@ -3,6 +3,7 @@ import { api } from '../../../services/api';
 import type { Category } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
 import { ArrowLeft, BookOpen, BarChart2 } from 'lucide-react';
+import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 
 const CategoryReport: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -65,8 +66,12 @@ const CategoryReport: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex h-64 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            <div className="p-6 space-y-4">
+                <div className="h-8 w-64 animate-pulse rounded bg-neutral-200"></div>
+                <div className="grid gap-6 md:grid-cols-2">
+                    <ChartSkeleton />
+                    <ChartSkeleton />
+                </div>
             </div>
         );
     }
@@ -88,8 +93,12 @@ const CategoryReport: React.FC = () => {
                 </div>
 
                 {detailLoading ? (
-                    <div className="flex h-64 items-center justify-center">
-                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                    <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                        </div>
+                        <ChartSkeleton />
                     </div>
                 ) : categoryStats && (
                     <div className="flex-1 space-y-6 overflow-y-auto pr-2">

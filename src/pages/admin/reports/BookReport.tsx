@@ -4,6 +4,7 @@ import type { BookItem, BookMaster } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
+import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 import { AlertTriangle, ArrowLeft, BookOpen, BarChart2, Copy, Clock } from 'lucide-react';
 
 const BookReport: React.FC = () => {
@@ -129,8 +130,12 @@ const BookReport: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex h-64 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            <div className="p-6 space-y-4">
+                <div className="h-8 w-64 animate-pulse rounded bg-neutral-200"></div>
+                <div className="grid gap-6 md:grid-cols-2">
+                    <ChartSkeleton />
+                    <ChartSkeleton />
+                </div>
             </div>
         );
     }
@@ -152,8 +157,13 @@ const BookReport: React.FC = () => {
                 </div>
 
                 {detailLoading ? (
-                    <div className="flex h-64 items-center justify-center">
-                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                    <div className="flex-1 space-y-6 overflow-y-auto pr-2">
+                        <div className="grid gap-6 md:grid-cols-3">
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                            <StatCardSkeleton />
+                        </div>
+                        <ChartSkeleton />
                     </div>
                 ) : bookStats && (
                     <div className="flex-1 space-y-6 overflow-y-auto pr-2">

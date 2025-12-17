@@ -4,6 +4,8 @@ import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemand
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { BookOpen, FileText, FolderOpen, TrendingUp } from 'lucide-react';
+import { CardLoading } from '../../../components/CardLoading';
+import { OverviewSkeleton, SectionSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 
 const LibraryReportPage: React.FC = () => {
     // State for overview section
@@ -20,7 +22,7 @@ const LibraryReportPage: React.FC = () => {
 
     // State for borrowing trends section
     const [trends, setTrends] = useState<MonthlyTrend[]>([]);
-    const [trendsYear, setTrendsYear] = useState<number>(new Date().getFullYear());
+    const [trendsYear, setTrendsYear] = useState<number>(2025); // Default to 2025
     const [trendsLoading, setTrendsLoading] = useState(true);
 
     // State for inventory section
@@ -136,9 +138,7 @@ const LibraryReportPage: React.FC = () => {
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Ringkasan Perpustakaan</h2>
 
                     {overviewLoading ? (
-                        <div className="flex h-32 items-center justify-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        </div>
+                        <OverviewSkeleton columns={5} />
                     ) : overview ? (
                         <div className="grid gap-6 md:grid-cols-5">
                             <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -207,8 +207,8 @@ const LibraryReportPage: React.FC = () => {
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Buku Paling Diminati Saat Ini</h2>
 
                     {inDemandLoading ? (
-                        <div className="flex h-32 items-center justify-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                            <SectionSkeleton items={5} />
                         </div>
                     ) : inDemandBooks.length > 0 ? (
                         <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -291,7 +291,7 @@ const LibraryReportPage: React.FC = () => {
                                 onChange={(e) => setTrendsYear(Number(e.target.value))}
                                 className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
                             >
-                                {[2024, 2023, 2022, 2021].map(year => (
+                                {[2025, 2024, 2023, 2022, 2021, 2020].map(year => (
                                     <option key={year} value={year}>{year}</option>
                                 ))}
                             </select>
@@ -299,9 +299,7 @@ const LibraryReportPage: React.FC = () => {
                     </div>
 
                     {trendsLoading ? (
-                        <div className="flex h-64 items-center justify-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-                        </div>
+                        <ChartSkeleton height="h-80" />
                     ) : trends.length > 0 ? (
                         <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                             <div className="mb-6 flex items-center gap-2 text-sm text-neutral-600">
@@ -362,8 +360,9 @@ const LibraryReportPage: React.FC = () => {
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Distribusi Kategori Buku</h2>
 
                     {categoriesLoading ? (
-                        <div className="flex h-64 items-center justify-center">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <ChartSkeleton />
+                            <ChartSkeleton />
                         </div>
                     ) : categories.length > 0 ? (
                         <div className="grid gap-6 md:grid-cols-2">
