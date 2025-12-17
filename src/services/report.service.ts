@@ -1,4 +1,3 @@
-import { bookItems, borrowDetails, borrowTransactions, returnTransactions, returnDetails, students } from './mock-db';
 import { apiClient } from '../lib/api-client';
 import type {
   LibraryOverviewResponse,
@@ -13,22 +12,35 @@ import type {
   BookItem
 } from '../types';
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const reportService = {
+  /**
+   * Get most borrowed books
+   * Uses /popular-books endpoint which returns books by total borrow count
+   */
   getMostBorrowedBooks: async (): Promise<{ title: string; count: number }[]> => {
-    await delay(500);
-    return [
-      { title: 'The Great Gatsby', count: 15 },
-      { title: 'Clean Code', count: 12 },
-      { title: 'A Brief History of Time', count: 8 },
-      { title: 'Harry Potter', count: 20 },
-      { title: 'Lord of the Rings', count: 18 },
-    ].sort((a, b) => b.count - a.count);
+    try {
+      const response = await reportService.getPopularBooks(10);
+      return response.data.map(book => ({
+        title: book.title,
+        count: book.total_borrowed
+      }));
+    } catch (error) {
+      console.error('Failed to fetch most borrowed books:', error);
+      // Fallback to empty array on error
+      return [];
+    }
   },
 
+  /**
+   * Get longest borrowed books
+   * TODO: Backend endpoint not implemented yet
+   * Required: GET /api/library/reports/longest-borrowed-books?limit=10
+   * Response should include: { title, average_days_borrowed }
+   */
   getLongestBorrowedBooks: async (): Promise<{ title: string; days: number }[]> => {
-    await delay(500);
+    // TODO: Replace with real API when endpoint is available
+    console.warn('getLongestBorrowedBooks is using mock data - backend endpoint not implemented');
     return [
       { title: 'Clean Code', days: 45 },
       { title: 'The Great Gatsby', days: 30 },
@@ -38,18 +50,38 @@ export const reportService = {
     ].sort((a, b) => b.days - a.days);
   },
 
+  /**
+   * Get most borrowed categories
+   * Aggregates from category distribution and borrowing data
+   */
   getMostBorrowedCategories: async (): Promise<{ name: string; count: number }[]> => {
-    await delay(500);
-    return [
-      { name: 'Fiction', count: 45 },
-      { name: 'Technology', count: 30 },
-      { name: 'Science', count: 25 },
-      { name: 'History', count: 15 },
-    ].sort((a, b) => b.count - a.count);
+    try {
+      // Use category distribution as a proxy for now
+      // This shows categories by total book items, not borrow count
+      // TODO: Backend should provide endpoint with actual borrow counts per category
+      const response = await reportService.getCategoryDistribution();
+      return response.data
+        .map(cat => ({
+          name: cat.category_name,
+          count: cat.total_book_items // Using items count as proxy
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+    } catch (error) {
+      console.error('Failed to fetch most borrowed categories:', error);
+      return [];
+    }
   },
 
+  /**
+   * Get longest borrowed categories
+   * TODO: Backend endpoint not implemented yet
+   * Required: GET /api/library/reports/longest-borrowed-categories?limit=10
+   * Response should include: { category_name, average_days_borrowed }
+   */
   getLongestBorrowedCategories: async (): Promise<{ name: string; days: number }[]> => {
-    await delay(500);
+    // TODO: Replace with real API when endpoint is available
+    console.warn('getLongestBorrowedCategories is using mock data - backend endpoint not implemented');
     return [
       { name: 'Technology', days: 120 },
       { name: 'Fiction', days: 90 },
@@ -58,27 +90,66 @@ export const reportService = {
     ].sort((a, b) => b.days - a.days);
   },
 
-  getCategoryReportDetails: async (_categoryId: string): Promise<{
+  /**
+   * Get category report details
+   * @param categoryId - Category ID to get details for
+   * @returns Category statistics and monthly trends
+   */
+  getCategoryReportDetails: async (categoryId: string): Promise<{
     monthlyBorrows: { month: string; count: number }[];
     totalBooks: number;
     totalBorrows: number;
   }> => {
-    await delay(500);
-    // Mock data based on category ID (randomized for demo)
-    return {
-      monthlyBorrows: [
-        { month: 'Jan', count: Math.floor(Math.random() * 50) },
-        { month: 'Feb', count: Math.floor(Math.random() * 50) },
-        { month: 'Mar', count: Math.floor(Math.random() * 50) },
-        { month: 'Apr', count: Math.floor(Math.random() * 50) },
-        { month: 'May', count: Math.floor(Math.random() * 50) },
-        { month: 'Jun', count: Math.floor(Math.random() * 50) },
-      ],
-      totalBooks: Math.floor(Math.random() * 100),
-      totalBorrows: Math.floor(Math.random() * 200),
-    };
+    try {
+      const response = await apiClient.get<{
+        success: boolean;
+        message: string;
+        data: {
+          category_info: {
+            id: string;
+            name: string;
+            description: string | null;
+          };
+          statistics: {
+            total_books: number;
+            total_borrows: number;
+            average_borrows_per_book: number;
+          };
+          monthly_borrows: {
+            month: string;
+            month_name: string;
+            count: number;
+          }[];
+          top_books: {
+            book_id: string;
+            title: string;
+            author: string;
+            total_borrows: number;
+            currently_borrowed: number;
+          }[];
+        };
+      }>(`/library/reports/categories/${categoryId}/details`);
+
+      // Transform response to match frontend interface
+      return {
+        monthlyBorrows: response.data.monthly_borrows.map(m => ({
+          month: m.month_name,
+          count: m.count
+        })),
+        totalBooks: response.data.statistics.total_books,
+        totalBorrows: response.data.statistics.total_borrows
+      };
+    } catch (error) {
+      console.error('Failed to fetch category details:', error);
+      throw error;
+    }
   },
 
+  /**
+   * Get book report details
+   * @param bookId - Book master ID to get details for
+   * @returns Book statistics, monthly trends, and item history
+   */
   getBookReportDetails: async (bookId: string): Promise<{
     monthlyBorrows: { month: string; count: number }[];
     totalCopies: number;
@@ -99,57 +170,81 @@ export const reportService = {
       }[];
     }[];
   }> => {
-    await delay(500);
-
-    // Find items for this book
-    const items = bookItems.filter(item => item.masterId === bookId);
-
-    // Map items to include history
-    const itemsWithHistory = items.map(item => {
-      // Find borrows for this item
-      const itemBorrows = borrowDetails.filter(bd => bd.bookItemId === item.id);
-
-      const history = itemBorrows.map(bd => {
-        const borrowTx = borrowTransactions.find(bt => bt.id === bd.borrowId);
-        if (!borrowTx) return null;
-
-        const returnTx = returnTransactions.find(rt => rt.borrowId === borrowTx.id);
-        const returnDetail = returnTx ? returnDetails.find(rd => rd.returnId === returnTx.id && rd.bookItemId === item.id) : undefined;
-        const student = students.find(s => s.id === borrowTx.studentId);
-
-        return {
-          id: borrowTx.id,
-          studentName: student ? student.name : 'Unknown',
-          borrowDate: borrowTx.borrowedAt,
-          returnDate: returnTx ? returnTx.returnedAt : undefined,
-          status: borrowTx.status as 'Borrowed' | 'Returned' | 'Overdue',
-          returnCondition: returnDetail ? returnDetail.conditionAtReturn : undefined
+    try {
+      const response = await apiClient.get<{
+        success: boolean;
+        message: string;
+        data: {
+          book_info: {
+            id: string;
+            title: string;
+            author: string;
+            publisher: string;
+            year: number;
+            isbn: string;
+            category: string | null;
+          };
+          statistics: {
+            total_copies: number;
+            currently_borrowed: number;
+            total_lifetime_borrows: number;
+            average_borrow_days: number;
+          };
+          monthly_borrows: {
+            month: string;
+            month_name: string;
+            count: number;
+          }[];
+          items: {
+            id: string;
+            code: string;
+            condition: string;
+            status: string;
+            created_at: string;
+            history: {
+              id: string;
+              student_id: string;
+              student_name: string;
+              student_number: string;
+              borrow_date: string;
+              due_date: string;
+              return_date: string | null;
+              status: 'borrowed' | 'returned' | 'overdue';
+              return_condition: string | null;
+              days_borrowed: number;
+            }[];
+          }[];
         };
-      }).filter((h): h is NonNullable<typeof h> => h !== null);
+      }>(`/library/reports/books/${bookId}/details`);
 
+      // Transform response to match frontend interface
       return {
-        id: item.id,
-        code: item.code,
-        condition: item.condition,
-        status: item.status,
-        history: history.sort((a, b) => b.borrowDate.getTime() - a.borrowDate.getTime())
+        monthlyBorrows: response.data.monthly_borrows.map(m => ({
+          month: m.month_name,
+          count: m.count
+        })),
+        totalCopies: response.data.statistics.total_copies,
+        currentlyBorrowed: response.data.statistics.currently_borrowed,
+        totalLifetimeBorrows: response.data.statistics.total_lifetime_borrows,
+        items: response.data.items.map(item => ({
+          id: item.id,
+          code: item.code,
+          condition: item.condition,
+          status: item.status,
+          history: item.history.map(h => ({
+            id: h.id,
+            studentName: h.student_name,
+            borrowDate: new Date(h.borrow_date),
+            returnDate: h.return_date ? new Date(h.return_date) : undefined,
+            status: h.status.charAt(0).toUpperCase() + h.status.slice(1) as 'Borrowed' | 'Returned' | 'Overdue',
+            returnCondition: h.return_condition || undefined
+          }))
+        }))
       };
-    });
-
-    return {
-      monthlyBorrows: [
-        { month: 'Jan', count: Math.floor(Math.random() * 20) },
-        { month: 'Feb', count: Math.floor(Math.random() * 20) },
-        { month: 'Mar', count: Math.floor(Math.random() * 20) },
-        { month: 'Apr', count: Math.floor(Math.random() * 20) },
-        { month: 'May', count: Math.floor(Math.random() * 20) },
-        { month: 'Jun', count: Math.floor(Math.random() * 20) },
-      ],
-      totalCopies: items.length,
-      currentlyBorrowed: items.filter(i => i.status === 'Borrowed').length,
-      totalLifetimeBorrows: itemsWithHistory.reduce((acc, item) => acc + item.history.length, 0),
-      items: itemsWithHistory
-    };
+    } catch (error) {
+      console.error('Failed to fetch book details:', error);
+      throw error;
+    }
   },
 
   // ===== Library Report API Methods =====
