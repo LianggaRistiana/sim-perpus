@@ -114,8 +114,8 @@ const LibraryReportPage: React.FC = () => {
                 setInventoryLoading(true);
                 const response = await api.getInventoryReport(currentPage, perPage);
                 setInventory(response.data);
-                setTotalPages(response.pagination.last_page);
-                setTotalItems(response.pagination.total);
+                setTotalPages(response.meta.last_page);
+                setTotalItems(response.meta.total);
             } catch (error) {
                 console.error('Error fetching inventory:', error);
             } finally {
