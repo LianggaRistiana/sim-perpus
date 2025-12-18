@@ -517,15 +517,14 @@ const BookReport: React.FC = () => {
                                     <th className="px-6 py-4 font-medium">Judul</th>
                                     <th className="px-6 py-4 font-medium">Kondisi</th>
                                     <th className="px-6 py-4 font-medium">Status</th>
-                                    <th className="px-6 py-4 font-medium">Tanggal Masuk</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-100">
                                 {damagedBooksLoading ? (
-                                    <TableLoading colSpan={5} />
+                                    <TableLoading colSpan={4} />
                                 ) : damagedBooks.length === 0 ? (
                                     <TableEmpty
-                                        colSpan={5}
+                                        colSpan={4}
                                         message="Tidak ada buku rusak"
                                         description="Semua buku dalam kondisi baik."
                                     />
@@ -542,9 +541,6 @@ const BookReport: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-neutral-600">{book.status}</td>
-                                            <td className="px-6 py-4 text-neutral-600">
-                                                {new Date(book.createdAt).toLocaleDateString('id-ID')}
-                                            </td>
                                         </tr>
                                     ))
                                 )}
@@ -580,15 +576,14 @@ const BookReport: React.FC = () => {
                                     <th className="px-6 py-4 font-medium">Kode Buku</th>
                                     <th className="px-6 py-4 font-medium">Judul</th>
                                     <th className="px-6 py-4 font-medium">Status</th>
-                                    <th className="px-6 py-4 font-medium">Tanggal Masuk</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-100">
                                 {lostBooksLoading ? (
-                                    <TableLoading colSpan={4} />
+                                    <TableLoading colSpan={3} />
                                 ) : lostBooks.length === 0 ? (
                                     <TableEmpty
-                                        colSpan={4}
+                                        colSpan={3}
                                         message="Tidak ada buku hilang"
                                         description="Semua buku tercatat dengan baik."
                                     />
@@ -603,9 +598,6 @@ const BookReport: React.FC = () => {
                                                 <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
                                                     {book.status}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-neutral-600">
-                                                {new Date(book.createdAt).toLocaleDateString('id-ID')}
                                             </td>
                                         </tr>
                                     ))
