@@ -75,7 +75,7 @@ const BookForm: React.FC = () => {
             const response = await api.getCategories({ page, limit: 10, keyword });
             return {
                 options: response.data.map(c => ({ id: c.id, label: c.name })),
-                hasMore: response.meta.page < response.meta.last_page
+                hasMore: response.meta.current_page < response.meta.last_page
             };
         } catch (error) {
             return { options: [], hasMore: false };
@@ -120,7 +120,7 @@ const BookForm: React.FC = () => {
             }
 
             setTotalItems(response.meta.total);
-            setHasMore(response.meta.page < response.meta.last_page);
+            setHasMore(response.meta.current_page < response.meta.last_page);
             setPage(pageNum);
         } catch (error) {
             console.error('Error fetching items:', error);

@@ -94,7 +94,7 @@ export interface ApiPaginatedResponse<T> {
 	status: string;
 	data: T[];
 	meta: {
-		page: number;
+		current_page: number;
 		per_page: number;
 		total: number;
 		last_page: number;

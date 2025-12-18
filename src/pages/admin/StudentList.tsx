@@ -16,7 +16,7 @@ const StudentList: React.FC = () => {
     const [keyword, setKeyword] = useState('');
     const [inputValue, setInputValue] = useState('');
     const [meta, setMeta] = useState<PaginatedResponse<Student>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,

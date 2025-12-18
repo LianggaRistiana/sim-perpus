@@ -30,7 +30,7 @@ const BookCatalog: React.FC = () => {
             const response = await api.getCategories({ page, limit: 10, keyword });
             return {
                 options: response.data.map(c => ({ id: c.id, label: c.name })),
-                hasMore: response.meta.page < response.meta.last_page
+                hasMore: response.meta.current_page < response.meta.last_page
             };
         } catch (error) {
             return { options: [], hasMore: false };
@@ -132,7 +132,7 @@ const BookCatalog: React.FC = () => {
                                     Previous
                                 </button>
                                 <span className="flex items-center px-4 text-sm font-medium text-neutral-600">
-                                    Page {meta.page} of {meta.last_page}
+                                    Page {meta.current_page} of {meta.last_page}
                                 </span>
                                 <button
                                     onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}

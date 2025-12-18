@@ -48,7 +48,7 @@ const BookUpload: React.FC = () => {
             const response = await api.getCategories({ page, keyword, limit: 10 });
             return {
                 options: response.data.map((c: Category) => ({ id: c.id, label: `${c.name} (${c.code})` })),
-                hasMore: response.meta.page < response.meta.last_page
+                hasMore: response.meta.current_page < response.meta.last_page
             };
         } catch (error) {
             console.error('Failed to load categories', error);

@@ -40,7 +40,7 @@ const BorrowForm: React.FC = () => {
 					id: s.id,
 					label: `${s.user_number} - ${s.name}`,
 				})),
-				hasMore: response.meta.page < response.meta.last_page,
+				hasMore: response.meta.current_page < response.meta.last_page,
 			};
 		} catch (error) {
 			console.error("Failed to load students", error);
@@ -95,7 +95,7 @@ const BorrowForm: React.FC = () => {
 					label: `${b.code} - ${b.book_master?.title || "Unknown Title"}`,
 					original: b,
 				})),
-				hasMore: response.meta?.page < response.meta?.last_page,
+				hasMore: response.meta?.current_page < response.meta?.last_page,
 			};
 		} catch (error) {
 			console.error("Failed to load books", error);
