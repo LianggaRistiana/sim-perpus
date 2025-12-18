@@ -87,34 +87,34 @@ export const bookService = {
 		}
 	},
 
-    createBookBatch: async (
-        books: {
-            title: string;
-            author: string;
-            publisher: string;
-            year: number;
-            categoryId: string;
-            isbn: string;
-            items: { condition: string; quantity: number }[];
-        }[]
-    ): Promise<ApiResponseMeta<{ created_books: number; created_items: number }> | null> => {
-        try {
-            const response = await apiClient.post<ApiResponseMeta<{ created_books: number; created_items: number }>>(
-                "/books/batch",
-                { books }
-            );
+	createBookBatch: async (
+		books: {
+			title: string;
+			author: string;
+			publisher: string;
+			year: number;
+			categoryId: string;
+			isbn: string;
+			items: { condition: string; quantity: number }[];
+		}[]
+	): Promise<ApiResponseMeta<{ created_books: number; created_items: number }> | null> => {
+		try {
+			const response = await apiClient.post<ApiResponseMeta<{ created_books: number; created_items: number }>>(
+				"/books/batch",
+				{ books }
+			);
 			// console.log("lolos");
-            return response;
-        } catch (error) {
+			return response;
+		} catch (error) {
 			if (error instanceof ApiError) {
 				throw error;
 			}
-            console.error("Failed to create batch books:", error);
-            return null;
-        }
-    },
+			console.error("Failed to create batch books:", error);
+			return null;
+		}
+	},
 
-    // Book Items
+	// Book Items
 	getBookItems: async (
 		masterId?: string,
 		status?: string
@@ -136,6 +136,7 @@ export const bookService = {
 	getBookItemsPaginated: async (params: {
 		masterId?: string;
 		status?: string;
+		condition?: string;
 		page?: number;
 		limit?: number;
 		keyword?: string;
@@ -144,6 +145,7 @@ export const bookService = {
 			const query = new URLSearchParams();
 			if (params.masterId) query.append("book_master_id", params.masterId);
 			if (params.status) query.append("status", params.status);
+			if (params.condition) query.append("condition", params.condition);
 			if (params.page) query.append("page", params.page.toString());
 			if (params.limit) query.append("limit", params.limit.toString());
 			if (params.keyword) query.append("keyword", params.keyword);
@@ -163,10 +165,10 @@ export const bookService = {
 					createdAt: new Date(item.createdAt),
 					book_master: item.book_master
 						? {
-								...item.book_master,
-								categoryId:
-									item.book_master.category_id || item.book_master.categoryId,
-						  }
+							...item.book_master,
+							categoryId:
+								item.book_master.category_id || item.book_master.categoryId,
+						}
 						: undefined,
 				})),
 			};

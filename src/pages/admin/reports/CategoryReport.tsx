@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
-import type { Category } from '../../../types';
+import type { Category, PaginatedResponse } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
-import { ArrowLeft, BookOpen, BarChart2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, BarChart2, Search } from 'lucide-react';
 import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
+import { TableEmpty } from '../../../components/TableState';
+import { Pagination } from '../../../components/Pagination';
 
 const CategoryReport: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [meta, setMeta] = useState<PaginatedResponse<Category>['meta']>({
+        page: 1,
+        per_page: 10,
+        total: 0,
+        last_page: 1,
+        timestamp: ''
+    });
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [categoryStats, setCategoryStats] = useState<{
         monthlyBorrows: { label: string; value: number }[];
@@ -21,26 +30,58 @@ const CategoryReport: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [detailLoading, setDetailLoading] = useState(false);
 
+    // Search and pagination states
+    const [inputValue, setInputValue] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // Debounced search
     useEffect(() => {
-        const fetchData = async () => {
+        const timeoutId = setTimeout(() => {
+            setSearchTerm(inputValue);
+            setCurrentPage(1); // Reset to page 1 on search
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [inputValue]);
+
+    // Initial load for charts only
+    useEffect(() => {
+        const fetchChartsData = async () => {
             try {
-                const [cats, mostBorrowed, longestBorrowed] = await Promise.all([
-                    api.getCategories(),
+                const [mostBorrowed, longestBorrowed] = await Promise.all([
                     api.getMostBorrowedCategories(),
                     api.getLongestBorrowedCategories()
                 ]);
 
-                setCategories(cats.data);
                 setMostBorrowedCategories(mostBorrowed.map(i => ({ label: i.name, value: i.count })));
                 setLongestBorrowedCategories(longestBorrowed.map(i => ({ label: i.name, value: i.days })));
             } catch (error) {
-                console.error('Error fetching category report data:', error);
+                console.error('Error fetching category chart data:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
+        fetchChartsData();
     }, []);
+
+    // Fetch categories with pagination and search
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await api.getCategories({
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    keyword: searchTerm
+                });
+                setCategories(response.data);
+                setMeta(response.meta);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        fetchCategories();
+    }, [currentPage, itemsPerPage, searchTerm]);
 
     const handleCategoryClick = async (category: Category) => {
         setSelectedCategory(category);
@@ -159,21 +200,82 @@ const CategoryReport: React.FC = () => {
 
                 <div>
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Kategori</h2>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {categories.map((category) => (
-                            <button
-                                key={category.id}
-                                onClick={() => handleCategoryClick(category)}
-                                className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-                            >
-                                <h3 className="mb-2 font-bold text-neutral-900">{category.name}</h3>
-                                <p className="text-sm text-neutral-600 line-clamp-2">{category.description}</p>
-                                <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
-                                    Lihat Statistik <BarChart2 size={14} className="ml-1" />
-                                </div>
-                            </button>
-                        ))}
+
+                    {/* Search Bar */}
+                    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                            <input
+                                type="text"
+                                placeholder="Cari kategori berdasarkan nama atau deskripsi..."
+                                className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                            />
+                        </div>
                     </div>
+
+                    {/* Categories Table */}
+                    <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-neutral-50 text-neutral-500">
+                                <tr>
+                                    <th className="px-6 py-4 font-medium">Nama Kategori</th>
+                                    <th className="px-6 py-4 font-medium">Deskripsi</th>
+                                    <th className="px-6 py-4 font-medium text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100">
+                                {categories.length === 0 ? (
+                                    <TableEmpty
+                                        colSpan={3}
+                                        message="Tidak ada kategori ditemukan"
+                                        description="Coba cari dengan kata kunci yang berbeda."
+                                    />
+                                ) : (
+                                    categories.map((category) => (
+                                        <tr
+                                            key={category.id}
+                                            className="cursor-pointer hover:bg-neutral-50"
+                                            onClick={() => handleCategoryClick(category)}
+                                        >
+                                            <td className="px-6 py-4 font-medium text-neutral-900">{category.name}</td>
+                                            <td className="px-6 py-4 text-neutral-600 max-w-md truncate">
+                                                {category.description || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleCategoryClick(category);
+                                                    }}
+                                                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                                                >
+                                                    <BarChart2 size={14} />
+                                                    Lihat Detail
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {meta.total > 0 && (
+                        <Pagination
+                            currentPage={meta.page}
+                            totalPages={meta.last_page}
+                            totalItems={meta.total}
+                            itemsPerPage={meta.per_page}
+                            onPageChange={setCurrentPage}
+                            onItemsPerPageChange={(limit) => {
+                                setItemsPerPage(limit);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    )}
                 </div>
             </div>
         </div>

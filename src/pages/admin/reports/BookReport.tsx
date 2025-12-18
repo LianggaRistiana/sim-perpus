@@ -1,14 +1,21 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
-import type { BookItem, BookMaster } from '../../../types';
+import type { BookItem, BookMaster, PaginatedResponse } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
-import { AlertTriangle, ArrowLeft, BookOpen, BarChart2, Copy, Clock } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, BookOpen, BarChart2, Copy, Clock, Search } from 'lucide-react';
 
 const BookReport: React.FC = () => {
     const [books, setBooks] = useState<BookMaster[]>([]);
+    const [meta, setMeta] = useState<PaginatedResponse<BookMaster>['meta']>({
+        page: 1,
+        per_page: 10,
+        total: 0,
+        last_page: 1,
+        timestamp: ''
+    });
     const [selectedBook, setSelectedBook] = useState<BookMaster | null>(null);
     const [bookStats, setBookStats] = useState<{
         monthlyBorrows: { label: string; value: number }[];
@@ -37,54 +44,126 @@ const BookReport: React.FC = () => {
     const [damagedBooks, setDamagedBooks] = useState<BookItem[]>([]);
     const [damagedBooksPage, setDamagedBooksPage] = useState(1);
     const [damagedBooksPerPage, setDamagedBooksPerPage] = useState(10);
-    const [totalDamagedBooks, setTotalDamagedBooks] = useState(0);
+    const [damagedBooksMeta, setDamagedBooksMeta] = useState<PaginatedResponse<BookItem>['meta']>({
+        page: 1,
+        per_page: 10,
+        total: 0,
+        last_page: 1,
+        timestamp: ''
+    });
+
+    // Lost books states
+    const [lostBooks, setLostBooks] = useState<BookItem[]>([]);
+    const [lostBooksPage, setLostBooksPage] = useState(1);
+    const [lostBooksPerPage, setLostBooksPerPage] = useState(10);
+    const [lostBooksMeta, setLostBooksMeta] = useState<PaginatedResponse<BookItem>['meta']>({
+        page: 1,
+        per_page: 10,
+        total: 0,
+        last_page: 1,
+        timestamp: ''
+    });
 
     const [loading, setLoading] = useState(true);
     const [detailLoading, setDetailLoading] = useState(false);
     const [damagedBooksLoading, setDamagedBooksLoading] = useState(false);
+    const [lostBooksLoading, setLostBooksLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
 
+    // Search and pagination states
+    const [inputValue, setInputValue] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // Debounced search
     useEffect(() => {
-        const fetchData = async () => {
+        const timeoutId = setTimeout(() => {
+            setSearchTerm(inputValue);
+            setCurrentPage(1);
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [inputValue]);
+
+    // Initial load for charts only
+    useEffect(() => {
+        const fetchChartsData = async () => {
             try {
-                const allBooks = await api.getBooks();
                 const popularBooksRes = await api.getPopularBooks(10);
                 const longestBorrowed = await api.getLongestBorrowedBooks();
 
-                setBooks(allBooks.data);
-                // popularBooksRes is PopularBooksResponse { success, message, data: PopularBook[] }
-                // So we access .data to get the PopularBook[] array
                 setMostBorrowedBooks(popularBooksRes.data.map((book) => ({ label: book.title, value: book.total_borrowed })));
                 setLongestBorrowedBooks(longestBorrowed.map((i: any) => ({ label: i.title, value: i.days })));
             } catch (error) {
-                console.error('Error fetching book report data:', error);
+                console.error('Error fetching book chart data:', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
+        fetchChartsData();
     }, []);
 
-    const fetchDamagedBooks = useCallback(async () => {
-        setDamagedBooksLoading(true);
-        try {
-            // Use backend filtering with multi-condition support
-            const damaged = await api.getDamagedBooks('poor,damaged');
-            // Simple client-side pagination (backend doesn't support pagination for this endpoint yet)
-            const startIndex = (damagedBooksPage - 1) * damagedBooksPerPage;
-            const endIndex = startIndex + damagedBooksPerPage;
-            setDamagedBooks(damaged.slice(startIndex, endIndex));
-            setTotalDamagedBooks(damaged.length);
-        } catch (error) {
-            console.error('Error fetching damaged books:', error);
-        } finally {
-            setDamagedBooksLoading(false);
-        }
+    // Fetch books with pagination and search
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const response = await api.getBooks({
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    keyword: searchTerm
+                });
+                setBooks(response.data);
+                setMeta(response.meta);
+            } catch (error) {
+                console.error('Error fetching books:', error);
+            }
+        };
+        fetchBooks();
+    }, [currentPage, itemsPerPage, searchTerm]);
+
+    // Fetch damaged books with server-side pagination
+    // Damaged books are filtered by CONDITION (poor), not status
+    useEffect(() => {
+        const fetchDamagedBooks = async () => {
+            setDamagedBooksLoading(true);
+            try {
+                const response = await api.getBookItemsPaginated({
+                    page: damagedBooksPage,
+                    limit: damagedBooksPerPage,
+                    condition: 'poor' // Filter by poor condition
+                });
+                setDamagedBooks(response.data);
+                setDamagedBooksMeta(response.meta);
+            } catch (error) {
+                console.error('Error fetching damaged books:', error);
+            } finally {
+                setDamagedBooksLoading(false);
+            }
+        };
+        fetchDamagedBooks();
     }, [damagedBooksPage, damagedBooksPerPage]);
 
+    // Fetch lost books with server-side pagination
+    // Lost books are filtered by STATUS (lost), not condition
     useEffect(() => {
-        fetchDamagedBooks();
-    }, [fetchDamagedBooks]);
+        const fetchLostBooks = async () => {
+            setLostBooksLoading(true);
+            try {
+                const response = await api.getBookItemsPaginated({
+                    page: lostBooksPage,
+                    limit: lostBooksPerPage,
+                    status: 'lost' // Filter by lost status
+                });
+                setLostBooks(response.data);
+                setLostBooksMeta(response.meta);
+            } catch (error) {
+                console.error('Error fetching lost books:', error);
+            } finally {
+                setLostBooksLoading(false);
+            }
+        };
+        fetchLostBooks();
+    }, [lostBooksPage, lostBooksPerPage]);
 
     const handleBookClick = async (book: BookMaster) => {
         setSelectedBook(book);
@@ -340,27 +419,93 @@ const BookReport: React.FC = () => {
 
                 <div>
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Detail per Buku</h2>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {books.map((book) => (
-                            <button
-                                key={book.id}
-                                onClick={() => handleBookClick(book)}
-                                className="flex flex-col items-start rounded-xl border border-neutral-200 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-                            >
-                                <h3 className="mb-1 font-bold text-neutral-900 line-clamp-1">{book.title}</h3>
-                                <p className="text-sm text-neutral-600">{book.author}</p>
-                                <div className="mt-4 flex items-center text-xs font-medium text-blue-600">
-                                    Lihat Statistik <BarChart2 size={14} className="ml-1" />
-                                </div>
-                            </button>
-                        ))}
+
+                    {/* Search Bar */}
+                    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                            <input
+                                type="text"
+                                placeholder="Cari buku berdasarkan judul atau penulis..."
+                                className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                            />
+                        </div>
                     </div>
+
+                    {/* Books Table */}
+                    <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-neutral-50 text-neutral-500">
+                                <tr>
+                                    <th className="px-6 py-4 font-medium">Judul</th>
+                                    <th className="px-6 py-4 font-medium">Penulis</th>
+                                    <th className="px-6 py-4 font-medium">Kategori</th>
+                                    <th className="px-6 py-4 font-medium">Tahun</th>
+                                    <th className="px-6 py-4 font-medium text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100">
+                                {books.length === 0 ? (
+                                    <TableEmpty
+                                        colSpan={5}
+                                        message="Tidak ada buku ditemukan"
+                                        description="Coba cari dengan kata kunci yang berbeda."
+                                    />
+                                ) : (
+                                    books.map((book) => (
+                                        <tr
+                                            key={book.id}
+                                            className="cursor-pointer hover:bg-neutral-50"
+                                            onClick={() => handleBookClick(book)}
+                                        >
+                                            <td className="px-6 py-4 font-medium text-neutral-900">{book.title}</td>
+                                            <td className="px-6 py-4 text-neutral-600">{book.author}</td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                                                    {book.category?.name || '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-neutral-600">{book.year}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleBookClick(book);
+                                                    }}
+                                                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                                                >
+                                                    <BarChart2 size={14} />
+                                                    Lihat Detail
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {meta.total > 0 && (
+                        <Pagination
+                            currentPage={meta.page}
+                            totalPages={meta.last_page}
+                            totalItems={meta.total}
+                            itemsPerPage={meta.per_page}
+                            onPageChange={setCurrentPage}
+                            onItemsPerPageChange={(limit) => {
+                                setItemsPerPage(limit);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    )}
                 </div>
 
                 {/* Damaged Books Section */}
                 <div>
                     <div className="mb-4 flex items-center gap-2">
-                        <AlertTriangle className="text-red-500" size={24} />
                         <h3 className="text-lg font-bold text-neutral-900">Daftar Buku Rusak</h3>
                     </div>
 
@@ -369,6 +514,7 @@ const BookReport: React.FC = () => {
                             <thead className="bg-neutral-50 text-neutral-500">
                                 <tr>
                                     <th className="px-6 py-4 font-medium">Kode Buku</th>
+                                    <th className="px-6 py-4 font-medium">Judul</th>
                                     <th className="px-6 py-4 font-medium">Kondisi</th>
                                     <th className="px-6 py-4 font-medium">Status</th>
                                     <th className="px-6 py-4 font-medium">Tanggal Masuk</th>
@@ -376,10 +522,10 @@ const BookReport: React.FC = () => {
                             </thead>
                             <tbody className="divide-y divide-neutral-100">
                                 {damagedBooksLoading ? (
-                                    <TableLoading colSpan={4} />
+                                    <TableLoading colSpan={5} />
                                 ) : damagedBooks.length === 0 ? (
                                     <TableEmpty
-                                        colSpan={4}
+                                        colSpan={5}
                                         message="Tidak ada buku rusak"
                                         description="Semua buku dalam kondisi baik."
                                     />
@@ -387,6 +533,9 @@ const BookReport: React.FC = () => {
                                     damagedBooks.map((book) => (
                                         <tr key={book.id} className="hover:bg-neutral-50">
                                             <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
+                                            <td className="px-6 py-4 text-neutral-600">
+                                                {book.book_master?.title || '-'}
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getConditionBadgeClass(book.condition)}`}>
                                                     {book.condition}
@@ -403,16 +552,78 @@ const BookReport: React.FC = () => {
                         </table>
                     </div>
 
-                    {totalDamagedBooks > 0 && (
+                    {damagedBooksMeta.total > 0 && (
                         <Pagination
-                            currentPage={damagedBooksPage}
-                            totalPages={Math.ceil(totalDamagedBooks / damagedBooksPerPage)}
-                            totalItems={totalDamagedBooks}
-                            itemsPerPage={damagedBooksPerPage}
+                            currentPage={damagedBooksMeta.page}
+                            totalPages={damagedBooksMeta.last_page}
+                            totalItems={damagedBooksMeta.total}
+                            itemsPerPage={damagedBooksMeta.per_page}
                             onPageChange={setDamagedBooksPage}
                             onItemsPerPageChange={(limit) => {
                                 setDamagedBooksPerPage(limit);
                                 setDamagedBooksPage(1);
+                            }}
+                        />
+                    )}
+                </div>
+
+                {/* Lost Books Section */}
+                <div>
+                    <div className="mb-4 flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-neutral-900">Daftar Buku Hilang</h3>
+                    </div>
+
+                    <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-neutral-50 text-neutral-500">
+                                <tr>
+                                    <th className="px-6 py-4 font-medium">Kode Buku</th>
+                                    <th className="px-6 py-4 font-medium">Judul</th>
+                                    <th className="px-6 py-4 font-medium">Status</th>
+                                    <th className="px-6 py-4 font-medium">Tanggal Masuk</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-100">
+                                {lostBooksLoading ? (
+                                    <TableLoading colSpan={4} />
+                                ) : lostBooks.length === 0 ? (
+                                    <TableEmpty
+                                        colSpan={4}
+                                        message="Tidak ada buku hilang"
+                                        description="Semua buku tercatat dengan baik."
+                                    />
+                                ) : (
+                                    lostBooks.map((book) => (
+                                        <tr key={book.id} className="hover:bg-neutral-50">
+                                            <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
+                                            <td className="px-6 py-4 text-neutral-600">
+                                                {book.book_master?.title || '-'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                                                    {book.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-neutral-600">
+                                                {new Date(book.createdAt).toLocaleDateString('id-ID')}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {lostBooksMeta.total > 0 && (
+                        <Pagination
+                            currentPage={lostBooksMeta.page}
+                            totalPages={lostBooksMeta.last_page}
+                            totalItems={lostBooksMeta.total}
+                            itemsPerPage={lostBooksMeta.per_page}
+                            onPageChange={setLostBooksPage}
+                            onItemsPerPageChange={(limit) => {
+                                setLostBooksPerPage(limit);
+                                setLostBooksPage(1);
                             }}
                         />
                     )}

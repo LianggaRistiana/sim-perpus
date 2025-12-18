@@ -4,7 +4,6 @@ import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemand
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { BookOpen, FileText, FolderOpen, TrendingUp } from 'lucide-react';
-import { CardLoading } from '../../../components/CardLoading';
 import { OverviewSkeleton, SectionSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 
 const LibraryReportPage: React.FC = () => {
