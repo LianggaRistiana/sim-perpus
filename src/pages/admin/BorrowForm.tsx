@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Save, Trash } from "lucide-react";
+import { Save, Trash, AlertCircle } from "lucide-react";
 import { apiClient } from "../../lib/api-client";
 import { api } from "../../services/api";
 import BackButton from "../../components/BackButton";
@@ -15,6 +15,12 @@ const BorrowForm: React.FC = () => {
 	const [loading, setLoading] = useState(false);
 
 	const [selectedStudent, setSelectedStudent] = useState<Option | null>(null);
+	const [tuitionStatus, setTuitionStatus] = useState<{
+		loading: boolean;
+		hasPaid: boolean | null;
+		period: string;
+		studentName: string;
+	}>({ loading: false, hasPaid: null, period: '', studentName: '' });
 	const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
 	const [selectedBookItems, setSelectedBookItems] = useState<BookItem[]>([]);
 	const [currentBook, setCurrentBook] = useState<Option | null>(null);
@@ -71,10 +77,10 @@ const BorrowForm: React.FC = () => {
 				createdAt: new Date(item.createdAt),
 				book_master: item.book_master
 					? {
-							...item.book_master,
-							categoryId:
-								item.book_master.category_id || item.book_master.categoryId,
-					  }
+						...item.book_master,
+						categoryId:
+							item.book_master.category_id || item.book_master.categoryId,
+					}
 					: undefined,
 			})) as BookItem[];
 
@@ -94,6 +100,47 @@ const BorrowForm: React.FC = () => {
 		} catch (error) {
 			console.error("Failed to load books", error);
 			return { options: [], hasMore: false };
+		}
+	};
+
+	const checkTuitionStatus = async (studentId: string, studentLabel: string) => {
+		setTuitionStatus({ loading: true, hasPaid: null, period: '', studentName: '' });
+		try {
+			const response = await apiClient.get<{
+				status: string;
+				data: {
+					student_id: string;
+					student_name: string;
+					student_number: string;
+					period: string;
+					can_borrow_books: boolean;
+				};
+			}>(`/students/${studentId}/tuition-status`);
+
+			setTuitionStatus({
+				loading: false,
+				hasPaid: response.data.can_borrow_books,
+				period: response.data.period,
+				studentName: response.data.student_name,
+			});
+		} catch (error) {
+			console.error('Failed to check tuition status:', error);
+			setTuitionStatus({
+				loading: false,
+				hasPaid: false,
+				period: '',
+				studentName: studentLabel,
+			});
+			showToast('Gagal memeriksa status SPP mahasiswa', 'error');
+		}
+	};
+
+	const handleStudentChange = (option: Option | null) => {
+		setSelectedStudent(option);
+		if (option) {
+			checkTuitionStatus(option.id, option.label);
+		} else {
+			setTuitionStatus({ loading: false, hasPaid: null, period: '', studentName: '' });
 		}
 	};
 
@@ -183,8 +230,39 @@ const BorrowForm: React.FC = () => {
 											placeholder="Cari siswa..."
 											loadOptions={loadStudentOptions}
 											value={selectedStudent}
-											onChange={setSelectedStudent}
+											onChange={handleStudentChange}
 										/>
+
+										{/* Tuition Status Warning */}
+										{tuitionStatus.loading && (
+											<div className="mt-2 flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+												<div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-700 border-t-transparent"></div>
+												<span>Memeriksa status SPP...</span>
+											</div>
+										)}
+
+										{!tuitionStatus.loading && tuitionStatus.hasPaid === false && selectedStudent && (
+											<div className="mt-2 rounded-lg bg-red-50 p-3">
+												<div className="flex items-start gap-2">
+													<AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600" />
+													<div className="flex-1">
+														<p className="text-sm font-medium text-red-800">SPP Belum Dibayar</p>
+														<p className="mt-1 text-xs text-red-700">
+															Mahasiswa {tuitionStatus.studentName} belum membayar SPP periode {tuitionStatus.period || 'bulan ini'}. Silakan hubungi bagian keuangan.
+														</p>
+													</div>
+												</div>
+											</div>
+										)}
+
+										{!tuitionStatus.loading && tuitionStatus.hasPaid === true && selectedStudent && (
+											<div className="mt-2 flex items-center gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+												<svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+													<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+												</svg>
+												<span>SPP periode {tuitionStatus.period} sudah dibayar ✓</span>
+											</div>
+										)}
 									</div>
 
 									<div>
@@ -298,7 +376,8 @@ const BorrowForm: React.FC = () => {
 											disabled={
 												loading ||
 												selectedBookIds.length === 0 ||
-												!selectedStudent
+												!selectedStudent ||
+												tuitionStatus.hasPaid === false
 											}
 											className="flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-70">
 											<Save size={20} />
