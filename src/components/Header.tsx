@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Bell } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import type { Admin } from '../types';
 
 interface HeaderProps {
@@ -18,10 +18,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, user }) => {
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
-                <button className="relative rounded-full bg-neutral-100 p-2 text-neutral-600 hover:bg-neutral-200">
+                {/* <button className="relative rounded-full bg-neutral-100 p-2 text-neutral-600 hover:bg-neutral-200">
                     <Bell size={20} />
                     <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500"></span>
-                </button>
+                </button> */}
                 <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
                         {user.name.charAt(0)}

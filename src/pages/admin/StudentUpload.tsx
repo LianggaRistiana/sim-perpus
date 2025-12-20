@@ -122,9 +122,16 @@ const StudentUpload: React.FC = () => {
             } else {
                 showToast('Gagal mengimpor data siswa.', 'error');
             }
-        } catch (err) {
+        } catch (err :any) {
             console.error(err);
-            showToast('Terjadi kesalahan saat memproses data.', 'error');
+            let message = 'Terjadi kesalahan saat memproses data';
+            showToast(message, 'error');
+            
+            if (err?.fields) {
+                for (const field of Object.keys(err.fields)) {
+                    showToast(err.fields[field][0], 'error');
+                }
+            }
         } finally {
             setLoading(false);
         }

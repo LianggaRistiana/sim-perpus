@@ -22,6 +22,9 @@ import StudentList from './pages/admin/StudentList';
 import StudentUpload from './pages/admin/StudentUpload';
 import StudentForm from './pages/admin/StudentForm';
 import StudentDetail from './pages/admin/StudentDetail';
+import LibrarianList from './pages/admin/LibrarianList';
+import LibrarianForm from './pages/admin/LibrarianForm';
+import LibrarianDetail from './pages/admin/LibrarianDetail';
 import CategoryList from './pages/admin/CategoryList';
 import CategoryDetail from './pages/admin/CategoryDetail';
 import CategoryForm from './pages/admin/CategoryForm';
@@ -38,6 +41,7 @@ import BorrowingTrendsReport from './pages/admin/reports/BorrowingTrendsReport';
 import OverdueBooksReport from './pages/admin/reports/OverdueBooksReport';
 import { ToastProvider } from './components/Toast';
 import BookCatalogDetail from './pages/BookCatalogDetail';
+import { AdminRoute } from './components/AdminRoute';
 
 
 function App() {
@@ -66,6 +70,27 @@ function App() {
             <Route path="students/:id" element={<StudentDetail />} />
             <Route path="students/:id/edit" element={<StudentForm />} />
             <Route path="students/upload" element={<StudentUpload />} />
+
+            <Route path="librarians" element={
+              <AdminRoute>
+                <LibrarianList />
+              </AdminRoute>
+            } />
+            <Route path="librarians/new" element={
+              <AdminRoute>
+                <LibrarianForm />
+              </AdminRoute>
+            } />
+            <Route path="librarians/:id" element={
+              <AdminRoute>
+                <LibrarianDetail />
+              </AdminRoute>
+            } />
+            <Route path="librarians/:id/edit" element={
+              <AdminRoute>
+                <LibrarianForm />
+              </AdminRoute>
+            } />
 
             <Route path="categories" element={<CategoryList />} />
             <Route path="categories/new" element={<CategoryForm />} />

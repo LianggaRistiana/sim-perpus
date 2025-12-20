@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import type { User } from '../types';
 import {
     LayoutDashboard,
     BookOpen,
@@ -16,9 +17,10 @@ interface SidebarProps {
     isOpen: boolean;
     onClose: () => void;
     onLogout: () => void;
+    user: User | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) => {
     const location = useLocation();
     const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
@@ -108,6 +110,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
                             >
                                 Kategori
                             </Link>
+
+                            {user?.role === 'admin' && (
+                                <Link
+                                    to="/dashboard/librarians"
+                                    className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/librarians')
+                                        ? 'text-white'
+                                        : 'text-neutral-400 hover:text-white'
+                                        }`}
+                                >
+                                    Pustakawan
+                                </Link>
+                            )}
                         </div>
                     )}
                 </div>

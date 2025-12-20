@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "STAFF" | "LIBRARIAN";
+export type Role = "admin" | "librarian";
 
 export interface User {
   id: string;
@@ -6,6 +6,14 @@ export interface User {
   user_number: string;
   role: Role;
   username?: string; // Optional as it might not be in the me response directly or named differently
+}
+
+export interface Librarian {
+  id: string;
+  name: string;
+  user_number: string;
+  email: string;
+  role: 'librarian';
 }
 
 export interface Admin extends User {
