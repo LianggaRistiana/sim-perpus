@@ -10,7 +10,7 @@ import { Pagination } from '../../../components/Pagination';
 const MemberReport: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
     const [meta, setMeta] = useState<PaginatedResponse<Student>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,
@@ -295,7 +295,7 @@ const MemberReport: React.FC = () => {
                     {/* Pagination */}
                     {meta.total > 0 && (
                         <Pagination
-                            currentPage={meta.page}
+                            currentPage={meta.current_page}
                             totalPages={meta.last_page}
                             totalItems={meta.total}
                             itemsPerPage={meta.per_page}

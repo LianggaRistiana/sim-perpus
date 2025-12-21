@@ -10,7 +10,7 @@ import { ArrowLeft, BookOpen, BarChart2, Copy, Clock, Search } from 'lucide-reac
 const BookReport: React.FC = () => {
     const [books, setBooks] = useState<BookMaster[]>([]);
     const [meta, setMeta] = useState<PaginatedResponse<BookMaster>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,
@@ -45,7 +45,7 @@ const BookReport: React.FC = () => {
     const [damagedBooksPage, setDamagedBooksPage] = useState(1);
     const [damagedBooksPerPage, setDamagedBooksPerPage] = useState(10);
     const [damagedBooksMeta, setDamagedBooksMeta] = useState<PaginatedResponse<BookItem>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,
@@ -57,7 +57,7 @@ const BookReport: React.FC = () => {
     const [lostBooksPage, setLostBooksPage] = useState(1);
     const [lostBooksPerPage, setLostBooksPerPage] = useState(10);
     const [lostBooksMeta, setLostBooksMeta] = useState<PaginatedResponse<BookItem>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,
@@ -490,7 +490,7 @@ const BookReport: React.FC = () => {
                     {/* Pagination */}
                     {meta.total > 0 && (
                         <Pagination
-                            currentPage={meta.page}
+                            currentPage={meta.current_page}
                             totalPages={meta.last_page}
                             totalItems={meta.total}
                             itemsPerPage={meta.per_page}
@@ -550,7 +550,7 @@ const BookReport: React.FC = () => {
 
                     {damagedBooksMeta.total > 0 && (
                         <Pagination
-                            currentPage={damagedBooksMeta.page}
+                            currentPage={damagedBooksMeta.current_page}
                             totalPages={damagedBooksMeta.last_page}
                             totalItems={damagedBooksMeta.total}
                             itemsPerPage={damagedBooksMeta.per_page}
@@ -608,7 +608,7 @@ const BookReport: React.FC = () => {
 
                     {lostBooksMeta.total > 0 && (
                         <Pagination
-                            currentPage={lostBooksMeta.page}
+                            currentPage={lostBooksMeta.current_page}
                             totalPages={lostBooksMeta.last_page}
                             totalItems={lostBooksMeta.total}
                             itemsPerPage={lostBooksMeta.per_page}
