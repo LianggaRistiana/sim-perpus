@@ -221,23 +221,23 @@ const BookReport: React.FC = () => {
 
     if (selectedBook) {
         return (
-            <div className="flex h-screen flex-col overflow-hidden p-6">
+            <div className="flex h-screen flex-col overflow-hidden p-4 md:p-6">
                 <button
                     onClick={handleBack}
-                    className="mb-6 flex items-center text-sm font-medium text-neutral-600 hover:text-blue-600"
+                    className="mb-4 md:mb-6 flex items-center text-sm font-medium text-neutral-600 hover:text-blue-600"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Kembali ke Daftar Laporan
                 </button>
 
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-neutral-900">{selectedBook.title}</h1>
-                    <p className="text-neutral-600">{selectedBook.author} - {selectedBook.publisher} ({selectedBook.year})</p>
+                <div className="mb-6 md:mb-8">
+                    <h1 className="text-xl md:text-2xl font-bold text-neutral-900">{selectedBook.title}</h1>
+                    <p className="text-sm md:text-base text-neutral-600">{selectedBook.author} - {selectedBook.publisher} ({selectedBook.year})</p>
                 </div>
 
                 {detailLoading ? (
                     <div className="flex-1 space-y-6 overflow-y-auto pr-2">
-                        <div className="grid gap-6 md:grid-cols-3">
+                        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                             <StatCardSkeleton />
                             <StatCardSkeleton />
                             <StatCardSkeleton />
@@ -246,8 +246,8 @@ const BookReport: React.FC = () => {
                     </div>
                 ) : bookStats && (
                     <div className="flex-1 space-y-6 overflow-y-auto pr-2">
-                        <div className="grid gap-6 md:grid-cols-3">
-                            <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                            <div className="rounded-xl border border-neutral-200 bg-white p-4 md:p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="rounded-full bg-blue-100 p-3 text-blue-600">
                                         <Copy size={24} />
@@ -399,12 +399,12 @@ const BookReport: React.FC = () => {
     }
 
     return (
-        <div className="flex h-screen flex-col overflow-hidden p-6">
-            <h1 className="mb-6 text-2xl font-bold text-neutral-900">Laporan Buku</h1>
+        <div className="flex h-screen flex-col overflow-hidden p-4 md:p-6">
+            <h1 className="mb-4 md:mb-6 text-xl md:text-2xl font-bold text-neutral-900">Laporan Buku</h1>
 
-            <div className="flex-1 space-y-8 overflow-y-auto pr-2">
+            <div className="flex-1 space-y-6 md:space-y-8 overflow-y-auto pr-2">
                 {/* Global Stats */}
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
                     <ReportChart
                         title="Buku Paling Sering Dipinjam"
                         data={mostBorrowedBooks}
@@ -436,55 +436,57 @@ const BookReport: React.FC = () => {
 
                     {/* Books Table */}
                     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-neutral-50 text-neutral-500">
-                                <tr>
-                                    <th className="px-6 py-4 font-medium">Judul</th>
-                                    <th className="px-6 py-4 font-medium">Penulis</th>
-                                    <th className="px-6 py-4 font-medium">Kategori</th>
-                                    <th className="px-6 py-4 font-medium">Tahun</th>
-                                    <th className="px-6 py-4 font-medium text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-100">
-                                {books.length === 0 ? (
-                                    <TableEmpty
-                                        colSpan={5}
-                                        message="Tidak ada buku ditemukan"
-                                        description="Coba cari dengan kata kunci yang berbeda."
-                                    />
-                                ) : (
-                                    books.map((book) => (
-                                        <tr
-                                            key={book.id}
-                                            className="cursor-pointer hover:bg-neutral-50"
-                                            onClick={() => handleBookClick(book)}
-                                        >
-                                            <td className="px-6 py-4 font-medium text-neutral-900">{book.title}</td>
-                                            <td className="px-6 py-4 text-neutral-600">{book.author}</td>
-                                            <td className="px-6 py-4">
-                                                <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
-                                                    {book.category?.name || '-'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-neutral-600">{book.year}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleBookClick(book);
-                                                    }}
-                                                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
-                                                >
-                                                    <BarChart2 size={14} />
-                                                    Lihat Detail
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-neutral-50 text-neutral-500">
+                                    <tr>
+                                        <th className="px-6 py-4 font-medium">Judul</th>
+                                        <th className="px-6 py-4 font-medium hidden md:table-cell">Penulis</th>
+                                        <th className="px-6 py-4 font-medium hidden lg:table-cell">Kategori</th>
+                                        <th className="px-6 py-4 font-medium hidden lg:table-cell">Tahun</th>
+                                        <th className="px-6 py-4 font-medium text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100">
+                                    {books.length === 0 ? (
+                                        <TableEmpty
+                                            colSpan={5}
+                                            message="Tidak ada buku ditemukan"
+                                            description="Coba cari dengan kata kunci yang berbeda."
+                                        />
+                                    ) : (
+                                        books.map((book) => (
+                                            <tr
+                                                key={book.id}
+                                                className="cursor-pointer hover:bg-neutral-50"
+                                                onClick={() => handleBookClick(book)}
+                                            >
+                                                <td className="px-6 py-4 font-medium text-neutral-900">{book.title}</td>
+                                                <td className="px-6 py-4 text-neutral-600 hidden md:table-cell">{book.author}</td>
+                                                <td className="px-6 py-4 hidden lg:table-cell">
+                                                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                                                        {book.category?.name || '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-neutral-600 hidden lg:table-cell">{book.year}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleBookClick(book);
+                                                        }}
+                                                        className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                                                    >
+                                                        <BarChart2 size={14} />
+                                                        <span className="hidden md:inline">Lihat Detail</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     {/* Pagination */}
@@ -510,42 +512,44 @@ const BookReport: React.FC = () => {
                     </div>
 
                     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-neutral-50 text-neutral-500">
-                                <tr>
-                                    <th className="px-6 py-4 font-medium">Kode Buku</th>
-                                    <th className="px-6 py-4 font-medium">Judul</th>
-                                    <th className="px-6 py-4 font-medium">Kondisi</th>
-                                    <th className="px-6 py-4 font-medium">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-100">
-                                {damagedBooksLoading ? (
-                                    <TableLoading colSpan={4} />
-                                ) : damagedBooks.length === 0 ? (
-                                    <TableEmpty
-                                        colSpan={4}
-                                        message="Tidak ada buku rusak"
-                                        description="Semua buku dalam kondisi baik."
-                                    />
-                                ) : (
-                                    damagedBooks.map((book) => (
-                                        <tr key={book.id} className="hover:bg-neutral-50">
-                                            <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
-                                            <td className="px-6 py-4 text-neutral-600">
-                                                {book.book_master?.title || '-'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getConditionBadgeClass(book.condition)}`}>
-                                                    {book.condition}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-neutral-600">{book.status}</td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-neutral-50 text-neutral-500">
+                                    <tr>
+                                        <th className="px-6 py-4 font-medium">Kode Buku</th>
+                                        <th className="px-6 py-4 font-medium">Judul</th>
+                                        <th className="px-6 py-4 font-medium">Kondisi</th>
+                                        <th className="px-6 py-4 font-medium hidden md:table-cell">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100">
+                                    {damagedBooksLoading ? (
+                                        <TableLoading colSpan={4} />
+                                    ) : damagedBooks.length === 0 ? (
+                                        <TableEmpty
+                                            colSpan={4}
+                                            message="Tidak ada buku rusak"
+                                            description="Semua buku dalam kondisi baik."
+                                        />
+                                    ) : (
+                                        damagedBooks.map((book) => (
+                                            <tr key={book.id} className="hover:bg-neutral-50">
+                                                <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
+                                                <td className="px-6 py-4 text-neutral-600">
+                                                    {book.book_master?.title || '-'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getConditionBadgeClass(book.condition)}`}>
+                                                        {book.condition}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-neutral-600 hidden md:table-cell">{book.status}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     {damagedBooksMeta.total > 0 && (
@@ -570,40 +574,42 @@ const BookReport: React.FC = () => {
                     </div>
 
                     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-neutral-50 text-neutral-500">
-                                <tr>
-                                    <th className="px-6 py-4 font-medium">Kode Buku</th>
-                                    <th className="px-6 py-4 font-medium">Judul</th>
-                                    <th className="px-6 py-4 font-medium">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-neutral-100">
-                                {lostBooksLoading ? (
-                                    <TableLoading colSpan={3} />
-                                ) : lostBooks.length === 0 ? (
-                                    <TableEmpty
-                                        colSpan={3}
-                                        message="Tidak ada buku hilang"
-                                        description="Semua buku tercatat dengan baik."
-                                    />
-                                ) : (
-                                    lostBooks.map((book) => (
-                                        <tr key={book.id} className="hover:bg-neutral-50">
-                                            <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
-                                            <td className="px-6 py-4 text-neutral-600">
-                                                {book.book_master?.title || '-'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
-                                                    {book.status}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
+                                <thead className="bg-neutral-50 text-neutral-500">
+                                    <tr>
+                                        <th className="px-6 py-4 font-medium">Kode Buku</th>
+                                        <th className="px-6 py-4 font-medium">Judul</th>
+                                        <th className="px-6 py-4 font-medium">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-neutral-100">
+                                    {lostBooksLoading ? (
+                                        <TableLoading colSpan={3} />
+                                    ) : lostBooks.length === 0 ? (
+                                        <TableEmpty
+                                            colSpan={3}
+                                            message="Tidak ada buku hilang"
+                                            description="Semua buku tercatat dengan baik."
+                                        />
+                                    ) : (
+                                        lostBooks.map((book) => (
+                                            <tr key={book.id} className="hover:bg-neutral-50">
+                                                <td className="px-6 py-4 font-medium text-neutral-900">{book.code}</td>
+                                                <td className="px-6 py-4 text-neutral-600">
+                                                    {book.book_master?.title || '-'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                                                        {book.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     {lostBooksMeta.total > 0 && (
