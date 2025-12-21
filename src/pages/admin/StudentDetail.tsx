@@ -159,7 +159,7 @@ const StudentDetail: React.FC = () => {
                         </div>
                     </div>
                     <div
-                        onClick={() => navigate(``)}
+                        onClick={() => navigate(`/dashboard/reports/members?search=${encodeURIComponent(student.user_number)}`)}
                         className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 md:p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">

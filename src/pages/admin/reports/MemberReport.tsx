@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
+import { useSearchParams } from 'react-router-dom';
 import type { Student, PaginatedResponse } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
 import { ArrowLeft, User, BarChart2, Clock, AlertCircle, Search } from 'lucide-react';
@@ -9,6 +10,9 @@ import { Pagination } from '../../../components/Pagination';
 
 const MemberReport: React.FC = () => {
     const [students, setStudents] = useState<Student[]>([]);
+    const [searchParams] = useSearchParams();
+    const initialSearch = searchParams.get('search') || '';
+
     const [meta, setMeta] = useState<PaginatedResponse<Student>['meta']>({
         current_page: 1,
         per_page: 10,
@@ -31,8 +35,8 @@ const MemberReport: React.FC = () => {
     const [detailLoading, setDetailLoading] = useState(false);
 
     // Search and pagination states
-    const [inputValue, setInputValue] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [inputValue, setInputValue] = useState(initialSearch);
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
