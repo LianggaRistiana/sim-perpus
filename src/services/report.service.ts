@@ -76,21 +76,34 @@ export const reportService = {
 
   /**
    * Get most borrowed categories
-   * Aggregates from category distribution and borrowing data
+   * Returns categories ranked by total borrow count (most to least)
+   * @param limit - Maximum number of categories to return (default: 10)
+   * @returns List of categories with total borrow counts
    */
-  getMostBorrowedCategories: async (): Promise<{ name: string; count: number }[]> => {
+  getMostBorrowedCategories: async (limit: number = 10): Promise<{ name: string; count: number }[]> => {
     try {
-      // Use category distribution as a proxy for now
-      // This shows categories by total book items, not borrow count
-      // TODO: Backend should provide endpoint with actual borrow counts per category
-      const response = await reportService.getCategoryDistribution();
-      return response.data
-        .map(cat => ({
-          name: cat.category_name,
-          count: cat.total_book_items // Using items count as proxy
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10);
+      const query = new URLSearchParams();
+      query.append('limit', limit.toString());
+
+      const response = await apiClient.get<{
+        status: string;
+        data: {
+          category_id: number;
+          category_name: string;
+          description: string | null;
+          total_books: number;
+          total_borrows: number;
+          currently_borrowed: number;
+          avg_borrows_per_book: number;
+        }[];
+        error: null;
+        meta: null;
+      }>(`/library/reports/most-borrowed-categories?${query.toString()}`);
+
+      return response.data.map(category => ({
+        name: category.category_name,
+        count: category.total_borrows
+      }));
     } catch (error) {
       console.error('Failed to fetch most borrowed categories:', error);
       return [];
@@ -109,10 +122,9 @@ export const reportService = {
       query.append('limit', limit.toString());
 
       const response = await apiClient.get<{
-        success: boolean;
-        message: string;
+        status: string;
         data: {
-          category_id: number;
+          category_id: string;
           category_name: string;
           description: string | null;
           total_borrows: number;
@@ -121,7 +133,10 @@ export const reportService = {
           min_borrow_days: number;
           max_borrow_days: number;
         }[];
-        note?: string;
+        error: null;
+        meta: {
+          timestamp: string;
+        };
       }>(`/library/reports/longest-borrowed-categories?${query.toString()}`);
 
       return response.data.map(category => ({
