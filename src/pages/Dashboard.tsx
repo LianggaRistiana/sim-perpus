@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
                 onLogout={handleLogout}
+                user={user}
             />
 
             {/* Main Content */}

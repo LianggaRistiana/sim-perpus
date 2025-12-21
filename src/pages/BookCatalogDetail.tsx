@@ -40,7 +40,7 @@ const BookCatalogDetail: React.FC = () => {
             }
 
             setTotalCopies(response.meta.total);
-            setHasMore(response.meta.page < response.meta.last_page);
+            setHasMore(response.meta.current_page < response.meta.last_page);
             setPage(pageNum);
         } catch (error) {
             console.error('Failed to fetch items', error);

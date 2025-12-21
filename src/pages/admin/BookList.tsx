@@ -17,7 +17,7 @@ const BookList: React.FC = () => {
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [meta, setMeta] = useState<PaginatedResponse<BookMaster>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,
@@ -84,7 +84,7 @@ const BookList: React.FC = () => {
             const response = await api.getCategories({ page, limit: 10, keyword });
             return {
                 options: response.data.map(c => ({ id: c.id, label: c.name })),
-                hasMore: response.meta.page < response.meta.last_page
+                hasMore: response.meta.current_page < response.meta.last_page
             };
         } catch (error) {
             return { options: [], hasMore: false };

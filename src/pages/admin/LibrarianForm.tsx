@@ -3,16 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Save, User, Hash } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../components/Toast';
-import type { Student } from '../../types';
+import type { Librarian } from '../../types';
 import BackButton from '../../components/BackButton';
 import { LoadingScreen } from '../../components/LoadingScreen';
 
-const StudentForm: React.FC = () => {
+const LibrarianForm: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const isEditMode = !!id;
 
-    const [formData, setFormData] = useState<Partial<Student>>({
+    const [formData, setFormData] = useState<Partial<Librarian>>({
         name: '',
         user_number: '',
     });
@@ -30,7 +30,7 @@ const StudentForm: React.FC = () => {
         if (!id) return;
         setLoading(true);
         try {
-            const data = await api.getStudentById(id);
+            const data = await api.getLibrarianById(id);
             if (data) {
                 setFormData({
                     name: data.name,
@@ -38,8 +38,8 @@ const StudentForm: React.FC = () => {
                 });
             }
         } catch (error) {
-            console.error('Error fetching student:', error);
-            showToast('Gagal memuat data siswa', 'error');
+            console.error('Error fetching librarian:', error);
+            showToast('Gagal memuat data pustakawan', 'error');
         } finally {
             setLoading(false);
         }
@@ -50,30 +50,39 @@ const StudentForm: React.FC = () => {
         setLoading(true);
         try {
             if (isEditMode && id) {
-                const response = await api.updateStudent(id, formData);
+                const response = await api.updateLibrarian(id, {
+                    name: formData.name,
+                    user_number: formData.user_number,
+                });
                 if (response) {
-                    showToast('Siswa berhasil diperbarui', 'success');
-                    navigate('/dashboard/students');
+                    showToast('Pustakawan berhasil diperbarui', 'success');
+                    navigate('/dashboard/librarians');
                 } else {
-                    showToast('Gagal memperbarui siswa', 'error');
+                    showToast('Gagal memperbarui pustakawan', 'error');
                 }
             } else {
-                const response = await api.addStudent(formData as Omit<Student, 'id'>);
+                const response = await api.addLibrarian({
+                    name: formData.name || '',
+                    user_number: formData.user_number || '',
+                });
                 if (response) {
-                    showToast('Siswa berhasil ditambahkan', 'success');
-                    navigate('/dashboard/students');
+                    showToast('Pustakawan berhasil ditambahkan', 'success');
+                    navigate('/dashboard/librarians');
                 } else {
-                    showToast('Gagal menambahkan siswa', 'error');
+                    showToast('Gagal menambahkan pustakawan', 'error');
                 }
             }
         } catch (error: any) {
-            console.error('Error saving student:', error);
-            let message = 'Terjadi kesalahan saat menyimpan siswa';
+            console.error('Error saving librarian:', error);
+            let message =  'Terjadi kesalahan saat menyimpan pustakawan';
             
             if (error?.fields) {
                 const fieldErrors = Object.values(error.fields).flat();
-                message = fieldErrors.join(', ');
+                if (fieldErrors.length > 0) {
+                    message = `${message}: ${fieldErrors[0]}`;
+                }
             }
+            
             showToast(message, 'error');
         } finally {
             setLoading(false);
@@ -81,7 +90,7 @@ const StudentForm: React.FC = () => {
     };
 
     if (loading && isEditMode && !formData.name) {
-        return <LoadingScreen message="Memuat data siswa..." />;
+        return <LoadingScreen message="Memuat data pustakawan..." />;
     }
 
     return (
@@ -89,13 +98,13 @@ const StudentForm: React.FC = () => {
             {/* Header Section */}
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
-                    <BackButton to='/dashboard/students' />
+                    <BackButton to='/dashboard/librarians' />
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-                            {isEditMode ? 'Edit Siswa' : 'Tambah Siswa Baru'}
+                            {isEditMode ? 'Edit Pustakawan' : 'Tambah Pustakawan Baru'}
                         </h1>
                         <p className="text-sm text-neutral-500">
-                            {isEditMode ? 'Perbarui informasi dan data siswa' : 'Tambahkan data siswa baru ke dalam sistem'}
+                            {isEditMode ? 'Perbarui informasi dan data pustakawan' : 'Tambahkan data pustakawan baru ke dalam sistem'}
                         </p>
                     </div>
                 </div>
@@ -108,7 +117,7 @@ const StudentForm: React.FC = () => {
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                                     <User size={18} />
                                 </div>
-                                <h2 className="text-lg font-bold text-neutral-900">Informasi Siswa</h2>
+                                <h2 className="text-lg font-bold text-neutral-900">Informasi Pustakawan</h2>
                             </div>
                             <button
                                 type="submit"
@@ -142,13 +151,13 @@ const StudentForm: React.FC = () => {
                                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                                         <div className="flex items-center gap-2">
                                             <Hash size={14} className="text-neutral-400" />
-                                            NIS / User Number
+                                            NIP / User Number
                                         </div>
                                     </label>
                                     <input
                                         type="text"
                                         required
-                                        placeholder="Contoh: 12345678"
+                                        placeholder="Masukkan NIP / User Number"
                                         className="w-full rounded-xl border border-neutral-200 bg-neutral-50 p-2.5 transition-all focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
                                         value={formData.user_number}
                                         onChange={e => setFormData({ ...formData, user_number: e.target.value })}
@@ -163,4 +172,4 @@ const StudentForm: React.FC = () => {
     );
 };
 
-export default StudentForm;
+export default LibrarianForm;

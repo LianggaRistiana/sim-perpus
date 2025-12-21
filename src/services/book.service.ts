@@ -31,7 +31,7 @@ export const bookService = {
 				status: "error",
 				data: [],
 				meta: {
-					page: 1,
+					current_page: 1,
 					per_page: 10,
 					total: 0,
 					last_page: 1,
@@ -178,7 +178,7 @@ export const bookService = {
 				status: "error",
 				data: [],
 				meta: {
-					page: 1,
+					current_page: 1,
 					per_page: 10,
 					total: 0,
 					last_page: 1,

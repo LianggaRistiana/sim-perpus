@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { Trash2, Search, Edit, Plus, Shield } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { api } from '../../services/api';
+import type { Librarian, PaginatedResponse } from '../../types';
 import { useToast } from '../../components/Toast';
 import { DeleteModal } from '../../components/DeleteModal';
 import { TableLoading, TableEmpty } from '../../components/TableState';
-import type { Category, PaginatedResponse } from '../../types';
 
-const CategoryList: React.FC = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
+const LibrarianList: React.FC = () => {
+    const [librarians, setLibrarians] = useState<Librarian[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [keyword, setKeyword] = useState('');
     const [inputValue, setInputValue] = useState('');
-    const [meta, setMeta] = useState<PaginatedResponse<Category>['meta']>({
+    const [meta, setMeta] = useState<PaginatedResponse<Librarian>['meta']>({
         current_page: 1,
         per_page: 10,
         total: 0,
@@ -25,9 +25,10 @@ const CategoryList: React.FC = () => {
 
     // Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+    const [librarianToDelete, setLibrarianToDelete] = useState<string | null>(null);
 
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -44,40 +45,48 @@ const CategoryList: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await api.getCategories({ page, limit: itemsPerPage, keyword });
-            setCategories(response.data);
+            const response = await api.getLibrarians({ page, limit: itemsPerPage, keyword });
+            setLibrarians(response.data);
             setMeta(response.meta);
         } catch (error) {
-            console.error('Error fetching categories:', error);
+            console.error('Error fetching librarians:', error);
+            showToast('Gagal memuat data pustakawan', 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const { showToast } = useToast();
-
     const handleDelete = (id: string) => {
-        setCategoryToDelete(id);
+        setLibrarianToDelete(id);
         setShowDeleteModal(true);
     };
 
     const confirmDelete = async () => {
-        if (!categoryToDelete) return;
+        if (!librarianToDelete) return;
 
         try {
-            const response = await api.deleteCategory(categoryToDelete);
+            const response = await api.deleteLibrarian(librarianToDelete);
             if (response) {
-                showToast(response.message || 'Kategori berhasil dihapus', 'success');
+                showToast('Pustakawan berhasil dihapus', 'success');
                 fetchData();
             } else {
-                showToast('Gagal menghapus kategori', 'error');
+                showToast('Gagal menghapus pustakawan', 'error');
             }
-        } catch (error) {
-            console.error('Error deleting category:', error);
-            showToast('Gagal menghapus kategori', 'error');
+        } catch (error: any) {
+            console.error('Error deleting librarian:', error);
+            let message = error?.message || 'Gagal menghapus pustakawan';
+            
+            if (error?.fields) {
+                 const fieldErrors = Object.values(error.fields).flat();
+                 if (fieldErrors.length > 0) {
+                     message = `${message}: ${fieldErrors[0]}`;
+                 }
+            }
+
+            showToast(message, 'error');
         } finally {
             setShowDeleteModal(false);
-            setCategoryToDelete(null);
+            setLibrarianToDelete(null);
         }
     };
 
@@ -85,16 +94,18 @@ const CategoryList: React.FC = () => {
         <div className="flex h-full flex-col bg-neutral-50 px-8 pt-8">
             <div className="mb-8 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-neutral-900">Kategori Buku</h1>
-                    <p className="text-neutral-600">Kelola kategori dan klasifikasi buku</p>
+                    <h1 className="text-2xl font-bold text-neutral-900">Manajemen Pustakawan</h1>
+                    <p className="text-neutral-600">Kelola data pustakawan perpustakaan</p>
                 </div>
-                <Link
-                    to="/dashboard/categories/new"
-                    className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-                >
-                    <Plus size={20} />
-                    <span className='hidden md:block'>Tambah Kategori</span>
-                </Link>
+                <div className="flex gap-2">
+                    <Link
+                        to="/dashboard/librarians/new"
+                        className="flex items-center gap-2 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
+                    >
+                        <Plus size={20} />
+                        <span className='hidden md:block'>Tambah Pustakawan</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Filters */}
@@ -104,7 +115,7 @@ const CategoryList: React.FC = () => {
                         <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
                         <input
                             type="text"
-                            placeholder="Cari kategori..."
+                            placeholder="Cari nama atau NIP..."
                             className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
@@ -118,37 +129,44 @@ const CategoryList: React.FC = () => {
                     <table className="w-full text-left text-sm">
                         <thead className="sticky top-0 z-10 bg-neutral-50 text-neutral-500">
                             <tr>
-                                <th className="px-6 py-4 font-medium">Kode Kategori</th>
-                                <th className="px-6 py-4 font-medium">Nama Kategori</th>
-                                <th className="px-6 py-4 font-medium">Deskripsi</th>
+                                <th className="px-6 py-4 font-medium">NIP / User Number</th>
+                                <th className="px-6 py-4 font-medium">Nama Lengkap</th>
+                                <th className="px-6 py-4 font-medium">Email</th>
+                                <th className="px-6 py-4 font-medium">Role</th>
                                 <th className="px-6 py-4 font-medium text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-100">
                             {loading ? (
-                                <TableLoading colSpan={4} />
-                            ) : categories.length === 0 ? (
+                                <TableLoading colSpan={5} />
+                            ) : librarians.length === 0 ? (
                                 <TableEmpty
-                                    colSpan={4}
-                                    message="Tidak ada kategori ditemukan"
-                                    description="Coba cari dengan kata kunci lain atau tambahkan kategori baru."
+                                    colSpan={5}
+                                    message="Tidak ada pustakawan ditemukan"
+                                    description="Coba cari dengan kata kunci lain atau tambahkan pustakawan baru."
                                 />
                             ) : (
-                                categories.map((category) => (
-                                    <tr key={category.id} className="hover:bg-neutral-50 cursor-pointer" onClick={() => navigate(`/dashboard/categories/${category.id}`)}>
-                                        <td className="px-6 py-4 font-medium text-neutral-900">{category.code || '-'}</td>
-                                        <td className="px-6 py-4 font-medium text-neutral-900">{category.name}</td>
-                                        <td className="px-6 py-4 text-neutral-600">{category.description}</td>
+                                librarians.map((librarian) => (
+                                    <tr key={librarian.id} className="hover:bg-neutral-50 cursor-pointer" onClick={() => navigate(`/dashboard/librarians/${librarian.id}`)}>
+                                        <td className="px-6 py-4 font-medium text-neutral-900">{librarian.user_number}</td>
+                                        <td className="px-6 py-4 text-neutral-600">{librarian.name}</td>
+                                        <td className="px-6 py-4 text-neutral-600">{librarian.email}</td>
+                                        <td className="px-6 py-4 text-neutral-600">
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                                                <Shield size={12} />
+                                                {librarian.role}
+                                            </span>
+                                        </td>
                                         <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex justify-end gap-2">
                                                 <Link
-                                                    to={`/dashboard/categories/edit/${category.id}`}
+                                                    to={`/dashboard/librarians/${librarian.id}/edit`}
                                                     className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 hover:text-blue-600"
                                                 >
                                                     <Edit size={18} />
                                                 </Link>
                                                 <button
-                                                    onClick={() => handleDelete(category.id)}
+                                                    onClick={() => handleDelete(librarian.id)}
                                                     className="rounded-lg p-2 text-neutral-600 hover:bg-neutral-100 hover:text-red-600"
                                                 >
                                                     <Trash2 size={18} />
@@ -181,12 +199,12 @@ const CategoryList: React.FC = () => {
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
                 onConfirm={confirmDelete}
-                title="Hapus Kategori?"
-                message="Apakah Anda yakin ingin menghapus kategori ini? Tindakan ini tidak dapat dibatalkan."
+                title="Hapus Pustakawan?"
+                message="Apakah Anda yakin ingin menghapus pustakawan ini? Tindakan ini tidak dapat dibatalkan."
                 confirmLabel="Ya, Hapus"
             />
         </div>
     );
 };
 
-export default CategoryList;
+export default LibrarianList;

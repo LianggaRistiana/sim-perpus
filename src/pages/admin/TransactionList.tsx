@@ -238,7 +238,7 @@ const TransactionList: React.FC = () => {
 			</div>
 			{meta && (
 				<Pagination
-					currentPage={meta.page}
+					currentPage={meta.current_page}
 					totalPages={meta.last_page}
 					totalItems={meta.total}
 					itemsPerPage={meta.per_page}

@@ -95,7 +95,7 @@ const BookDetail: React.FC = () => {
             }
 
             setTotalItems(response.meta.total);
-            setHasMore(response.meta.page < response.meta.last_page);
+            setHasMore(response.meta.current_page < response.meta.last_page);
             setPage(pageNum);
         } catch (error) {
             console.error('Error fetching items:', error);
