@@ -16,7 +16,7 @@ export const categoryService = {
       return {
         status: 'error',
         data: [],
-        meta: { page: 1, per_page: 10, total: 0, last_page: 1, timestamp: new Date().toISOString() }
+        meta: { current_page: 1, per_page: 10, total: 0, last_page: 1, timestamp: new Date().toISOString() }
       };
     }
   },

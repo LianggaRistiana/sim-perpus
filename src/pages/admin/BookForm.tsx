@@ -122,9 +122,9 @@ const BookForm: React.FC = () => {
             setTotalItems(response.meta.total);
             setHasMore(response.meta.current_page < response.meta.last_page);
             setPage(pageNum);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching items:', error);
-            showToast('Gagal memuat salinan buku', 'error');
+            showToast(error.message, 'error');
         } finally {
             setLoadingItems(false);
         }
@@ -161,9 +161,16 @@ const BookForm: React.FC = () => {
             } else {
                 showToast('Gagal menyimpan buku', 'error');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving book:', error);
-            showToast('Terjadi kesalahan saat menyimpan buku', 'error');
+            console.error(error); 
+            let message = 'Terjadi kesalahan saat menyimpan buku';
+
+            if (error?.fields) {
+                const fieldErrors = Object.values(error.fields).flat();
+                message = fieldErrors.join(', ');
+            }
+            showToast(message, 'error');
         } finally {
             setSubmitting(false);
         }
