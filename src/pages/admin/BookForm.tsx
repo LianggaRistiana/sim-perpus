@@ -211,7 +211,7 @@ const BookForm: React.FC = () => {
                         items: [{
                             condition: copyCondition,
                             quantity: copyQuantity,
-                            status: 'available'
+                            status: copyStatus
                         }]
                     });
                     showToast(`${copyQuantity} Salinan berhasil ditambahkan`, 'success');
