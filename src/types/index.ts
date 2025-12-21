@@ -189,10 +189,16 @@ export interface CategoryDistributionResponse {
 }
 
 export interface InventoryReportResponse {
-  success: boolean;
-  message: string;
+  status: string;
   data: InventoryBook[];
-  pagination: InventoryPagination;
+  error: null;
+  meta: {
+    timestamp: string;
+    page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
 }
 
 // In-Demand Books Types

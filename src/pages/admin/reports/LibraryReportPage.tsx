@@ -4,7 +4,6 @@ import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemand
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { BookOpen, FileText, FolderOpen, TrendingUp } from 'lucide-react';
-import { CardLoading } from '../../../components/CardLoading';
 import { OverviewSkeleton, SectionSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 
 const LibraryReportPage: React.FC = () => {
@@ -115,8 +114,8 @@ const LibraryReportPage: React.FC = () => {
                 setInventoryLoading(true);
                 const response = await api.getInventoryReport(currentPage, perPage);
                 setInventory(response.data);
-                setTotalPages(response.pagination.last_page);
-                setTotalItems(response.pagination.total);
+                setTotalPages(response.meta.last_page);
+                setTotalItems(response.meta.total);
             } catch (error) {
                 console.error('Error fetching inventory:', error);
             } finally {

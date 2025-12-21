@@ -34,20 +34,44 @@ export const reportService = {
 
   /**
    * Get longest borrowed books
-   * TODO: Backend endpoint not implemented yet
-   * Required: GET /api/library/reports/longest-borrowed-books?limit=10
-   * Response should include: { title, average_days_borrowed }
+   * Returns books ranked by average borrow duration (longest to shortest)
+   * @param limit - Maximum number of books to return (default: 10)
+   * @returns List of books with average borrow days
    */
-  getLongestBorrowedBooks: async (): Promise<{ title: string; days: number }[]> => {
-    // TODO: Replace with real API when endpoint is available
-    console.warn('getLongestBorrowedBooks is using mock data - backend endpoint not implemented');
-    return [
-      { title: 'Clean Code', days: 45 },
-      { title: 'The Great Gatsby', days: 30 },
-      { title: 'A Brief History of Time', days: 25 },
-      { title: 'Introduction to Algorithms', days: 60 },
-      { title: 'Design Patterns', days: 40 },
-    ].sort((a, b) => b.days - a.days);
+  getLongestBorrowedBooks: async (limit: number = 10): Promise<{ title: string; days: number }[]> => {
+    try {
+      const query = new URLSearchParams();
+      query.append('limit', limit.toString());
+
+      const response = await apiClient.get<{
+        success: boolean;
+        message: string;
+        data: {
+          book_id: number;
+          title: string;
+          author: string;
+          publisher: string;
+          year: number;
+          isbn: string;
+          category: string | null;
+          total_copies: number;
+          currently_borrowed: number;
+          total_borrows: number;
+          avg_borrow_days: number;
+          min_borrow_days: number;
+          max_borrow_days: number;
+        }[];
+        note?: string;
+      }>(`/library/reports/longest-borrowed-books?${query.toString()}`);
+
+      return response.data.map(book => ({
+        title: book.title,
+        days: Math.round(book.avg_borrow_days * 10) / 10 // Round to 1 decimal place
+      }));
+    } catch (error) {
+      console.error('Failed to fetch longest borrowed books:', error);
+      return [];
+    }
   },
 
   /**
@@ -75,19 +99,39 @@ export const reportService = {
 
   /**
    * Get longest borrowed categories
-   * TODO: Backend endpoint not implemented yet
-   * Required: GET /api/library/reports/longest-borrowed-categories?limit=10
-   * Response should include: { category_name, average_days_borrowed }
+   * Returns categories ranked by average borrow duration (longest to shortest)
+   * @param limit - Maximum number of categories to return (default: 10)
+   * @returns List of categories with average borrow days
    */
-  getLongestBorrowedCategories: async (): Promise<{ name: string; days: number }[]> => {
-    // TODO: Replace with real API when endpoint is available
-    console.warn('getLongestBorrowedCategories is using mock data - backend endpoint not implemented');
-    return [
-      { name: 'Technology', days: 120 },
-      { name: 'Fiction', days: 90 },
-      { name: 'Science', days: 60 },
-      { name: 'History', days: 45 },
-    ].sort((a, b) => b.days - a.days);
+  getLongestBorrowedCategories: async (limit: number = 10): Promise<{ name: string; days: number }[]> => {
+    try {
+      const query = new URLSearchParams();
+      query.append('limit', limit.toString());
+
+      const response = await apiClient.get<{
+        success: boolean;
+        message: string;
+        data: {
+          category_id: number;
+          category_name: string;
+          description: string | null;
+          total_borrows: number;
+          total_books: number;
+          avg_borrow_days: number;
+          min_borrow_days: number;
+          max_borrow_days: number;
+        }[];
+        note?: string;
+      }>(`/library/reports/longest-borrowed-categories?${query.toString()}`);
+
+      return response.data.map(category => ({
+        name: category.category_name,
+        days: Math.round(category.avg_borrow_days * 10) / 10 // Round to 1 decimal place
+      }));
+    } catch (error) {
+      console.error('Failed to fetch longest borrowed categories:', error);
+      return [];
+    }
   },
 
   /**
