@@ -25,6 +25,8 @@ const CategoryReport: React.FC = () => {
         monthlyBorrows: { label: string; value: number }[];
         totalBooks: number;
         totalBorrows: number;
+        averageBorrowsPerBook: number;
+        topBooks: { bookId: string; title: string; author: string; totalBorrows: number; currentlyBorrowed: number }[];
     } | null>(null);
 
     // Global stats
@@ -95,7 +97,9 @@ const CategoryReport: React.FC = () => {
             setCategoryStats({
                 monthlyBorrows: stats.monthlyBorrows.map(i => ({ label: i.month, value: i.count })),
                 totalBooks: stats.totalBooks,
-                totalBorrows: stats.totalBorrows
+                totalBorrows: stats.totalBorrows,
+                averageBorrowsPerBook: stats.averageBorrowsPerBook,
+                topBooks: stats.topBooks
             });
         } catch (error) {
             console.error('Error fetching category details:', error);
@@ -147,8 +151,10 @@ const CategoryReport: React.FC = () => {
                     </div>
                 ) : categoryStats && (
                     <div className="flex-1 space-y-6 overflow-y-auto pr-2">
-                        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
-                            <div className="rounded-xl border border-neutral-200 bg-white p-4 md:p-6 shadow-sm">
+                        {/* Statistics Grid - Matching Overview Style */}
+                        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                            {/* Total Books */}
+                            <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="rounded-full bg-blue-100 p-3 text-blue-600">
                                         <BookOpen size={24} />
@@ -159,6 +165,8 @@ const CategoryReport: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Total Peminjaman */}
                             <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                                 <div className="flex items-center gap-4">
                                     <div className="rounded-full bg-green-100 p-3 text-green-600">
@@ -170,13 +178,74 @@ const CategoryReport: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Average Borrows per Book */}
+                            <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                                <div className="flex items-center gap-4">
+                                    <div className="rounded-full bg-purple-100 p-3 text-purple-600">
+                                        <BarChart2 size={24} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-neutral-600">Rata-rata Peminjaman</p>
+                                        <p className="text-2xl font-bold text-neutral-900">{categoryStats.averageBorrowsPerBook.toFixed(1)}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        {/* Monthly Chart */}
                         <ReportChart
                             title={`Statistik Peminjaman - ${selectedCategory.name}`}
                             data={categoryStats.monthlyBorrows}
                             color="bg-blue-500"
                         />
+
+                        {/* Top Books Section */}
+                        {categoryStats.topBooks.length > 0 && (
+                            <div className="rounded-xl border border-neutral-200 bg-white shadow-sm">
+                                <div className="border-b border-neutral-200 px-6 py-4">
+                                    <h3 className="text-lg font-bold text-neutral-900">Buku Paling Populer</h3>
+                                    <p className="text-sm text-neutral-600">5 buku teratas dengan peminjaman terbanyak</p>
+                                </div>
+                                <div className="p-6">
+                                    <div className="space-y-4">
+                                        {categoryStats.topBooks.slice(0, 5).map((book, index) => (
+                                            <div key={book.bookId} className="flex items-start gap-4 rounded-lg border border-neutral-100 p-4 hover:bg-neutral-50 hover:border-neutral-200 transition-colors">
+                                                {/* Rank Badge */}
+                                                <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                                    index === 1 ? 'bg-gray-100 text-gray-700' :
+                                                        index === 2 ? 'bg-orange-100 text-orange-700' :
+                                                            'bg-neutral-100 text-neutral-600'
+                                                    }`}>
+                                                    {index + 1}
+                                                </div>
+
+                                                {/* Book Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-semibold text-neutral-900 truncate">{book.title}</h4>
+                                                    <p className="text-sm text-neutral-600">{book.author}</p>
+                                                </div>
+
+                                                {/* Borrow Stats */}
+                                                <div className="flex flex-col items-end gap-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs text-neutral-500">Peminjaman:</span>
+                                                        <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                                            {book.totalBorrows}
+                                                        </span>
+                                                    </div>
+                                                    {book.currentlyBorrowed > 0 && (
+                                                        <span className="text-xs text-orange-600">
+                                                            {book.currentlyBorrowed} sedang dipinjam
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

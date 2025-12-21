@@ -207,6 +207,40 @@ const BookReport: React.FC = () => {
         }
     };
 
+    const translateBookCondition = (condition: string): string => {
+        const translations: Record<string, string> = {
+            'good': 'Baik',
+            'fair': 'Cukup',
+            'poor': 'Buruk',
+            'damaged': 'Rusak',
+            'excellent': 'Sangat Baik'
+        };
+        return translations[condition.toLowerCase()] || condition;
+    };
+
+    const translateBookStatus = (status: string): string => {
+        const translations: Record<string, string> = {
+            'available': 'Tersedia',
+            'borrowed': 'Dipinjam',
+            'lost': 'Hilang',
+            'unknown': 'Tidak Diketahui'
+        };
+        return translations[status.toLowerCase()] || status;
+    };
+
+    const getStatusBadgeClass = (status: string) => {
+        switch (status.toLowerCase()) {
+            case 'available':
+                return 'bg-green-100 text-green-700';
+            case 'borrowed':
+                return 'bg-orange-100 text-orange-700';
+            case 'lost':
+                return 'bg-red-100 text-red-700';
+            default:
+                return 'bg-gray-100 text-gray-700';
+        }
+    };
+
     if (loading) {
         return (
             <div className="p-6 space-y-4">
@@ -324,14 +358,11 @@ const BookReport: React.FC = () => {
                                                             <p className="text-sm text-neutral-600">Kode: {item.code}</p>
                                                         </div>
                                                         <div className="flex gap-2">
-                                                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-neutral-700 shadow-sm border border-neutral-200">
-                                                                Kondisi: {item.condition}
+                                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getConditionBadgeClass(item.condition)}`}>
+                                                                Kondisi: {translateBookCondition(item.condition)}
                                                             </span>
-                                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.status === 'Available' ? 'bg-green-100 text-green-700' :
-                                                                item.status === 'Borrowed' ? 'bg-orange-100 text-orange-700' :
-                                                                    'bg-red-100 text-red-700'
-                                                                }`}>
-                                                                {item.status}
+                                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(item.status)}`}>
+                                                                {translateBookStatus(item.status)}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -351,7 +382,6 @@ const BookReport: React.FC = () => {
                                                                         <th className="px-4 py-3 font-medium">Peminjam</th>
                                                                         <th className="px-4 py-3 font-medium">Tanggal Pinjam</th>
                                                                         <th className="px-4 py-3 font-medium">Tanggal Kembali</th>
-                                                                        <th className="px-4 py-3 font-medium">Status</th>
                                                                         <th className="px-4 py-3 font-medium">Kondisi Kembali</th>
                                                                     </tr>
                                                                 </thead>
@@ -366,16 +396,9 @@ const BookReport: React.FC = () => {
                                                                                 {tx.returnDate ? new Date(tx.returnDate).toLocaleDateString('id-ID') : '-'}
                                                                             </td>
                                                                             <td className="px-4 py-3">
-                                                                                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${tx.status === 'Returned' ? 'bg-green-100 text-green-700' :
-                                                                                    tx.status === 'Borrowed' ? 'bg-blue-100 text-blue-700' :
-                                                                                        'bg-red-100 text-red-700'
-                                                                                    }`}>
-                                                                                    {tx.status === 'Returned' ? 'Dikembalikan' :
-                                                                                        tx.status === 'Borrowed' ? 'Dipinjam' : 'Terlambat'}
+                                                                                <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${tx.returnCondition ? getConditionBadgeClass(tx.returnCondition) : 'bg-gray-50 text-gray-700'}`}>
+                                                                                    {tx.returnCondition ? translateBookCondition(tx.returnCondition) : '-'}
                                                                                 </span>
-                                                                            </td>
-                                                                            <td className="px-4 py-3 text-neutral-600">
-                                                                                {tx.returnCondition || '-'}
                                                                             </td>
                                                                         </tr>
                                                                     ))}
@@ -540,10 +563,10 @@ const BookReport: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getConditionBadgeClass(book.condition)}`}>
-                                                        {book.condition}
+                                                        {translateBookCondition(book.condition)}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-neutral-600 hidden md:table-cell">{book.status}</td>
+                                                <td className="px-6 py-4 text-neutral-600 hidden md:table-cell">{translateBookStatus(book.status)}</td>
                                             </tr>
                                         ))
                                     )}
@@ -601,7 +624,7 @@ const BookReport: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
-                                                        {book.status}
+                                                        {translateBookStatus(book.status)}
                                                     </span>
                                                 </td>
                                             </tr>

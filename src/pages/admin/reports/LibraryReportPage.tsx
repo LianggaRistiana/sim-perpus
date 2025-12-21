@@ -3,8 +3,9 @@ import { api } from '../../../services/api';
 import type { LibraryOverview, CategoryDistributionItem, InventoryBook, InDemandBook, MonthlyTrend } from '../../../types';
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
-import { BookOpen, FileText, FolderOpen, TrendingUp } from 'lucide-react';
+import { BookOpen, FileText, FolderOpen, TrendingUp, Search } from 'lucide-react';
 import { OverviewSkeleton, SectionSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
+import { AsyncSelect, type Option } from '../../../components/AsyncSelect';
 
 const LibraryReportPage: React.FC = () => {
     // State for overview section
@@ -31,6 +32,13 @@ const LibraryReportPage: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const perPage = 15;
+
+    // Inventory filters
+    const [categoryFilter, setCategoryFilter] = useState<Option | null>(null);
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('title_asc');
+    const [searchInput, setSearchInput] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Fetch overview data
     useEffect(() => {
@@ -107,12 +115,50 @@ const LibraryReportPage: React.FC = () => {
         fetchTrends();
     }, [trendsYear]);
 
-    // Fetch inventory data with pagination
+    // Debounce search input
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setSearchQuery(searchInput);
+            setCurrentPage(1); // Reset to first page on search
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchInput]);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [categoryFilter, statusFilter, sortBy]);
+
+    // Fetch inventory data with server-side filters
     useEffect(() => {
         const fetchInventory = async () => {
             try {
                 setInventoryLoading(true);
-                const response = await api.getInventoryReport(currentPage, perPage);
+
+                // Build filter params for server-side filtering
+                const filters: {
+                    category_id?: number | string;
+                    status?: 'available' | 'low_stock' | 'out_of_stock';
+                    search?: string;
+                    sort?: 'title_asc' | 'title_desc' | 'total_desc' | 'available_desc' | 'available_asc';
+                } = {};
+
+                if (categoryFilter) {
+                    filters.category_id = categoryFilter.id as any;
+                }
+                if (statusFilter !== 'all') {
+                    filters.status = statusFilter as 'available' | 'low_stock' | 'out_of_stock';
+                }
+                if (searchQuery.trim()) {
+                    filters.search = searchQuery;
+                }
+                if (sortBy) {
+                    filters.sort = sortBy as any;
+                }
+
+                console.log('Sending filters to API:', filters);
+                const response = await api.getInventoryReport(currentPage, perPage, filters);
+
                 setInventory(response.data);
                 setTotalPages(response.meta.last_page);
                 setTotalItems(response.meta.total);
@@ -123,7 +169,7 @@ const LibraryReportPage: React.FC = () => {
             }
         };
         fetchInventory();
-    }, [currentPage]);
+    }, [currentPage, categoryFilter, statusFilter, sortBy, searchQuery]);
 
 
     return (
@@ -429,6 +475,103 @@ const LibraryReportPage: React.FC = () => {
                 {/* Inventory Section */}
                 <div>
                     <h2 className="mb-4 text-lg font-bold text-neutral-900">Inventori Buku</h2>
+
+                    {/* Filter Controls - Single Row */}
+                    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            {/* Search */}
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400" />
+                                <input
+                                    type="text"
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    placeholder="Cari judul atau ISBN..."
+                                    className="w-full rounded-lg border border-neutral-200 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            {/* Category Filter - AsyncSelect */}
+                            <div className="w-full">
+                                <AsyncSelect
+                                    placeholder="Semua Kategori"
+                                    value={categoryFilter}
+                                    onChange={setCategoryFilter}
+                                    loadOptions={async ({ page, keyword }) => {
+                                        try {
+                                            const response = await api.getCategories({ page, limit: 10, keyword });
+                                            return {
+                                                options: response.data.map(c => ({ id: c.id, label: c.name })),
+                                                hasMore: response.meta.current_page < response.meta.last_page
+                                            };
+                                        } catch (error) {
+                                            return { options: [], hasMore: false };
+                                        }
+                                    }}
+                                    className='bg-transparent'
+                                    borderActive='border-blue-500'
+                                    ringActive='ring-blue-500'
+                                />
+                            </div>
+
+                            {/* Status Filter */}
+                            <div className="w-full">
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="w-full rounded-lg border border-neutral-200 py-2 px-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                >
+                                    <option value="all">Semua Status</option>
+                                    <option value="available">Tersedia</option>
+                                    <option value="low_stock">Stok Rendah (&lt;30%)</option>
+                                    <option value="out_of_stock">Habis</option>
+                                </select>
+                            </div>
+
+                            {/* Sort By */}
+                            <div className="w-full">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="w-full rounded-lg border border-neutral-200 py-2 px-3 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                >
+                                    <option value="title_asc">Urutkan: Judul (A-Z)</option>
+                                    <option value="title_desc">Urutkan: Judul (Z-A)</option>
+                                    <option value="total_desc">Urutkan: Total Eksemplar</option>
+                                    <option value="available_desc">Urutkan: Ketersediaan ↑</option>
+                                    <option value="available_asc">Urutkan: Ketersediaan ↓</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Active Filters Indicator */}
+                        {(categoryFilter || statusFilter !== 'all' || searchQuery.trim() || sortBy !== 'title_asc') && (
+                            <div className="mt-3 flex items-center gap-2 text-xs text-neutral-600">
+                                <span className="font-medium">Filter aktif:</span>
+                                {categoryFilter && (
+                                    <span className="rounded-full bg-blue-100 px-2 py-1 text-blue-700">
+                                        {categoryFilter.label}
+                                    </span>
+                                )}
+                                {statusFilter !== 'all' && (
+                                    <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">
+                                        {statusFilter === 'available' ? 'Tersedia' :
+                                            statusFilter === 'low_stock' ? 'Stok Rendah' : 'Habis'}
+                                    </span>
+                                )}
+                                {searchQuery.trim() && (
+                                    <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700">
+                                        "{searchQuery}"
+                                    </span>
+                                )}
+                                {sortBy !== 'title_asc' && (
+                                    <span className="rounded-full bg-orange-100 px-2 py-1 text-orange-700">
+                                        Diurutkan
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
                         <table className="w-full text-left text-sm">

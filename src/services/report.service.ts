@@ -158,6 +158,14 @@ export const reportService = {
     monthlyBorrows: { month: string; count: number }[];
     totalBooks: number;
     totalBorrows: number;
+    averageBorrowsPerBook: number;
+    topBooks: {
+      bookId: string;
+      title: string;
+      author: string;
+      totalBorrows: number;
+      currentlyBorrowed: number;
+    }[];
   }> => {
     try {
       const response = await apiClient.get<{
@@ -196,7 +204,15 @@ export const reportService = {
           count: m.count
         })),
         totalBooks: response.data.statistics.total_books,
-        totalBorrows: response.data.statistics.total_borrows
+        totalBorrows: response.data.statistics.total_borrows,
+        averageBorrowsPerBook: response.data.statistics.average_borrows_per_book,
+        topBooks: response.data.top_books.map(book => ({
+          bookId: book.book_id,
+          title: book.title,
+          author: book.author,
+          totalBorrows: book.total_borrows,
+          currentlyBorrowed: book.currently_borrowed
+        }))
       };
     } catch (error) {
       console.error('Failed to fetch category details:', error);
@@ -342,11 +358,36 @@ export const reportService = {
    * @param perPage - Items per page (default: 15)
    * @returns Paginated inventory data with book items details
    */
-  getInventoryReport: async (page: number = 1, perPage: number = 15) => {
+  getInventoryReport: async (
+    page: number = 1,
+    perPage: number = 15,
+    filters?: {
+      category_id?: number | string;
+      status?: 'available' | 'low_stock' | 'out_of_stock';
+      search?: string;
+      sort?: 'title_asc' | 'title_desc' | 'total_desc' | 'available_desc' | 'available_asc';
+    }
+  ) => {
     try {
       const query = new URLSearchParams();
       query.append('page', page.toString());
       query.append('per_page', perPage.toString());
+
+      // Add filter params if provided
+      if (filters) {
+        if (filters.category_id) {
+          query.append('category_id', filters.category_id.toString());
+        }
+        if (filters.status) {
+          query.append('status', filters.status);
+        }
+        if (filters.search) {
+          query.append('search', filters.search);
+        }
+        if (filters.sort) {
+          query.append('sort', filters.sort);
+        }
+      }
 
       const response = await apiClient.get<InventoryReportResponse>(`/library/reports/inventory?${query.toString()}`);
       return response;
