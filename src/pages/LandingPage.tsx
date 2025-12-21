@@ -15,8 +15,8 @@ const LandingPage: React.FC = () => {
                         <span className="text-xl font-bold tracking-tight text-neutral-900">SimPerpus</span>
                     </div>
                     <div className="hidden md:flex items-center gap-6">
-                        <a href="#features" className="text-sm font-medium text-neutral-600 hover:text-blue-600 transition-colors">Fitur</a>
-                        <a href="#about" className="text-sm font-medium text-neutral-600 hover:text-blue-600 transition-colors">Tentang</a>
+                        {/* <a href="#features" className="text-sm font-medium text-neutral-600 hover:text-blue-600 transition-colors">Fitur</a> */}
+                        {/* <a href="#about" className="text-sm font-medium text-neutral-600 hover:text-blue-600 transition-colors">Tentang</a> */}
                         <Link to="/login" className="rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-800 transition-all hover:shadow-lg">
                             Masuk
                         </Link>
@@ -31,10 +31,10 @@ const LandingPage: React.FC = () => {
                     <div className="mx-auto max-w-3xl space-y-6">
                         <div className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-medium text-blue-800">
                             <span className="flex h-2 w-2 rounded-full bg-blue-600 mr-2"></span>
-                            Sistem Perpustakaan Generasi Baru
+                            Platform Perpustakaan Digital
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 sm:text-5xl md:text-6xl lg:text-7xl">
-                            Kelola perpustakaan Anda dengan <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Cerdas</span>
+                            Sistem Perpustakaan <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">SMPN 2 Baturiti</span>
                         </h1>
                         <p className="mx-auto max-w-[700px] text-lg text-neutral-600 md:text-xl leading-relaxed">
                             Permudah pelacakan buku, manajemen anggota, dan transaksi dengan solusi manajemen perpustakaan kami yang modern, intuitif, dan canggih.
@@ -44,9 +44,6 @@ const LandingPage: React.FC = () => {
                                 Lihat Katalog
                                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </Link>
-                            <button className="inline-flex h-12 items-center justify-center rounded-full border border-neutral-200 bg-white px-8 text-base font-medium text-neutral-900 transition-all hover:bg-neutral-50 hover:border-neutral-300">
-                                Lihat Demo
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -114,9 +111,9 @@ const LandingPage: React.FC = () => {
                             © {new Date().getFullYear()} SimPerpus. Hak Cipta Dilindungi.
                         </p>
                         <div className="flex gap-6">
-                            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900">Privasi</a>
-                            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900">Syarat</a>
-                            <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900">Kontak</a>
+                            {/* <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900">Privasi</a> */}
+                            {/* <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900">Syarat</a> */}
+                            {/* <a href="#" className="text-sm text-neutral-500 hover:text-neutral-900">Kontak</a> */}
                         </div>
                     </div>
                 </div>
