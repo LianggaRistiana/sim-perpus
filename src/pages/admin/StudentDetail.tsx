@@ -141,14 +141,14 @@ const StudentDetail: React.FC = () => {
                     </div>
                 </div>
                 {/* Search Box */}
-                <div className="flex items-center gap-2">
+                <div className="grid gap-4 grid-cols-2">
                     <div
                         onClick={() => navigate(`/dashboard/transactions?search=${encodeURIComponent(student.name)}`)}
-                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
+                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 md:p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">
-                            <div className="mb-4 rounded-full bg-blue-50 p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
-                                <User size={32} />
+                            <div className="mb-4 rounded-full bg-blue-50 p-3 md:p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
+                                <User size={24} className="md:w-8 md:h-8" />
                             </div>
                             <p className="mb-1 text-base font-medium text-neutral-900">
                                 Lihat semua peminjaman {student.name}
@@ -159,12 +159,12 @@ const StudentDetail: React.FC = () => {
                         </div>
                     </div>
                     <div
-                        onClick={() => navigate(``)}
-                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
+                        onClick={() => navigate(`/dashboard/reports/members?search=${encodeURIComponent(student.user_number)}`)}
+                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 md:p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">
-                            <div className="mb-4 rounded-full bg-blue-50 p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
-                                <FileText size={32} />
+                            <div className="mb-4 rounded-full bg-blue-50 p-3 md:p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
+                                <FileText size={24} className="md:w-8 md:h-8" />
                             </div>
                             <p className="mb-1 text-base font-medium text-neutral-900">
                                 Lihat laporan peminjaman {student.name}

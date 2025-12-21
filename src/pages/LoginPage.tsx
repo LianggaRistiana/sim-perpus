@@ -113,6 +113,15 @@ const LoginPage: React.FC = () => {
                         </button>
                     </div>
                 </form>
+
+                <div className="text-center mt-4">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                    >
+                        &larr; Kembali ke Beranda
+                    </button>
+                </div>
             </div>
         </div>
     );

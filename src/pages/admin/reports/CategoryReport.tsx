@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
+import { useSearchParams } from 'react-router-dom';
 import type { Category, PaginatedResponse } from '../../../types';
 import ReportChart from '../../../components/ReportChart';
 import { ArrowLeft, BookOpen, BarChart2, Search } from 'lucide-react';
@@ -9,8 +10,11 @@ import { Pagination } from '../../../components/Pagination';
 
 const CategoryReport: React.FC = () => {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [searchParams] = useSearchParams();
+    const initialSearch = searchParams.get('search') || '';
+
     const [meta, setMeta] = useState<PaginatedResponse<Category>['meta']>({
-        page: 1,
+        current_page: 1,
         per_page: 10,
         total: 0,
         last_page: 1,
@@ -31,8 +35,8 @@ const CategoryReport: React.FC = () => {
     const [detailLoading, setDetailLoading] = useState(false);
 
     // Search and pagination states
-    const [inputValue, setInputValue] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [inputValue, setInputValue] = useState(initialSearch);
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -265,7 +269,7 @@ const CategoryReport: React.FC = () => {
                     {/* Pagination */}
                     {meta.total > 0 && (
                         <Pagination
-                            currentPage={meta.page}
+                            currentPage={meta.current_page}
                             totalPages={meta.last_page}
                             totalItems={meta.total}
                             itemsPerPage={meta.per_page}

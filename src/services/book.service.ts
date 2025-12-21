@@ -72,7 +72,8 @@ export const bookService = {
 			return response;
 		} catch (error) {
 			console.error("Failed to update book:", error);
-			return null;
+			// return null;
+			throw error;
 		}
 	},
 	deleteBook: async (id: string): Promise<ApiResponse<null> | null> => {

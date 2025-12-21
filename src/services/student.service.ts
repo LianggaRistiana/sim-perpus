@@ -19,7 +19,7 @@ export const studentService = {
       return {
         status: 'error',
         data: [],
-        meta: { page: 1, per_page: 10, total: 0, last_page: 1, timestamp: new Date().toISOString() }
+        meta: { current_page: 1, per_page: 10, total: 0, last_page: 1, timestamp: new Date().toISOString() }
       };
     }
   },
@@ -45,7 +45,8 @@ export const studentService = {
         return response;
     } catch (error) {
         console.error('Failed to update student:', error);
-        return null;
+        // return null;
+        throw error;
     }
   },
 

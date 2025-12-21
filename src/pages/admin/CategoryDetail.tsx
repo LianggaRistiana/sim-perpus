@@ -142,14 +142,14 @@ const CategoryDetail: React.FC = () => {
                     </div>
                 </div>
                 {/* Search Box */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-2 mb-8">
                     <div
                         onClick={() => navigate(`/dashboard/books?categoryId=${category.id}&categoryName=${encodeURIComponent(category.name)}`)}
-                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
+                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 md:p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">
-                            <div className="mb-4 rounded-full bg-blue-50 p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
-                                <Book size={32} />
+                            <div className="mb-4 rounded-full bg-blue-50 p-3 md:p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
+                                <Book size={24} className="md:w-8 md:h-8" />
                             </div>
                             <p className="mb-1 text-base font-medium text-neutral-900">
                                 Cari buku kategori {category.name}
@@ -160,12 +160,12 @@ const CategoryDetail: React.FC = () => {
                         </div>
                     </div>
                     <div
-                        onClick={() => navigate('#')}
-                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
+                        onClick={() => navigate(`/dashboard/reports/categories?search=${encodeURIComponent(category.name)}`)}
+                        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-4 md:p-8 transition-all hover:border-blue-500 hover:bg-blue-50"
                     >
                         <div className="flex flex-col items-center justify-center text-center">
-                            <div className="mb-4 rounded-full bg-blue-50 p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
-                                <FileText size={32} />
+                            <div className="mb-4 rounded-full bg-blue-50 p-3 md:p-4 text-blue-600 group-hover:bg-white transition-transform group-hover:scale-110">
+                                <FileText size={24} className="md:w-8 md:h-8" />
                             </div>
                             <p className="mb-1 text-base font-medium text-neutral-900">
                                 Cari Laporan kategori {category.name}
