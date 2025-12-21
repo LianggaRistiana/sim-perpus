@@ -267,10 +267,10 @@ const CategoryReport: React.FC = () => {
                     {/* Pagination */}
                     {meta.total > 0 && (
                         <Pagination
-                            currentPage={meta.current_page}
+                            currentPage={currentPage}
                             totalPages={meta.last_page}
                             totalItems={meta.total}
-                            itemsPerPage={meta.per_page}
+                            itemsPerPage={itemsPerPage}
                             onPageChange={setCurrentPage}
                             onItemsPerPageChange={(limit) => {
                                 setItemsPerPage(limit);
