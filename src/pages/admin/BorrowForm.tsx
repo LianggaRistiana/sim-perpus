@@ -20,7 +20,7 @@ const BorrowForm: React.FC = () => {
 		hasPaid: boolean | null;
 		period: string;
 		studentName: string;
-	}>({ loading: false, hasPaid: null, period: '', studentName: '' });
+	}>({ loading: false, hasPaid: null, period: "", studentName: "" });
 	const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
 	const [selectedBookItems, setSelectedBookItems] = useState<BookItem[]>([]);
 	const [currentBook, setCurrentBook] = useState<Option | null>(null);
@@ -77,10 +77,10 @@ const BorrowForm: React.FC = () => {
 				createdAt: new Date(item.createdAt),
 				book_master: item.book_master
 					? {
-						...item.book_master,
-						categoryId:
-							item.book_master.category_id || item.book_master.categoryId,
-					}
+							...item.book_master,
+							categoryId:
+								item.book_master.category_id || item.book_master.categoryId,
+					  }
 					: undefined,
 			})) as BookItem[];
 
@@ -103,45 +103,45 @@ const BorrowForm: React.FC = () => {
 		}
 	};
 
-	const checkTuitionStatus = async (studentId: string, studentLabel: string) => {
-		setTuitionStatus({ loading: true, hasPaid: null, period: '', studentName: '' });
-		try {
-			const response = await apiClient.get<{
-				status: string;
-				data: {
-					student_id: string;
-					student_name: string;
-					student_number: string;
-					period: string;
-					can_borrow_books: boolean;
-				};
-			}>(`/students/${studentId}/tuition-status`);
+	// const checkTuitionStatus = async (studentId: string, studentLabel: string) => {
+	// 	setTuitionStatus({ loading: true, hasPaid: null, period: '', studentName: '' });
+	// 	try {
+	// 		const response = await apiClient.get<{
+	// 			status: string;
+	// 			data: {
+	// 				student_id: string;
+	// 				student_name: string;
+	// 				student_number: string;
+	// 				period: string;
+	// 				can_borrow_books: boolean;
+	// 			};
+	// 		}>(`/students/${studentId}/tuition-status`);
 
-			setTuitionStatus({
-				loading: false,
-				hasPaid: response.data.can_borrow_books,
-				period: response.data.period,
-				studentName: response.data.student_name,
-			});
-		} catch (error) {
-			console.error('Failed to check tuition status:', error);
-			setTuitionStatus({
-				loading: false,
-				hasPaid: false,
-				period: '',
-				studentName: studentLabel,
-			});
-			showToast('Gagal memeriksa status SPP mahasiswa', 'error');
-		}
-	};
+	// 		setTuitionStatus({
+	// 			loading: false,
+	// 			hasPaid: response.data.can_borrow_books,
+	// 			period: response.data.period,
+	// 			studentName: response.data.student_name,
+	// 		});
+	// 	} catch (error) {
+	// 		console.error('Failed to check tuition status:', error);
+	// 		setTuitionStatus({
+	// 			loading: false,
+	// 			hasPaid: false,
+	// 			period: '',
+	// 			studentName: studentLabel,
+	// 		});
+	// 		showToast('Gagal memeriksa status SPP mahasiswa', 'error');
+	// 	}
+	// };
 
 	const handleStudentChange = (option: Option | null) => {
 		setSelectedStudent(option);
-		if (option) {
-			checkTuitionStatus(option.id, option.label);
-		} else {
-			setTuitionStatus({ loading: false, hasPaid: null, period: '', studentName: '' });
-		}
+		// if (option) {
+		// 	checkTuitionStatus(option.id, option.label);
+		// } else {
+		// 	setTuitionStatus({ loading: false, hasPaid: null, period: '', studentName: '' });
+		// }
 	};
 
 	const handleAddBook = () => {
@@ -214,9 +214,9 @@ const BorrowForm: React.FC = () => {
 				</div>
 
 				<form onSubmit={handleSubmit}>
-					<div className="grid gap-8 lg:grid-cols-3">
+					<div className="flex gap-8 overflow-x-auto pb-20 lg:grid lg:grid-cols-3 lg:overflow-x-visible">
 						{/* Left Column: General Info & Add Book */}
-						<div className="space-y-6 lg:col-span-1">
+						<div className="min-w-[320px] flex-shrink-0 space-y-6 lg:col-span-1 lg:min-w-0">
 							<div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
 								<h2 className="mb-4 text-lg font-bold text-neutral-900">
 									Informasi Umum
@@ -234,14 +234,14 @@ const BorrowForm: React.FC = () => {
 										/>
 
 										{/* Tuition Status Warning */}
-										{tuitionStatus.loading && (
+										{/* {tuitionStatus.loading && (
 											<div className="mt-2 flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
 												<div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-700 border-t-transparent"></div>
 												<span>Memeriksa status SPP...</span>
 											</div>
-										)}
+										)} */}
 
-										{!tuitionStatus.loading && tuitionStatus.hasPaid === false && selectedStudent && (
+										{/* {!tuitionStatus.loading && tuitionStatus.hasPaid === false && selectedStudent && (
 											<div className="mt-2 rounded-lg bg-red-50 p-3">
 												<div className="flex items-start gap-2">
 													<AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-600" />
@@ -253,16 +253,16 @@ const BorrowForm: React.FC = () => {
 													</div>
 												</div>
 											</div>
-										)}
+										)} */}
 
-										{!tuitionStatus.loading && tuitionStatus.hasPaid === true && selectedStudent && (
+										{/* {!tuitionStatus.loading && tuitionStatus.hasPaid === true && selectedStudent && (
 											<div className="mt-2 flex items-center gap-2 rounded-lg bg-green-50 p-3 text-sm text-green-700">
 												<svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
 													<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
 												</svg>
 												<span>SPP periode {tuitionStatus.period} sudah dibayar ✓</span>
 											</div>
-										)}
+										)} */}
 									</div>
 
 									<div>
@@ -311,7 +311,7 @@ const BorrowForm: React.FC = () => {
 						</div>
 
 						{/* Right Column: Book List */}
-						<div className="lg:col-span-2">
+						<div className="min-w-[320px] flex-shrink-0 lg:col-span-2 lg:min-w-0">
 							<div className="flex h-full flex-col rounded-xl border border-neutral-200 bg-white shadow-sm">
 								<div className="border-b border-neutral-200 p-6">
 									<div className="flex items-center justify-between">

@@ -89,18 +89,18 @@ const TransactionDetail: React.FC = () => {
 	return (
 		<div className="flex h-screen flex-col bg-neutral-50 overflow-hidden">
 			<div className="shrink-0 p-8 pb-4">
-				<div className="flex items-center justify-between">
-					<div className="mb-4 flex items-center gap-4">
+				<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+					<div className="flex items-center gap-4">
 						<BackButton to="/dashboard/transactions" />
-						<h1 className="text-2xl font-bold text-neutral-900">
+						<h1 className="text-xl lg:text-2xl font-bold text-neutral-900">
 							Detail Transaksi #{transaction.transaction_code}
 						</h1>
 					</div>
-					<div className="mb-4 flex items-center gap-4">
+					<div className="flex w-full items-center gap-4 lg:w-auto">
 						{transaction.status === "borrowed" && (
 							<Link
 								to={`/dashboard/transactions/${transaction.id}/return`}
-								className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+								className="w-full lg:w-auto rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 text-center">
 								Proses Pengembalian
 							</Link>
 						)}
@@ -172,8 +172,9 @@ const TransactionDetail: React.FC = () => {
 										Jatuh Tempo
 									</p>
 									<p
-										className={`font-medium ${isOverdue ? "text-red-600" : "text-neutral-900"
-											}`}>
+										className={`font-medium ${
+											isOverdue ? "text-red-600" : "text-neutral-900"
+										}`}>
 										{new Date(transaction.due_date).toLocaleDateString(
 											"id-ID",
 											{
@@ -203,17 +204,18 @@ const TransactionDetail: React.FC = () => {
 								<div>
 									<p className="text-sm font-medium text-neutral-500">Status</p>
 									<span
-										className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${transaction.status === "returned"
-											? "bg-green-50 text-green-700"
-											: isOverdue
+										className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+											transaction.status === "returned"
+												? "bg-green-50 text-green-700"
+												: isOverdue
 												? "bg-red-50 text-red-700"
 												: "bg-blue-50 text-blue-700"
-											}`}>
+										}`}>
 										{transaction.status === "returned"
 											? "Dikembalikan"
 											: isOverdue
-												? "Terlambat"
-												: "Dipinjam"}
+											? "Terlambat"
+											: "Dipinjam"}
 									</span>
 								</div>
 							</div>

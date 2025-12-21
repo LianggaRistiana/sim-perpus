@@ -121,9 +121,9 @@ const ReturnForm: React.FC = () => {
 
 				<form
 					onSubmit={handleSubmit}
-					className="grid gap-8 lg:grid-cols-3 relative">
+					className="flex gap-8 overflow-x-auto pb-20 lg:grid lg:grid-cols-3 lg:overflow-x-visible relative">
 					{/* Left Column: Transaction Details (Sticky) */}
-					<div className="space-y-6 lg:col-span-1 lg:sticky lg:top-8 h-fit">
+					<div className="min-w-[320px]  flex-shrink-0 space-y-6 lg:col-span-1 lg:min-w-0 lg:sticky lg:top-8 h-fit">
 						<div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
 							<h3 className="mb-4 text-lg font-bold text-neutral-900 border-b border-neutral-100 pb-2">
 								Informasi Peminjaman
@@ -166,7 +166,7 @@ const ReturnForm: React.FC = () => {
 						</div>
 
 						{/* Quick Actions (Desktop sticky could be added) */}
-						<div className="hidden lg:block">
+						<div>
 							<button
 								type="submit"
 								disabled={loading}
@@ -184,7 +184,7 @@ const ReturnForm: React.FC = () => {
 					</div>
 
 					{/* Right Column: Return Items */}
-					<div className="lg:col-span-2 space-y-6 overflow-y-auto lg:h-[calc(100vh-15rem)] pr-2">
+					<div className="min-w-[320px] flex-shrink-0 lg:col-span-2 lg:min-w-0 space-y-6 overflow-y-auto max-h-[calc(100vh-12rem)] lg:h-[calc(100vh-15rem)] pr-2">
 						{/* <div className="flex items-center justify-between">
 							<h3 className="text-lg font-bold text-neutral-900">
 								Daftar Buku ({transaction.details.length})
@@ -301,7 +301,7 @@ const ReturnForm: React.FC = () => {
 						})}
 
 						{/* Mobile Action Buttons */}
-						<div className="lg:hidden grid gap-4 pt-4">
+						{/* <div className="lg:hidden grid gap-4 pt-4">
 							<button
 								type="submit"
 								disabled={loading}
@@ -309,7 +309,7 @@ const ReturnForm: React.FC = () => {
 								<Save size={20} />
 								{loading ? "Memproses..." : "Simpan Pengembalian"}
 							</button>
-						</div>
+						</div> */}
 					</div>
 				</form>
 			</div>

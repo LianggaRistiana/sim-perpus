@@ -23,7 +23,7 @@ const TransactionList: React.FC = () => {
 	const [searchParams] = useSearchParams();
 	const [page, setPage] = useState(1);
 	const [perPage, setPerPage] = useState(10);
-	const [search, setSearch] = useState(() => searchParams.get('search') || "");
+	const [search, setSearch] = useState(() => searchParams.get("search") || "");
 	const [status, setStatus] = useState("");
 	const [overdue] = useState(false);
 	const [startDate, setStartDate] = useState("");
@@ -225,7 +225,7 @@ const TransactionList: React.FC = () => {
 													to={`/dashboard/transactions/${t.id}/return`}
 													className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
 													onClick={(e) => e.stopPropagation()}>
-													Proses Kembali
+													Pengembalian
 												</Link>
 											)}
 										</td>
