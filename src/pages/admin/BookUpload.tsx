@@ -34,6 +34,7 @@ const BookUpload: React.FC = () => {
     const [previewData, setPreviewData] = useState<BookPreview[]>([]);
     const [isDragging, setIsDragging] = useState(false);
     const [bulkCategoryOption, setBulkCategoryOption] = useState<Option | null>(null);
+    const [showFormatInfo, setShowFormatInfo] = useState(false);
 
     // Edit state
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -306,7 +307,7 @@ const BookUpload: React.FC = () => {
 
                 <div className="flex flex-1 flex-col rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                     {/* Instructions */}
-                    <div className="mb-6 rounded-xl bg-blue-50 p-4">
+                    <div className={`mb-6 rounded-xl bg-blue-50 p-4 ${showFormatInfo ? 'block' : 'hidden md:block'}`}>
                         <h3 className="mb-2 text-sm font-bold text-blue-900 flex items-center gap-2">
                             <AlertCircle size={16} />
                             Format CSV
@@ -373,27 +374,37 @@ const BookUpload: React.FC = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="mt-6 flex justify-end gap-3 pt-6 border-t border-neutral-100">
+                    <div className="mt-6 flex justify-between gap-3 pt-6 border-t border-neutral-100">
                         <button
-                            onClick={() => navigate('/dashboard/books')}
-                            className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
+                            onClick={() => setShowFormatInfo(!showFormatInfo)}
+                            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors md:hidden"
+                            title="Lihat Format CSV"
                         >
-                            Batal
+                            <AlertCircle size={18} />
+                            <span className="hidden sm:inline">Format CSV</span>
                         </button>
-                        <button
-                            onClick={handleProcess}
-                            disabled={!csvContent || loading || previewData.filter(i => i.isValid).length === 0}
-                            className="flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? (
-                                <>
-                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                    Memproses...
-                                </>
-                            ) : (
-                                `Impor (${previewData.filter(i => i.isValid).length})`
-                            )}
-                        </button>
+                        <div className="flex gap-3 ml-auto">
+                            <button
+                                onClick={() => navigate('/dashboard/books')}
+                                className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleProcess}
+                                disabled={!csvContent || loading || previewData.filter(i => i.isValid).length === 0}
+                                className="flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                        Memproses...
+                                    </>
+                                ) : (
+                                    `Impor (${previewData.filter(i => i.isValid).length})`
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
