@@ -5,7 +5,7 @@ import ReportChart from '../../../components/ReportChart';
 import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
-import { AlertTriangle, ArrowLeft, BookOpen, BarChart2, Copy, Clock, Search } from 'lucide-react';
+import { ArrowLeft, BookOpen, BarChart2, Copy, Clock, Search } from 'lucide-react';
 
 const BookReport: React.FC = () => {
     const [books, setBooks] = useState<BookMaster[]>([]);

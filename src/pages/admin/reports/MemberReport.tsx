@@ -107,7 +107,6 @@ const MemberReport: React.FC = () => {
             }, [] as { label: string; value: number }[]);
 
             const currentlyBorrowed = historyResponse.data.history.filter(h => h.status === 'borrowed').length;
-            const returned = historyResponse.data.history.filter(h => h.status === 'returned').length;
 
             setStudentStats({
                 monthlyActivity,
