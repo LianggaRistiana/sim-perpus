@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/books"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/books')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/students"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/students')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >
@@ -104,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/categories"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/categories')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >
@@ -115,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                                 <Link
                                     to="/dashboard/librarians"
                                     className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/librarians')
-                                        ? 'text-white'
+                                        ? 'bg-blue-600 pl-2 text-white'
                                         : 'text-neutral-400 hover:text-white'
                                         }`}
                                 >
@@ -157,7 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/reports/library"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/reports/library')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >
@@ -166,7 +166,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/reports/books"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/reports/books')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >
@@ -175,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/reports/categories"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/reports/categories')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >
@@ -184,7 +184,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout, user }) =>
                             <Link
                                 to="/dashboard/reports/members"
                                 className={`block rounded-lg py-2 text-sm font-medium transition-colors ${location.pathname.includes('/dashboard/reports/members')
-                                    ? 'text-white'
+                                    ? 'bg-blue-600 pl-2 text-white'
                                     : 'text-neutral-400 hover:text-white'
                                     }`}
                             >

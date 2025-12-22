@@ -408,7 +408,7 @@ const BookForm: React.FC = () => {
                                                 <input
                                                     type="number"
                                                     min="1"
-                                                    placeholder="Opsional (Default: 1)"
+                                                    placeholder="Opsional "
                                                     className="w-full max-w-xs rounded-lg border border-neutral-200 bg-white p-2 text-sm focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
                                                     value={formData.bookItemQuantity || ''}
                                                     onChange={e => setFormData({ ...formData, bookItemQuantity: parseInt(e.target.value) || undefined })}
