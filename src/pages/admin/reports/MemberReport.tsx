@@ -62,7 +62,10 @@ const MemberReport: React.FC = () => {
     useEffect(() => {
         const fetchChartsData = async () => {
             try {
-                const studentActivity = await api.getStudentActivity({ page: 1, per_page: 10 });
+                const [studentActivity, totalMembersResponse] = await Promise.all([
+                    api.getStudentActivity({ page: 1, per_page: 10 }),
+                    api.getStudents({ page: 1, limit: 1 }) // Fetch ONLY to get total count
+                ]);
 
                 // Transform student activity to chart format
                 const chartData = studentActivity.data
@@ -84,7 +87,8 @@ const MemberReport: React.FC = () => {
                     ...prev,
                     activeMembers,
                     totalBorrowings,
-                    averageBorrowings: activeMembers > 0 ? Math.round(totalBorrowings / activeMembers * 10) / 10 : 0
+                    averageBorrowings: activeMembers > 0 ? Math.round(totalBorrowings / activeMembers * 10) / 10 : 0,
+                    totalMembers: totalMembersResponse.meta.total
                 }));
             } catch (error) {
                 console.error('Error fetching student activity chart:', error);
@@ -114,12 +118,7 @@ const MemberReport: React.FC = () => {
     }, [currentPage, itemsPerPage, searchTerm]);
 
     // Update total members count from meta
-    useEffect(() => {
-        setOverviewStats(prev => ({
-            ...prev,
-            totalMembers: meta.total
-        }));
-    }, [meta.total]);
+
 
     const handleStudentClick = async (student: Student) => {
         setSelectedStudent(student);
