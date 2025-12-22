@@ -6,8 +6,10 @@ import { Pagination } from '../../../components/Pagination';
 import { TableLoading, TableEmpty } from '../../../components/TableState';
 import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 import { ArrowLeft, BookOpen, BarChart2, Copy, Clock, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const BookReport: React.FC = () => {
+    const navigate = useNavigate();
     const [books, setBooks] = useState<BookMaster[]>([]);
     const [meta, setMeta] = useState<PaginatedResponse<BookMaster>['meta']>({
         current_page: 1,
@@ -387,7 +389,7 @@ const BookReport: React.FC = () => {
                                                                 </thead>
                                                                 <tbody className="divide-y divide-neutral-200">
                                                                     {item.history.map((tx) => (
-                                                                        <tr key={tx.id} className="hover:bg-neutral-50">
+                                                                        <tr key={tx.id} className="hover:bg-neutral-50" onClick={() => navigate(`/dashboard/transactions/${tx.id}`)}>
                                                                             <td className="px-4 py-3 font-medium text-neutral-900">{tx.studentName}</td>
                                                                             <td className="px-4 py-3 text-neutral-600">
                                                                                 {new Date(tx.borrowDate).toLocaleDateString('id-ID')}

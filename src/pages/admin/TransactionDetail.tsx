@@ -146,6 +146,18 @@ const TransactionDetail: React.FC = () => {
 							</div>
 
 							<div className="flex items-start gap-3">
+								<User className="mt-0.5 h-5 w-5 text-neutral-400" />
+								<div>
+									<p className="text-sm font-medium text-neutral-500">
+										Admin Peminjam
+									</p>
+									<p className="font-medium text-neutral-900">
+										{transaction.admin?.name || "Unknown"}
+									</p>
+								</div>
+							</div>
+
+							<div className="flex items-start gap-3">
 								<Calendar className="mt-0.5 h-5 w-5 text-neutral-400" />
 								<div>
 									<p className="text-sm font-medium text-neutral-500">

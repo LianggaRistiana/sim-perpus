@@ -7,8 +7,10 @@ import { ArrowLeft, User, BarChart2, Clock, AlertCircle, Search } from 'lucide-r
 import { StatCardSkeleton, ChartSkeleton } from '../../../components/SkeletonLoading';
 import { TableEmpty } from '../../../components/TableState';
 import { Pagination } from '../../../components/Pagination';
+import { useNavigate } from 'react-router-dom';
 
 const MemberReport: React.FC = () => {
+    const navigate = useNavigate();
     const [students, setStudents] = useState<Student[]>([]);
     const [searchParams] = useSearchParams();
     const initialSearch = searchParams.get('search') || '';
@@ -270,7 +272,7 @@ const MemberReport: React.FC = () => {
                                     <table className="w-full text-left text-sm">
                                         <thead className="bg-neutral-50 text-neutral-500">
                                             <tr>
-                                                <th className="px-6 py-4 font-medium">Buku</th>
+                                                {/* <th className="px-6 py-4 font-medium">Buku</th> */}
                                                 <th className="px-6 py-4 font-medium">Tanggal Pinjam</th>
                                                 <th className="px-6 py-4 font-medium">Tanggal Kembali</th>
                                                 <th className="px-6 py-4 font-medium">Status</th>
@@ -278,13 +280,13 @@ const MemberReport: React.FC = () => {
                                         </thead>
                                         <tbody className="divide-y divide-neutral-100">
                                             {studentStats.borrowingHistory.map((transaction: any) => (
-                                                <tr key={transaction.id} className="hover:bg-neutral-50">
-                                                    <td className="px-6 py-4">
+                                                <tr key={transaction.transaction_id} className="hover:bg-neutral-50" onClick={() => navigate(`/dashboard/transactions/${transaction.transaction_id}`)}>
+                                                    {/* <td className="px-6 py-4">
                                                         <div>
                                                             <p className="font-medium text-neutral-900">{transaction.book_title}</p>
                                                             <p className="text-xs text-neutral-600">{transaction.book_code}</p>
                                                         </div>
-                                                    </td>
+                                                    </td> */}
                                                     <td className="px-6 py-4 text-neutral-600">
                                                         {new Date(transaction.borrow_date).toLocaleDateString('id-ID')}
                                                     </td>
@@ -446,8 +448,8 @@ const MemberReport: React.FC = () => {
                     {/* Discipline Status Card */}
                     <div className="rounded-xl border border-neutral-200 bg-white shadow-sm">
                         <div className="border-b border-neutral-200 px-6 py-4">
-                            <h3 className="text-lg font-bold text-neutral-900">Status Kedisiplinan</h3>
-                            <p className="text-sm text-neutral-600">Tingkat ketepatan pengembalian</p>
+                            <h3 className="text-lg font-bold text-neutral-900">Status Keaktifan Siswa</h3>
+                            <p className="text-sm text-neutral-600">Tingkat minat siswa dalam meminjam buku</p>
                         </div>
                         <div className="p-6">
                             {loading ? (
